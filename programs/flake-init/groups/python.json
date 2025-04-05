@@ -1,0 +1,16 @@
+{
+    "pkgs": [
+        "python3",
+        "poetry"
+    ],
+    "vspkgs": [
+        "ms-python.python",
+        "ms-python.debugpy",
+        "ms-python.black-formatter"
+    ],
+    "vsextpkgs": [
+        "detachhead.basedpyright"
+    ],
+    "inithooks": [
+    ]
+}

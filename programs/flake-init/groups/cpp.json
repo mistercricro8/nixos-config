@@ -1,0 +1,14 @@
+{
+    "pkgs": [
+        "gpp",
+        "gdb"
+    ],
+    "vspkgs": [
+        "ms-vscode.cpptools"
+    ],
+    "vsextpkgs": [
+    ],
+    "inithooks": [
+        "test"
+    ]
+}
