@@ -29,9 +29,10 @@
       fsType = "ext4";
     };
 
-  fileSystems."/home/cricro/LaEsquinaStore" =
+  fileSystems."/home/LaEsquina/LaEsquinaStore" =
     { device = "/dev/disk/by-uuid/D624289724287C9D";
       fsType = "ntfs";
+      options = [ "uid=1001" "gid=100" "umask=0022" ];
     };
 
   swapDevices = [ ];

@@ -17,7 +17,6 @@
   };
 
   # ------------- networking -------------
-  networking.hostName = "nixos";
   networking.networkmanager.enable = true;
 
   # ------------- oh so great flakes -------------

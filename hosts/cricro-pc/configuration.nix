@@ -13,6 +13,9 @@
     wrapperFeatures.gtk = true;
   };
 
+  # ------------- networking -------------
+  networking.hostName = "cricro-pc";
+
   # ------------- users -------------
   users = {
     defaultUserShell = pkgs.zsh;
@@ -37,14 +40,14 @@
         "security" = "user";
       };
       "files" = {
-        "path" = "/home/cricro/LaEsquinaStore/laesquina-management/files";
+        "path" = "/home/LaEsquina/LaEsquinaStore/laesquina-management/files";
         "guest ok" = "no";
         "create mask" = "0644";
         "directory mask" = "0755";
         "force user" = "LaEsquina";
       };
       "Archivos" = {
-        "path" = "/home/cricro/LaEsquinaStore/Archivos";
+        "path" = "/home/LaEsquina/LaEsquinaStore/Archivos";
         "guest ok" = "no";
         "create mask" = "0644";
         "directory mask" = "0755";
