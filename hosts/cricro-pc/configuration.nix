@@ -3,6 +3,12 @@
 {
   imports = [ ./hardware-configuration.nix ];
 
+  # ------------- vpn (yay) -------------
+  services.softether = {
+    enable = true;
+    vpnclient.enable = true;
+  };
+
   # ------------- sway! (not happening) -------------
   security.polkit.enable = true;
   programs.sway = {

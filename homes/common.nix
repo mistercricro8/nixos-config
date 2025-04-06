@@ -45,7 +45,6 @@
     slurp
     swaybg
     swaylock
-    softether
   ];
 
   programs.direnv = {
