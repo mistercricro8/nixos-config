@@ -3,6 +3,9 @@
 {
   imports = [ ./hardware-configuration.nix ];
 
+  # ------------- jk yes vpn -------------
+  networking.wg-quick.interfaces.wg0.configFile = "/etc/wireguard/cricro-laptop-linux.conf";
+
   # ------------- laptop networking -------------
   networking.wireless.iwd = {
     enable = true;

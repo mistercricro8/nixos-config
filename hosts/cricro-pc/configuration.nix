@@ -3,6 +3,9 @@
 {
   imports = [ ./hardware-configuration.nix ];
 
+  # ------------- jk yes vpn -------------
+  networking.wg-quick.interfaces.wg0.configFile = "/etc/wireguard/cricro-pc-linux.conf";
+
   # ------------- sway! (not happening) -------------
   security.polkit.enable = true;
   programs.sway = {
