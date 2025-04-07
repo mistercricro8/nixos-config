@@ -45,6 +45,8 @@
     slurp
     swaybg
     swaylock
+    brave
+    micro
   ];
 
   programs.direnv = {
