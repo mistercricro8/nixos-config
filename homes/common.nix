@@ -105,8 +105,7 @@
       nix-reload = "cd $nixhome && sudo nixos-rebuild switch --flake";
       nix-cleanup = "sudo nix-collect-garbage -d";
       cls = "clear";
-      gitac = "git add . && git commit -m";
-      gitp = "git push";
+      reload-wg = "sudo ifconfig wg0 down && sudo ifconfig wg0 up";
     };
     
     history = {

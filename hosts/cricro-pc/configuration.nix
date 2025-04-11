@@ -1,10 +1,19 @@
 { config, pkgs, ... }:
 
+let
+  commonPackages = import ../common-packages.nix { inherit pkgs; };
+in
 {
-  imports = [ ./hardware-configuration.nix ];
+  imports = [ ./hardware-configuration.nix ../common.nix ];
 
   # ------------- jk yes vpn -------------
   networking.wg-quick.interfaces.wg0.configFile = "/etc/wireguard/cricro-pc-linux.conf";
+
+  # ------------- additional system packages -------------
+  environment.systemPackages = with pkgs; commonPackages ++ [
+    # placeholder
+    cowsay
+  ];
 
   # ------------- sway! (not happening) -------------
   security.polkit.enable = true;

@@ -13,7 +13,6 @@
         system = "x86_64-linux";
         modules = [
           ./hosts/cricro-pc/configuration.nix
-          ./hosts/common.nix
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
@@ -26,7 +25,6 @@
         system = "x86_64-linux";
         modules = [
           ./hosts/cricro-laptop/configuration.nix
-          ./hosts/common.nix
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
@@ -35,13 +33,6 @@
           }
         ];
       };
-    };
-    
-    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [
-        ./configuration.nix
-      ];
     };
   };
 }

@@ -72,10 +72,6 @@
   # ------------- programs!! ------------- 
   # programs.firefox.enable = true;
   programs.zsh.enable = true;
-  environment.systemPackages = with pkgs; [ 
-    kitty
-    v4l-utils
-  ];
 
   # ------------- docker -------------
   virtualisation.docker = {
