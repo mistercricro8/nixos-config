@@ -15,9 +15,11 @@
           ./hosts/cricro-pc/configuration.nix
           home-manager.nixosModules.home-manager
           {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.cricro = ./homes/cricro-pc/home.nix;
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.cricro = ./homes/cricro-pc/home.nix;
+            };
           }
         ];
       };
@@ -27,9 +29,11 @@
           ./hosts/cricro-laptop/configuration.nix
           home-manager.nixosModules.home-manager
           {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.cricro = ./homes/cricro-laptop/home.nix;
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.cricro = ./homes/cricro-laptop/home.nix;
+            };
           }
         ];
       };

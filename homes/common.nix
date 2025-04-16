@@ -36,7 +36,6 @@
     catppuccin-gtk
     nwg-look
     brightnessctl
-    neovim
     fzf
     htop
     tree
