@@ -5,6 +5,8 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
+    nixvim.url = "github:dc-tec/nixvim";
   };
 
   outputs = { self, nixpkgs, home-manager, ... }@inputs: {
@@ -18,6 +20,7 @@
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
+              extraSpecialArgs = { inherit inputs; };
               users.cricro = ./homes/cricro-pc/home.nix;
             };
           }
@@ -32,6 +35,7 @@
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
+              extraSpecialArgs = { inherit inputs; };
               users.cricro = ./homes/cricro-laptop/home.nix;
             };
           }
