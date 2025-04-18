@@ -16,6 +16,11 @@
     extraModulePackages = [ pkgs.linuxPackages.v4l2loopback ];
   };
 
+  # ------------- acpi -------------
+  services.logind.extraConfig = ''
+    HandlePowerKey=ignore
+  '';
+
   # ------------- networking -------------
   networking.networkmanager.enable = true;
 

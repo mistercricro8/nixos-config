@@ -6,7 +6,7 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
-    nixvim.url = "github:dc-tec/nixvim";
+    nixvim.url = "github:khaneliman/khanelivim";
   };
 
   outputs = { self, nixpkgs, home-manager, ... }@inputs: {
