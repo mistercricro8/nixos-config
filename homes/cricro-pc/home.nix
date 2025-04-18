@@ -9,7 +9,6 @@
         obs-studio
         playerctl
         pavucontrol
-        godot_4
         audio-recorder
     ];
 

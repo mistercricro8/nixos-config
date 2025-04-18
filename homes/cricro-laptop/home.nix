@@ -8,7 +8,6 @@
         droidcam
         cheese
         mpv
-        godot_4
         jflap
     ];
 
