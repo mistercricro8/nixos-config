@@ -7,7 +7,9 @@ in
   imports = [ ./hardware-configuration.nix ../common.nix ];
 
   # ------------- jk yes vpn -------------
-  networking.wg-quick.interfaces.wg0.configFile = "/etc/wireguard/cricro-pc-linux.conf";
+  # networking.wg-quick.interfaces.wg0.configFile = "/etc/wireguard/cricro-pc-linux.conf";
+  services.tailscale.enable = true;
+  networking.firewall.checkReversePath = "loose";
 
   # ------------- additional system packages -------------
   environment.systemPackages = with pkgs; commonPackages ++ [

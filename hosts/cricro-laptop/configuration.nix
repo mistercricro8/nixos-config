@@ -7,7 +7,9 @@ in
   imports = [ ./hardware-configuration.nix ../common.nix ];
 
   # ------------- jk yes vpn -------------
-  networking.wg-quick.interfaces.wg0.configFile = "/etc/wireguard/cricro-laptop-linux.conf";
+  # networking.wg-quick.interfaces.wg0.configFile = "/etc/wireguard/cricro-laptop-linux.conf";
+  services.tailscale.enable = true;
+  networking.firewall.checkReversePath = "loose";
 
   # ------------- networking -------------
   networking.hostName = "cricro-laptop";
