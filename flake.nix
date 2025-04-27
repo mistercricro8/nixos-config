@@ -3,10 +3,16 @@
   
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    home-manager.url = "github:nix-community/home-manager";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
-    nixvim.url = "github:khaneliman/khanelivim";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nixvim = {
+      url = "github:khaneliman/khanelivim";
+    };
+    vscode-extensions = {
+      url = "github:nix-community/nix-vscode-extensions";
+    };
   };
 
   outputs = { self, nixpkgs, home-manager, ... }@inputs: {
