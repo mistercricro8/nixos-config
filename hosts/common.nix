@@ -77,6 +77,7 @@
   # ------------- programs!! ------------- 
   # programs.firefox.enable = true;
   programs.zsh.enable = true;
+  services.locate.enable = true;
 
   # ------------- docker -------------
   virtualisation.docker = {
