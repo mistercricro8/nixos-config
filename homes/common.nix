@@ -2,7 +2,7 @@
 
 let
   vscode-extra-extensions = inputs.vscode-extensions.extensions.${pkgs.system};
-  #nixvim = inputs.nixvim.packages.${pkgs.system}.default;
+  nixvim = inputs.nixvim.packages.${pkgs.system}.default;
 in
 {
   home.username = "cricro";
@@ -57,7 +57,7 @@ in
     swaylock
     brave
     micro
-    #nixvim
+    nixvim
   ];
 
   programs.direnv = {
