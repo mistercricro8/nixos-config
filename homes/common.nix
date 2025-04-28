@@ -50,6 +50,7 @@ in
     lazygit
     fd
     lorien
+    rnote
   ];
 
   programs.direnv = {
