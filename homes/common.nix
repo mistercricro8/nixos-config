@@ -6,7 +6,6 @@
 }:
 
 let
-  vscode-extra-extensions = inputs.vscode-extensions.extensions.${pkgs.system};
   nixvim = inputs.nixvim.packages.${pkgs.system}.default;
 in
 {
@@ -17,24 +16,7 @@ in
   home.packages = with pkgs; [
     (vscode-with-extensions.override {
       vscode = vscodium;
-      vscodeExtensions =
-        (with vscode-extra-extensions.vscode-marketplace; [
-          ms-vscode.vscode-typescript-next
-          detachhead.basedpyright
-        ])
-        ++ (with pkgs.vscode-extensions; [
-          # jnoortheen.nix-ide
-          # arrterian.nix-env-selector
-          github.copilot
-          ms-vscode.cpptools
-          visualstudioexptteam.vscodeintellicode
-          bradlc.vscode-tailwindcss
-          dbaeumer.vscode-eslint
-          esbenp.prettier-vscode
-          ms-python.python
-          ms-python.debugpy
-          ms-python.black-formatter
-        ]);
+      vscodeExtensions = [ ];
     })
     swaynotificationcenter
     wireplumber
@@ -67,6 +49,7 @@ in
     gcc
     lazygit
     fd
+    lorien
   ];
 
   programs.direnv = {
