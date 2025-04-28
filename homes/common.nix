@@ -1,4 +1,9 @@
-{ config, pkgs, inputs, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}:
 
 let
   vscode-extra-extensions = inputs.vscode-extensions.extensions.${pkgs.system};
@@ -13,22 +18,23 @@ in
     (vscode-with-extensions.override {
       vscode = vscodium;
       vscodeExtensions =
-      (with vscode-extra-extensions.vscode-marketplace; [
-        ms-vscode.vscode-typescript-next
-        detachhead.basedpyright
-      ]) ++ (with pkgs.vscode-extensions; [
-        # jnoortheen.nix-ide
-        # arrterian.nix-env-selector
-        github.copilot
-        ms-vscode.cpptools
-        visualstudioexptteam.vscodeintellicode
-        bradlc.vscode-tailwindcss
-        dbaeumer.vscode-eslint
-        esbenp.prettier-vscode
-        ms-python.python
-        ms-python.debugpy
-        ms-python.black-formatter
-      ]);
+        (with vscode-extra-extensions.vscode-marketplace; [
+          ms-vscode.vscode-typescript-next
+          detachhead.basedpyright
+        ])
+        ++ (with pkgs.vscode-extensions; [
+          # jnoortheen.nix-ide
+          # arrterian.nix-env-selector
+          github.copilot
+          ms-vscode.cpptools
+          visualstudioexptteam.vscodeintellicode
+          bradlc.vscode-tailwindcss
+          dbaeumer.vscode-eslint
+          esbenp.prettier-vscode
+          ms-python.python
+          ms-python.debugpy
+          ms-python.black-formatter
+        ]);
     })
     swaynotificationcenter
     wireplumber
@@ -58,6 +64,9 @@ in
     brave
     micro
     nixvim
+    gcc
+    lazygit
+    fd
   ];
 
   programs.direnv = {
@@ -76,16 +85,25 @@ in
     ];
     config = {
       common = {
-        default = ["gtk"];
+        default = [ "gtk" ];
       };
       Hyprland = {
-        default = ["hyprland" "gtk"];
+        default = [
+          "hyprland"
+          "gtk"
+        ];
       };
       sway = {
-        default = ["wlr" "gtk"];
+        default = [
+          "wlr"
+          "gtk"
+        ];
       };
       KDE = {
-        default = ["kde" "gtk"];
+        default = [
+          "kde"
+          "gtk"
+        ];
       };
     };
   };
@@ -98,9 +116,7 @@ in
 
     initContent = ''
       export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin"
-      nixroot="/etc/nixos"
       nixhome="$HOME/nixos-config"
-      codiumdata="$HOME/.config/VSCodium"
       eval "$(direnv hook zsh)"
       nix-flake-init() { 
         $nixhome/programs/flake-init/combine "$@"
@@ -111,14 +127,12 @@ in
     '';
 
     shellAliases = {
-      nix-root-config = "sudo codium --no-sandbox --user-data-dir $codiumdata $nixroot";
-      nix-config = "cd $nixhome && codium .";
+      nix-config = "cd $nixhome && nvim .";
       nix-reload = "cd $nixhome && sudo nixos-rebuild switch --flake";
       nix-cleanup = "sudo nix-collect-garbage -d";
       cls = "clear";
-      reload-wg = "sudo ifconfig wg0 down && sudo ifconfig wg0 up";
     };
-    
+
     history = {
       size = 10000;
       path = "${config.xdg.dataHome}/zsh/history";
@@ -154,7 +168,7 @@ in
   # through Home Manager then you have to manually source 'hm-session-vars.sh'
   # located at either
   home.sessionVariables = {
-    
+
   };
 
   # Let Home Manager install and manage itself.
