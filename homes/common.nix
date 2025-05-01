@@ -113,7 +113,7 @@ in
     shellAliases = {
       nix-config = "cd $nixhome && nvim .";
       nix-reload = "cd $nixhome && sudo nixos-rebuild switch --flake";
-      nix-cleanup = "sudo nix-collect-garbage -d";
+      nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
       cls = "clear";
     };
 
