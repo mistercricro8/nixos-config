@@ -10,16 +10,12 @@
     nixvim = {
       url = "github:khaneliman/khanelivim";
     };
-    clipboard-sync = {
-      url = "github:dnut/clipboard-sync";
-    };
   };
 
   outputs =
     {
       nixpkgs,
       home-manager,
-      clipboard-sync,
       ...
     }@inputs:
     {
@@ -37,7 +33,6 @@
                 users.cricro = ./homes/cricro-pc/home.nix;
               };
             }
-            clipboard-sync.nixosModules.default
           ];
           specialArgs = { inherit inputs; };
         };
@@ -54,10 +49,9 @@
                 users.cricro = ./homes/cricro-laptop/home.nix;
               };
             }
-            clipboard-sync.nixosModules.default
           ];
+          specialArgs = { inherit inputs; };
         };
       };
     };
 }
-

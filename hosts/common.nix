@@ -1,9 +1,6 @@
 { pkgs, ... }:
 
 {
-  # ------------- thanks xwayland -------------
-  services.clipboard-sync.enable = true;
-
   # ------------- boot and stuffs -------------
   boot = {
     loader.grub = {

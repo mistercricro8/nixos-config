@@ -21,6 +21,7 @@ in
     swaynotificationcenter
     wireplumber
     hyprpolkitagent
+    pavucontrol
     waybar
     hyprpaper
     rofi-wayland
