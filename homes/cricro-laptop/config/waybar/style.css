@@ -17,9 +17,9 @@ window#waybar {
 }
 
 #window {
-    margin: 8px;
-    padding-left: 8;
-    padding-right: 8;
+    margin: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 button {
@@ -59,6 +59,7 @@ button:hover {
 #battery,
 #cpu,
 #memory,
+#language,
 #disk,
 #temperature,
 #backlight,
@@ -74,6 +75,7 @@ button:hover {
   margin-right: 4px;
   padding-left: 4px;
   padding-right: 4px;
+  font-size: 12px;
 }
 
 #submap {
@@ -88,6 +90,11 @@ button:hover {
 #clock.date {
     color: @mauve;
     border-bottom: 2px solid @mauve;
+}
+
+#language {
+    color: @peach;
+    border-bottom: 2px solid @peach;
 }
 
 #pulseaudio {

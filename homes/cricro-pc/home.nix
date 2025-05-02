@@ -2,6 +2,36 @@
 
 let
   storeDir = "${config.home.homeDirectory}/store";
+  dotfilesDir = "${config.home.homeDirectory}/nixos-config/homes/cricro-laptop/config/";
+  dotfiles = [
+    "backgrounds"
+    "gtk-3.0"
+    "hypr"
+    "rofi"
+    "kitty"
+    "starship.toml"
+    "waybar"
+    "xsettingsd"
+  ];
+  mkDotfileEntry = name: {
+    name = ".config/${name}";
+    value = {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${name}";
+    };
+  };
+  storeDirs = [
+    "unsa"
+    "repos"
+    "tiny-projects"
+    "projects"
+    "important"
+  ];
+  mkStoreEntry = name: {
+    name = "${name}";
+    value = {
+      source = config.lib.file.mkOutOfStoreSymlink "${storeDir}/${name}";
+    };
+  };
 in
 {
   imports = [ ../common.nix ];
@@ -24,25 +54,8 @@ in
     };
   };
 
-  home.file = {
-    ".config/" = {
-      source = ./config;
-      recursive = true;
-    };
-    "unsa/" = {
-      source = config.lib.file.mkOutOfStoreSymlink storeDir + "/unsa";
-    };
-    "repos/" = {
-      source = config.lib.file.mkOutOfStoreSymlink storeDir + "/repos";
-    };
-    "projects/" = {
-      source = config.lib.file.mkOutOfStoreSymlink storeDir + "/projects";
-    };
-    "tiny-projects/" = {
-      source = config.lib.file.mkOutOfStoreSymlink storeDir + "/tiny-projects";
-    };
-    "important/" = {
-      source = config.lib.file.mkOutOfStoreSymlink storeDir + "/important";
-    };
-  };
+  home.file = (
+    builtins.listToAttrs (map mkDotfileEntry dotfiles)
+    // builtins.listToAttrs (map mkStoreEntry storeDirs)
+  );
 }

@@ -145,7 +145,7 @@ in
     extraConfig.init.defaultBranch = "main";
   };
 
-  programs.kitty.enable = true;
+  # programs.kitty.enable = true;
 
   services.gnome-keyring.enable = true;
 
