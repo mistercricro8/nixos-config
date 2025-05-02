@@ -1,6 +1,6 @@
 {
   description = "NixOS configuration.";
-  
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager = {
@@ -10,43 +10,54 @@
     nixvim = {
       url = "github:khaneliman/khanelivim";
     };
-    vscode-extensions = {
-      url = "github:nix-community/nix-vscode-extensions";
+    clipboard-sync = {
+      url = "github:dnut/clipboard-sync";
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }@inputs: {
-    nixosConfigurations = {
-      cricro-pc = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          ./hosts/cricro-pc/configuration.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              extraSpecialArgs = { inherit inputs; };
-              users.cricro = ./homes/cricro-pc/home.nix;
-            };
-          }
-        ];
-      };
-      cricro-laptop = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          ./hosts/cricro-laptop/configuration.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              extraSpecialArgs = { inherit inputs; };
-              users.cricro = ./homes/cricro-laptop/home.nix;
-            };
-          }
-        ];
+  outputs =
+    {
+      nixpkgs,
+      home-manager,
+      clipboard-sync,
+      ...
+    }@inputs:
+    {
+      nixosConfigurations = {
+        cricro-pc = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            ./hosts/cricro-pc/configuration.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                extraSpecialArgs = { inherit inputs; };
+                users.cricro = ./homes/cricro-pc/home.nix;
+              };
+            }
+            clipboard-sync.nixosModules.default
+          ];
+          specialArgs = { inherit inputs; };
+        };
+        cricro-laptop = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            ./hosts/cricro-laptop/configuration.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                extraSpecialArgs = { inherit inputs; };
+                users.cricro = ./homes/cricro-laptop/home.nix;
+              };
+            }
+            clipboard-sync.nixosModules.default
+          ];
+        };
       };
     };
-  };
 }
+

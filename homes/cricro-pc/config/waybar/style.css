@@ -58,6 +58,7 @@ button:hover {
 #clock,
 #battery,
 #cpu,
+#language,
 #memory,
 #disk,
 #temperature,
@@ -74,6 +75,11 @@ button:hover {
   margin-right: 4px;
   padding-left: 4px;
   padding-right: 4px;
+}
+
+#language {
+    color: @green;
+    border-bottom: 2px solid @green;
 }
 
 #submap {

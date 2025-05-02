@@ -1,21 +1,26 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 let
   commonPackages = import ../common-packages.nix { inherit pkgs; };
 in
 {
-  imports = [ ./hardware-configuration.nix ../common.nix ];
+  imports = [
+    ./hardware-configuration.nix
+    ../common.nix
+  ];
 
   # ------------- jk yes vpn -------------
-  # networking.wg-quick.interfaces.wg0.configFile = "/etc/wireguard/cricro-pc-linux.conf";
   services.tailscale.enable = true;
   networking.firewall.checkReversePath = "loose";
 
   # ------------- additional system packages -------------
-  environment.systemPackages = with pkgs; commonPackages ++ [
-    # placeholder
-    cowsay
-  ];
+  environment.systemPackages =
+    with pkgs;
+    commonPackages
+    ++ [
+      # placeholder
+      cowsay
+    ];
 
   # ------------- sway! (not happening) -------------
   security.polkit.enable = true;
@@ -33,7 +38,11 @@ in
     users.cricro = {
       isNormalUser = true;
       description = "Christian";
-      extraGroups = [ "networkmanager" "wheel" "cdrom" ];
+      extraGroups = [
+        "networkmanager"
+        "wheel"
+        "cdrom"
+      ];
       packages = with pkgs; [ ];
     };
     users.LaEsquina = {

@@ -8,6 +8,7 @@
     "hyprland/submap"
   ],
   "modules-right": [
+    "hyprland/language",
     "network",
     "pulseaudio",
     "clock"
@@ -15,15 +16,21 @@
   "hyprland/submap": {
     "format": "({})"
   },
+  "hyprland/language": {
+    "format": "<span size='13000'>  </span>{}",
+    "format-es": "ES",
+    "format-pt": "PT"
+  },
   "clock": {
-    "format": "<span foreground='#f5c2e7'>   </span>{:%a %d %H:%M}",
+    "format": "<span>   </span>{:%a %d %H:%M}",
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
   },
   "network": {
-    "format-ethernet": "<span size='13000' foreground='#f5e0dc'>󰈀 </span>{ipaddr}:{cidr}",
+    "interval": 2,
+    "format-ethernet": "<span size='13000'> </span>{bandwidthUpBits}   <span size='13000' foreground='#f5e0dc'> </span>{bandwidthDownBits}",
     "format-linked": "{ifname} (No IP) ",
-    "format-disconnected": "<span size='13000' foreground='#f5e0dc'>  </span>Disconnected",
-    "tooltip-format-ethernet": "{ipaddr}:{cidr}"
+    "format-disconnected": "<span size='13000'> </span>Disconnected",
+    "tooltip-format-ethernet": "{ipaddr}"
   },
   "pulseaudio": {
     "format": "<span size='13000'>{icon}</span> {volume}%",

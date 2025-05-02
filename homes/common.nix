@@ -43,7 +43,14 @@ in
     slurp
     swaybg
     swaylock
-    brave
+    (brave.override {
+      commandLineArgs = [
+        "--enable-features=VaapiVideoDecodeLinuxGL"
+        "--use-gl=angle"
+        "--use-angle=gl"
+        "--ozone-platform=wayland"
+      ];
+    })
     micro
     nixvim
     gcc

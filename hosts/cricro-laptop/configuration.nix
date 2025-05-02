@@ -1,13 +1,18 @@
-{ config, pkgs, lib, ... }:
+{
+  pkgs,
+  ...
+}:
 
 let
   commonPackages = import ../common-packages.nix { inherit pkgs; };
 in
 {
-  imports = [ ./hardware-configuration.nix ../common.nix ];
+  imports = [
+    ./hardware-configuration.nix
+    ../common.nix
+  ];
 
   # ------------- jk yes vpn -------------
-  # networking.wg-quick.interfaces.wg0.configFile = "/etc/wireguard/cricro-laptop-linux.conf";
   services.tailscale.enable = true;
   networking.firewall.checkReversePath = "loose";
 
@@ -15,19 +20,26 @@ in
   networking.hostName = "cricro-laptop";
 
   # ------------- additional system packages -------------
-  environment.systemPackages = with pkgs; commonPackages ++ [
-    qemu
-    quickemu
-    libguestfs-with-appliance
-    cowsay
-  ];
+  environment.systemPackages =
+    with pkgs;
+    commonPackages
+    ++ [
+      qemu
+      quickemu
+      libguestfs-with-appliance
+      cowsay
+    ];
 
   # ------------- laptop networking -------------
   networking.wireless.iwd = {
     enable = true;
     settings = {
-      IPv6 = { Enabled = true; };
-      Settings = { AutoConnect = true; };
+      IPv6 = {
+        Enabled = true;
+      };
+      Settings = {
+        AutoConnect = true;
+      };
     };
   };
   networking.networkmanager.wifi.backend = "iwd";
@@ -38,7 +50,10 @@ in
     users.cricro = {
       isNormalUser = true;
       description = "Christian";
-      extraGroups = [ "networkmanager" "wheel" ];
+      extraGroups = [
+        "networkmanager"
+        "wheel"
+      ];
       packages = with pkgs; [ ];
     };
   };

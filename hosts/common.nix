@@ -1,6 +1,9 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
+  # ------------- thanks xwayland -------------
+  services.clipboard-sync.enable = true;
+
   # ------------- boot and stuffs -------------
   boot = {
     loader.grub = {
@@ -25,7 +28,10 @@
   networking.networkmanager.enable = true;
 
   # ------------- oh so great flakes -------------
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
   nix.settings = {
     substituters = [ "https://hyprland.cachix.org" ];
     trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
@@ -50,12 +56,8 @@
 
   # ------------- keyboard stuff -------------
   console.keyMap = "la-latin1";
-
-  # this is for x11? maybe delete
-  # services.xserver.xkb = {
-  #   layout = "latam";
-  #   variant = "";
-  # };
+  # just have it so hyprland can manage it?
+  services.xserver.enable = true;
 
   # ------------- printing stuff -------------
   services.printing.enable = true;
@@ -74,7 +76,7 @@
   # ------------- very very important -------------
   nixpkgs.config.allowUnfree = true;
 
-  # ------------- programs!! ------------- 
+  # ------------- programs!! -------------
   # programs.firefox.enable = true;
   programs.zsh.enable = true;
   services.locate.enable = true;
