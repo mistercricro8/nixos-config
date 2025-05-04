@@ -20,11 +20,9 @@
         in
         pkgs.mkShell {
           packages = with pkgs; [
-            basepkgs
           ];
           buildInputs = [ pkgs.bashInteractive ];
-          initHook = ''
-            zsh
+          shellHook = ''
           '';
         };
     };

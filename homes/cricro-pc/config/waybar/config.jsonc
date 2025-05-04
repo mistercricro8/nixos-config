@@ -13,6 +13,9 @@
     "pulseaudio",
     "clock"
   ],
+  "hyprland/window": {
+    "max-length": 60
+  },
   "hyprland/submap": {
     "format": "({})"
   },
@@ -27,7 +30,7 @@
   },
   "network": {
     "interval": 2,
-    "format-ethernet": "<span size='13000'> </span>{bandwidthUpBits}   <span size='13000' foreground='#f5e0dc'> </span>{bandwidthDownBits}",
+    "format-ethernet": "<span size='13000'> </span>{bandwidthUpBits}   <span size='13000'> </span>{bandwidthDownBits}",
     "format-linked": "{ifname} (No IP) ",
     "format-disconnected": "<span size='13000'> </span>Disconnected",
     "tooltip-format-ethernet": "{ipaddr}"
@@ -43,5 +46,5 @@
       ]
     },
     "on-click": "pavucontrol"
-  },
+  }
 }

@@ -6,7 +6,7 @@
 }:
 
 let
-  nixvim = inputs.nixvim.packages.${pkgs.system}.default;
+  nvchad = inputs.nvchad4nix.packages.${pkgs.system}.default;
 in
 {
   home.username = "cricro";
@@ -53,12 +53,9 @@ in
       ];
     })
     micro
-    nixvim
-    gcc
-    lazygit
-    fd
     lorien
     rnote
+    nvchad
   ];
 
   programs.direnv = {
@@ -110,15 +107,10 @@ in
       export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin"
       nixhome="$HOME/nixos-config"
       eval "$(direnv hook zsh)"
-      nix-flake-init() { 
-        $nixhome/programs/flake-init/combine "$@"
-        echo '.direnv\n.envrc' >> .gitignore
-        echo "use flake" >> .envrc
-        direnv allow
-      }
     '';
 
     shellAliases = {
+      devflake-init = "$nixhome/apps/devflake-init/init.sh";
       nix-config = "cd $nixhome && nvim .";
       nix-reload = "cd $nixhome && sudo nixos-rebuild switch --flake";
       nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";

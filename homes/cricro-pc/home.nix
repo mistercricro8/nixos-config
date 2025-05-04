@@ -2,7 +2,7 @@
 
 let
   storeDir = "${config.home.homeDirectory}/store";
-  dotfilesDir = "${config.home.homeDirectory}/nixos-config/homes/cricro-laptop/config/";
+  dotfilesDir = "${config.home.homeDirectory}/nixos-config/homes/cricro-pc/config/";
   dotfiles = [
     "backgrounds"
     "gtk-3.0"
@@ -32,9 +32,13 @@ let
       source = config.lib.file.mkOutOfStoreSymlink "${storeDir}/${name}";
     };
   };
+
 in
 {
-  imports = [ ../common.nix ];
+  imports = [
+    ../common.nix
+  ];
+
   home.packages = with pkgs; [
     libreoffice
     discord
