@@ -1,14 +1,33 @@
-{
-  config,
-  pkgs,
-  inputs,
-  ...
+{ config
+, pkgs
+, inputs
+, ...
 }:
-
 let
-  nvchad = inputs.nvchad4nix.packages.${pkgs.system}.default;
+  import-dicts = [
+    {
+      folder = "common/nixvim";
+      imports = [ "default" "cmp" "comment" "copilot" "emmet" "formatter_linter" "ui" "git" "keymaps" "lsp" "luasnip" "preview" "syntax_highlights" "telescope" ];
+    }
+  ];
+  makeImports = dicts:
+    builtins.concatLists (
+      builtins.map
+        (
+          d:
+          builtins.map (imp: ./${d.folder}/${imp}.nix) d.imports
+        )
+        dicts
+    );
+  nixvim = inputs.nixvim.homeManagerModules.nixvim;
 in
 {
+  imports =
+    makeImports import-dicts
+    ++ [
+      nixvim
+    ];
+
   home.username = "cricro";
   home.homeDirectory = "/home/cricro";
   home.stateVersion = "24.11";
@@ -39,7 +58,6 @@ in
     fzf
     htop
     tree
-    devbox
     grim
     slurp
     swaybg
@@ -50,13 +68,25 @@ in
         "--use-gl=angle"
         "--use-angle=gl"
         "--ozone-platform=wayland"
+        "--password-store=gnome"
       ];
     })
     micro
     lorien
     rnote
-    nvchad
+    jflap
+    zed-editor
+    gcc
+    fd
+    luajitPackages.tiktoken_core
+    mercurial
   ];
+
+  #programs.nvchad = {
+  #  enable = true;
+  #  hm-activation = false;
+  #  backup = false;
+  #};
 
   programs.direnv = {
     enable = true;
@@ -151,9 +181,7 @@ in
   # shell provided by Home Manager. If you don't want to manage your shell
   # through Home Manager then you have to manually source 'hm-session-vars.sh'
   # located at either
-  home.sessionVariables = {
-
-  };
+  home.sessionVariables = { };
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
