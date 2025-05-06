@@ -18,6 +18,10 @@
     dependencies = {
       imagemagick.enable = true;
       chafa.enable = true;
+      gcc.enable = true;
+      fzf.enable = true;
+      lazygit.enable = true;
+      rust-analyzer.enable = true;
     };
   };
 }

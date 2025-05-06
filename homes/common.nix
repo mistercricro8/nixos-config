@@ -7,7 +7,7 @@ let
   import-dicts = [
     {
       folder = "common/nixvim";
-      imports = [ "default" "cmp" "comment" "copilot" "emmet" "formatter_linter" "ui" "git" "keymaps" "lsp" "luasnip" "preview" "syntax_highlights" "telescope" ];
+      imports = builtins.attrNames (builtins.readDir ./common/nixvim);
     }
   ];
   makeImports = dicts:
@@ -15,7 +15,7 @@ let
       builtins.map
         (
           d:
-          builtins.map (imp: ./${d.folder}/${imp}.nix) d.imports
+          builtins.map (imp: ./${d.folder}/${imp}) d.imports
         )
         dicts
     );
@@ -55,7 +55,6 @@ in
     catppuccin-gtk
     nwg-look
     brightnessctl
-    fzf
     htop
     tree
     grim
@@ -76,7 +75,6 @@ in
     rnote
     jflap
     zed-editor
-    gcc
     fd
     luajitPackages.tiktoken_core
     mercurial
