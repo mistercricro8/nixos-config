@@ -9,6 +9,10 @@ let
       folder = "common/nixvim";
       imports = builtins.attrNames (builtins.readDir ./common/nixvim);
     }
+    {
+      folder = "common/packages";
+      imports = builtins.attrNames (builtins.readDir ./common/packages);
+    }
   ];
   makeImports = dicts:
     builtins.concatLists (
@@ -39,18 +43,12 @@ in
     })
     swaynotificationcenter
     wireplumber
-    hyprpolkitagent
     pavucontrol
     waybar
-    hyprpaper
     rofi-wayland
     wl-clipboard
     cliphist
     nautilus
-    hypridle
-    hyprlock
-    hyprshot
-    hyprcursor
     nerd-fonts.caskaydia-mono
     catppuccin-gtk
     nwg-look
@@ -76,15 +74,7 @@ in
     jflap
     zed-editor
     fd
-    luajitPackages.tiktoken_core
-    mercurial
   ];
-
-  #programs.nvchad = {
-  #  enable = true;
-  #  hm-activation = false;
-  #  backup = false;
-  #};
 
   programs.direnv = {
     enable = true;
