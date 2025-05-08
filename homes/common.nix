@@ -14,7 +14,7 @@ let
       imports = builtins.attrNames (builtins.readDir ./common/packages);
     }
   ];
-  makeImports = dicts:
+  mkImports = dicts:
     builtins.concatLists (
       builtins.map
         (
@@ -27,7 +27,7 @@ let
 in
 {
   imports =
-    makeImports import-dicts
+    mkImports import-dicts
     ++ [
       nixvim
     ];

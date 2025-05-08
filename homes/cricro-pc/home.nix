@@ -2,17 +2,8 @@
 
 let
   storeDir = "${config.home.homeDirectory}/store";
-  dotfilesDir = "${config.home.homeDirectory}/nixos-config/homes/cricro-pc/config/";
-  dotfiles = [
-    "backgrounds"
-    "gtk-3.0"
-    "hypr"
-    "rofi"
-    "kitty"
-    "starship.toml"
-    "waybar"
-    "xsettingsd"
-  ];
+  dotfilesDir = ./config;
+  dotfiles = builtins.attrNames (builtins.readDir dotfilesDir);
   mkDotfileEntry = name: {
     name = ".config/${name}";
     value = {

@@ -1,18 +1,9 @@
 { pkgs, config, ... }:
 
 let
-  dotfilesDir = "${config.home.homeDirectory}/nixos-config/homes/cricro-laptop/config";
-  dotfiles = [
-    "backgrounds"
-    "gtk-3.0"
-    "hypr"
-    "rofi"
-    "kitty"
-    "starship.toml"
-    "waybar"
-    "xsettingsd"
-  ];
-  mkEntry = name: {
+  dotfilesDir = ./config;
+  dotfiles = builtins.attrNames (builtins.readDir dotfilesDir);
+  mkDotfileEntry = name: {
     name = ".config/${name}";
     value = {
       source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/${name}";
@@ -30,5 +21,5 @@ in
     jflap
   ];
 
-  home.file = builtins.listToAttrs (map mkEntry dotfiles);
+  home.file = builtins.listToAttrs (map mkDotfileEntry dotfiles);
 }
