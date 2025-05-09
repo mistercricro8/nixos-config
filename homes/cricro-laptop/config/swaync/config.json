@@ -10,7 +10,6 @@
   "control-center-width": 500,
   "control-center-height": 600,
   "fit-to-screen": false,
-
   "layer": "top",
   "cssPriority": "user",
   "notification-icon-size": 64,

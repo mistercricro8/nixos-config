@@ -13,7 +13,8 @@
     "network",
     "pulseaudio",
     "battery",
-    "clock"
+    "clock",
+    "custom/notifications"
   ],
   "hyprland/window": {
     "max-length": 60
@@ -22,26 +23,46 @@
     "format": "({})"
   },
   "clock": {
-    "format": "<span size='9000' foreground='#f5c2e7'> </span>{:%a %d %H:%M}",
+    "format": "<span foreground='#f5c2e7'>  </span>{:%a %d %H:%M}",
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
   },
   "hyprland/language": {
-    "format": "<span size='9000'>  </span>{}",
+    "format": "<span>   </span>{}",
     "format-es": "ES",
     "format-pt": "PT"
+  },
+  "custom/notifications": {
+    "tooltip": false,
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "<span foreground='red'><sup></sup></span>",
+      "none": "",
+      "dnd-notification": "<span foreground='red'><sup></sup></span>",
+      "dnd-none": "",
+      "inhibited-notification": "<span foreground='red'><sup></sup></span>",
+      "inhibited-none": "",
+      "dnd-inhibited-notification": "<span foreground='red'><sup></sup></span>",
+      "dnd-inhibited-none": ""
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
   },
   "battery": {
     "states": {
       "warning": 30,
       "critical": 15
     },
-    "format": "<span size='9000' foreground='#a6e3a1'>{icon} </span> {capacity}%",
-    "format-warning": "<span size='9000' foreground='#B1E3AD'>{icon} </span> {capacity}%",
-    "format-critical": "<span size='9000' foreground='#E38C8F'>{icon} </span> {capacity}%",
-    "format-charging": "<span size='9000' foreground='#B1E3AD'> </span>{capacity}%",
-    "format-plugged": "<span size='9000' foreground='#B1E3AD'> </span>{capacity}%",
-    "format-alt": "<span size='9000' foreground='#B1E3AD'>{icon} </span> {time}",
-    "format-full": "<span size='9000' foreground='#B1E3AD'> </span>{capacity}%",
+    "format": "<span foreground='#a6e3a1'>{icon} </span> {capacity}%",
+    "format-warning": "<span foreground='#B1E3AD'>{icon} </span> {capacity}%",
+    "format-critical": "<span foreground='#E38C8F'>{icon} </span> {capacity}%",
+    "format-charging": "<span foreground='#B1E3AD'> </span>{capacity}%",
+    "format-plugged": "<span foreground='#B1E3AD'> </span>{capacity}%",
+    "format-alt": "<span foreground='#B1E3AD'>{icon} </span> {time}",
+    "format-full": "<span foreground='#B1E3AD'> </span>{capacity}%",
     "format-icons": [
       "",
       "",
@@ -52,10 +73,10 @@
     "tooltip-format": "{time}"
   },
   "network": {
-    "format-wifi": "<span size='9000' foreground='#f5e0dc'>  </span>{essid}",
-    "format-ethernet": "<span size='9000' foreground='#f5e0dc'>󰤭  </span> Disconnected",
+    "format-wifi": "<span foreground='#f5e0dc'>  </span>{essid}",
+    "format-ethernet": "<span foreground='#f5e0dc'>󰤭  </span> Disconnected",
     "format-linked": "{ifname} (No IP) ",
-    "format-disconnected": "<span size='9000' foreground='#f5e0dc'>  </span>Disconnected",
+    "format-disconnected": "<span foreground='#f5e0dc'>  </span>Disconnected",
     "tooltip-format-wifi": "Signal Strenght: {signalStrength}%"
   },
   "pulseaudio": {

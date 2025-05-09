@@ -2,8 +2,8 @@
 
 let
   storeDir = "${config.home.homeDirectory}/store";
-  dotfilesDir = ./config;
-  dotfiles = builtins.attrNames (builtins.readDir dotfilesDir);
+  dotfiles = builtins.attrNames (builtins.readDir ./config);
+  dotfilesDir = "${config.home.homeDirectory}/nixos-config/homes/cricro-laptop/config";
   mkDotfileEntry = name: {
     name = ".config/${name}";
     value = {
