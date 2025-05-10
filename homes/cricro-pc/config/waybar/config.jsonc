@@ -20,7 +20,7 @@
     "format": "({})"
   },
   "hyprland/language": {
-    "format": "<span size='13000'>  </span>{}",
+    "format": "<span>  </span>{}",
     "format-es": "ES",
     "format-pt": "PT"
   },
@@ -30,13 +30,13 @@
   },
   "network": {
     "interval": 2,
-    "format-ethernet": "<span size='13000'> </span>{bandwidthUpBits}   <span size='13000'> </span>{bandwidthDownBits}",
+    "format-ethernet": "<span> </span>{bandwidthUpBits}   <span> </span>{bandwidthDownBits}",
     "format-linked": "{ifname} (No IP) ",
-    "format-disconnected": "<span size='13000'> </span>Disconnected",
+    "format-disconnected": "<span> </span>Disconnected",
     "tooltip-format-ethernet": "{ipaddr}"
   },
   "pulseaudio": {
-    "format": "<span size='13000'>{icon}</span> {volume}%",
+    "format": "<span>{icon}</span> {volume}%",
     "format-muted": "",
     "format-icons": {
       "default": [

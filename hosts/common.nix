@@ -9,6 +9,17 @@
       useOSProber = true;
       efiSupport = true;
       default = "saved";
+      # theme = pkgs.stdenv.mkDerivation {
+      #   pname = "catppuccin-grub";
+      #   version = "1.0";
+      #   src = pkgs.fetchFromGitHub {
+      #     owner = "catppuccin";
+      #     repo = "grub";
+      #     tag = "main";
+      #     hash = "";
+      #   };
+      #   installPhase = "cp -r src/catppuccin-mocha-grub-theme $out";
+      # };
     };
     loader.efi.canTouchEfiVariables = true;
     kernelPackages = pkgs.linuxPackages;

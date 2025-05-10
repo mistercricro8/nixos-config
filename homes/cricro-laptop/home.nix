@@ -21,5 +21,10 @@ in
     jflap
   ];
 
-  home.file = builtins.listToAttrs (map mkDotfileEntry dotfiles);
+  home.file = (
+    builtins.listToAttrs (map mkDotfileEntry dotfiles)
+    // {
+      ".icons".source = config.lib.file.mkOutOfStoreSymlink ./other-symlinks/.icons;
+    }
+  ); 
 }

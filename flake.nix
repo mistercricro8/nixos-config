@@ -13,6 +13,8 @@
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
+    catppuccin-nix.url = "github:catppuccin/nix";
   };
 
   outputs =
@@ -26,7 +28,7 @@
     {
       nixosConfigurations = {
         cricro-pc = nixpkgs.lib.nixosSystem {
-          system = system;
+          inherit system;
           modules = [
             ./hosts/cricro-pc/configuration.nix
             home-manager.nixosModules.home-manager
@@ -34,7 +36,7 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                extraSpecialArgs = { inputs = inputs; };
+                extraSpecialArgs = { inherit inputs; };
                 users.cricro = ./homes/cricro-pc/home.nix;
               };
             }
@@ -42,7 +44,7 @@
           specialArgs = { };
         };
         cricro-laptop = nixpkgs.lib.nixosSystem {
-          system = system;
+          inherit system;
           modules = [
             ./hosts/cricro-laptop/configuration.nix
             home-manager.nixosModules.home-manager
@@ -50,7 +52,7 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                extraSpecialArgs = { inputs = inputs; };
+                extraSpecialArgs = { inherit inputs; };
                 users.cricro = ./homes/cricro-laptop/home.nix;
               };
             }

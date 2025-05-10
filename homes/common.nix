@@ -24,12 +24,15 @@ let
         dicts
     );
   nixvim = inputs.nixvim.homeManagerModules.nixvim;
+  vscode-extra-extensions = inputs.vscode-extensions.extensions.${pkgs.system};
+  catppuccin-nix = inputs.catppuccin-nix.homeModules.catppuccin;
 in
 {
   imports =
     mkImports import-dicts
     ++ [
       nixvim
+      catppuccin-nix
     ];
 
   home.username = "cricro";
@@ -37,10 +40,6 @@ in
   home.stateVersion = "24.11";
 
   home.packages = with pkgs; [
-    (vscode-with-extensions.override {
-      vscode = vscodium;
-      vscodeExtensions = [ ];
-    })
     swaynotificationcenter
     wireplumber
     pavucontrol
@@ -48,7 +47,7 @@ in
     rofi-wayland
     wl-clipboard
     cliphist
-    nautilus
+    nemo
     nerd-fonts.caskaydia-mono
     catppuccin-gtk
     nwg-look
@@ -74,7 +73,50 @@ in
     jflap
     zed-editor
     fd
+    bottom
   ];
+
+  programs.vscode = {
+    enable = true;
+    package = pkgs.vscodium;
+    profiles.cricro = {
+      userSettings =
+        {
+          catppuccin.accentColor = "yellow";
+          editor.semanticHighlighting.enabled = true;
+          terminal.integrated.minimumContrastRatio = 1;
+          window.titleBarStyle = "custom";
+          workbench.colorTheme = "Catppuccin Mocha";
+        };
+      extensions = (with vscode-extra-extensions.vscode-marketplace; [
+        ms-vscode.vscode-typescript-next
+        detachhead.basedpyright
+        catppuccin.catppuccin-vsc-icons
+      ])
+      ++ (with pkgs.vscode-extensions; [
+        github.copilot
+        ms-vscode.cpptools
+        jnoortheen.nix-ide
+        visualstudioexptteam.vscodeintellicode
+        bradlc.vscode-tailwindcss
+        dbaeumer.vscode-eslint
+        esbenp.prettier-vscode
+        ms-python.python
+        ms-python.debugpy
+        ms-python.black-formatter
+      ]);
+    };
+  };
+
+  catppuccin = {
+    flavor = "mocha";
+    vscode = {
+      enable = true;
+      settings = {
+        accent = "yellow";
+      };
+    };
+  };
 
   programs.direnv = {
     enable = true;
