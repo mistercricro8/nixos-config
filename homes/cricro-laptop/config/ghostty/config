@@ -4,3 +4,4 @@ font-family = "CaskaydiaMono Nerd Font Mono"
 font-size = 14
 
 background-opacity = 0.9
+confirm-close-surface = false
