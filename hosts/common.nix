@@ -55,11 +55,9 @@
   # ------------- sddm -------------
   services.displayManager.sddm = {
     enable = true;
-    theme = "catppuccin-mocha";
-    package = pkgs.kdePackages.sddm;
     wayland.enable = true;
   };
-  # services.desktopManager.plasma6.enable = true;
+  services.desktopManager.plasma6.enable = true;
 
   # ------------- keyboard stuff -------------
   console.keyMap = "la-latin1";

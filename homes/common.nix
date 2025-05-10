@@ -108,39 +108,6 @@ in
     nix-direnv.enable = true;
   };
 
-  xdg.portal = {
-    enable = true;
-    extraPortals = with pkgs; [
-      xdg-desktop-portal-wlr
-      xdg-desktop-portal-gtk
-      xdg-desktop-portal-hyprland
-      libsForQt5.xdg-desktop-portal-kde
-    ];
-    config = {
-      common = {
-        default = [ "gtk" ];
-      };
-      Hyprland = {
-        default = [
-          "hyprland"
-          "gtk"
-        ];
-      };
-      sway = {
-        default = [
-          "wlr"
-          "gtk"
-        ];
-      };
-      KDE = {
-        default = [
-          "kde"
-          "gtk"
-        ];
-      };
-    };
-  };
-
   programs.zsh = {
     enable = true;
     enableCompletion = true;

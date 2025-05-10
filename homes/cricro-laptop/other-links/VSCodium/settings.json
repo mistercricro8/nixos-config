@@ -40,6 +40,5 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "typescript.updateImportsOnFileMove.enabled": "always",
-  "workbench.sideBar.location": "right",
-  "git.enableSmartCommit": true
+  "workbench.sideBar.location": "right"
 }
