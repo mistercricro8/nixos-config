@@ -108,7 +108,7 @@ in
     VSCodium = {
       name = "VSCodium";
       genericName = "Wayland";
-      exec = "codium --enable-features=UseOzonePlatform --ozone-platform=wayland";
+      exec = "codium --ozone-platform=wayland";
       categories = [ "TextEditor" "IDE" ];
       mimeType = [ "text/plain" ];
     };
@@ -133,11 +133,11 @@ in
     '';
 
     shellAliases = {
+      codium = "codium --ozone-platform=wayland";
+      nix-config = "cd $nixhome && codium .";
       devflake-init = "bash $nixhome/apps/devflake-init/init.sh";
-      nix-config = "cd $nixhome && codium --enable-features=UseOzonePlatform --ozone-platform=wayland .";
       nix-reload = "cd $nixhome && sudo nixos-rebuild switch --flake";
       nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
-      codium = "codium --enable-features=UseOzonePlatform --ozone-platform=wayland";
       cls = "clear";
     };
 
