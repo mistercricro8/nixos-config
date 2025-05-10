@@ -102,6 +102,18 @@ in
     };
   };
 
+  home.sessionVariables.NIXOS_OZONE_WL = "1";
+
+  xdg.desktopEntries = {
+    VSCodium = {
+      name = "VSCodium";
+      genericName = "Wayland";
+      exec = "codium --enable-features=UseOzonePlatform --ozone-platform=wayland";
+      categories = [ "TextEditor" "IDE" ];
+      mimeType = [ "text/plain" ];
+    };
+  };
+
   programs.direnv = {
     enable = true;
     enableBashIntegration = true;
@@ -122,9 +134,10 @@ in
 
     shellAliases = {
       devflake-init = "bash $nixhome/apps/devflake-init/init.sh";
-      nix-config = "cd $nixhome && codium .";
+      nix-config = "cd $nixhome && codium --enable-features=UseOzonePlatform --ozone-platform=wayland .";
       nix-reload = "cd $nixhome && sudo nixos-rebuild switch --flake";
       nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
+      codium = "codium --enable-features=UseOzonePlatform --ozone-platform=wayland";
       cls = "clear";
     };
 
