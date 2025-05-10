@@ -1,6 +1,7 @@
 { config
 , pkgs
 , inputs
+, lib
 , ...
 }:
 let
@@ -25,14 +26,12 @@ let
     );
   nixvim = inputs.nixvim.homeManagerModules.nixvim;
   vscode-extra-extensions = inputs.vscode-extensions.extensions.${pkgs.system};
-  catppuccin-nix = inputs.catppuccin-nix.homeModules.catppuccin;
 in
 {
   imports =
     mkImports import-dicts
     ++ [
       nixvim
-      catppuccin-nix
     ];
 
   home.username = "cricro";
@@ -74,23 +73,18 @@ in
     zed-editor
     fd
     bottom
+    lazygit
   ];
 
   programs.vscode = {
     enable = true;
     package = pkgs.vscodium;
-    profiles.cricro = {
-      userSettings =
-        {
-          catppuccin.accentColor = "yellow";
-          editor.semanticHighlighting.enabled = true;
-          terminal.integrated.minimumContrastRatio = 1;
-          window.titleBarStyle = "custom";
-          workbench.colorTheme = "Catppuccin Mocha";
-        };
+    mutableExtensionsDir = false;
+    profiles.default = {
       extensions = (with vscode-extra-extensions.vscode-marketplace; [
         ms-vscode.vscode-typescript-next
         detachhead.basedpyright
+        catppuccin.catppuccin-vsc
         catppuccin.catppuccin-vsc-icons
       ])
       ++ (with pkgs.vscode-extensions; [
@@ -105,16 +99,6 @@ in
         ms-python.debugpy
         ms-python.black-formatter
       ]);
-    };
-  };
-
-  catppuccin = {
-    flavor = "mocha";
-    vscode = {
-      enable = true;
-      settings = {
-        accent = "yellow";
-      };
     };
   };
 
@@ -170,8 +154,8 @@ in
     '';
 
     shellAliases = {
-      devflake-init = "$nixhome/apps/devflake-init/init.sh";
-      nix-config = "cd $nixhome && nvim .";
+      devflake-init = "bash $nixhome/apps/devflake-init/init.sh";
+      nix-config = "cd $nixhome && codium .";
       nix-reload = "cd $nixhome && sudo nixos-rebuild switch --flake";
       nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
       cls = "clear";
@@ -196,8 +180,6 @@ in
     enable = true;
     extraConfig.init.defaultBranch = "main";
   };
-
-  # programs.kitty.enable = true;
 
   services.gnome-keyring.enable = true;
 

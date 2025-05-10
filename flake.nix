@@ -13,8 +13,11 @@
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    catppuccin-grub = {
+      url = "github:catppuccin/grub";
+      flake = false;
+    };
     vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
-    catppuccin-nix.url = "github:catppuccin/nix";
   };
 
   outputs =
@@ -36,12 +39,13 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
+                backupFileExtension = "backup";
                 extraSpecialArgs = { inherit inputs; };
                 users.cricro = ./homes/cricro-pc/home.nix;
               };
             }
           ];
-          specialArgs = { };
+          specialArgs = { inherit inputs; };
         };
         cricro-laptop = nixpkgs.lib.nixosSystem {
           inherit system;
@@ -52,12 +56,13 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
+                backupFileExtension = "backup";
                 extraSpecialArgs = { inherit inputs; };
                 users.cricro = ./homes/cricro-laptop/home.nix;
               };
             }
           ];
-          specialArgs = { };
+          specialArgs = { inherit inputs; };
         };
       };
     };

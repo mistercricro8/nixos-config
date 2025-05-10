@@ -19,12 +19,14 @@ in
     cheese
     mpv
     jflap
+    catppuccin-cursors.mochaYellow
+    nwg-displays
   ];
 
   home.file = (
     builtins.listToAttrs (map mkDotfileEntry dotfiles)
     // {
-      ".icons".source = config.lib.file.mkOutOfStoreSymlink ./other-symlinks/.icons;
+      ".icons".source = "${pkgs.catppuccin-cursors.mochaYellow}";
     }
-  ); 
+  );
 }

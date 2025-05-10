@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   # ------------- boot and stuffs -------------
@@ -9,17 +9,12 @@
       useOSProber = true;
       efiSupport = true;
       default = "saved";
-      # theme = pkgs.stdenv.mkDerivation {
-      #   pname = "catppuccin-grub";
-      #   version = "1.0";
-      #   src = pkgs.fetchFromGitHub {
-      #     owner = "catppuccin";
-      #     repo = "grub";
-      #     tag = "main";
-      #     hash = "";
-      #   };
-      #   installPhase = "cp -r src/catppuccin-mocha-grub-theme $out";
-      # };
+      theme = pkgs.stdenv.mkDerivation {
+        pname = "catppuccin-grub";
+        version = "1.0";
+        src = inputs.catppuccin-grub;
+        installPhase = "cp -r src/catppuccin-mocha-grub-theme $out";
+      };
     };
     loader.efi.canTouchEfiVariables = true;
     kernelPackages = pkgs.linuxPackages;
@@ -58,9 +53,13 @@
   i18n.defaultLocale = "en_US.UTF-8";
 
   # ------------- sddm -------------
-  services.displayManager.sddm.enable = true;
-  services.displayManager.sddm.wayland.enable = true;
-  services.desktopManager.plasma6.enable = true;
+  services.displayManager.sddm = {
+    enable = true;
+    theme = "catppuccin-mocha";
+    package = pkgs.kdePackages.sddm;
+    wayland.enable = true;
+  };
+  # services.desktopManager.plasma6.enable = true;
 
   # ------------- keyboard stuff -------------
   console.keyMap = "la-latin1";

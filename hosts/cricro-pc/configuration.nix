@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 let
   commonPackages = import ../common-packages.nix { inherit pkgs; };

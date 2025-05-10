@@ -1,4 +1,4 @@
-@import "mocha.css"; 
+@import "mocha.css";
 
 * {
     font-family: "caskaydia-mono Nerd Font Mono Bold";
@@ -69,12 +69,21 @@ button:hover {
 #mode,
 #submap,
 #scratchpad {
-  margin-top: 2px;
-  margin-bottom: 2px;
-  margin-left: 4px;
-  margin-right: 4px;
-  padding-left: 4px;
-  padding-right: 4px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    margin-left: 4px;
+    margin-right: 4px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+#custom-notifications {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    margin-left: 4px;
+    margin-right: 12px;
+    font-size: 16px;
+    min-width: 12px;
 }
 
 #language {
@@ -121,12 +130,12 @@ button:hover {
 }
 
 /* If workspaces is the leftmost module, omit left margin */
-.modules-left>widget:first-child>#workspaces {
+.modules-left > widget:first-child > #workspaces {
     margin-left: 0;
 }
 
 /* If workspaces is the rightmost module, omit right margin */
-.modules-right>widget:last-child>#workspaces {
+.modules-right > widget:last-child > #workspaces {
     margin-right: 0;
 }
 
