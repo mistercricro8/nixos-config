@@ -120,10 +120,7 @@ tooltip label {
 }
 
 #workspaces button.active {
-  color: @base;
-  background: @flamingo;
-  margin: 2px;
-  padding: 0 6px;
+  color: @overlay0;
 }
 
 #custom-workspaceright {
@@ -394,7 +391,7 @@ tooltip label {
 
 #custom-notifications {
   color: @base;
-  padding: 0 6px 0 3px;
+  padding: 0 9px 0 6px;
   background: @flamingo;
 }
 
