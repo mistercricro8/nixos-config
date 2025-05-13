@@ -40,7 +40,6 @@ in
 
   home.packages = with pkgs; [
     swaynotificationcenter
-    wireplumber
     pavucontrol
     waybar
     rofi-wayland
@@ -48,6 +47,7 @@ in
     cliphist
     nemo
     nerd-fonts.caskaydia-mono
+    nerd-fonts.jetbrains-mono
     catppuccin-gtk
     nwg-look
     brightnessctl
@@ -74,6 +74,8 @@ in
     fd
     bottom
     lazygit
+    jq
+    lm_sensors
   ];
 
   programs.vscode = {

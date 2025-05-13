@@ -12,7 +12,7 @@
   "explorer.confirmDelete": false,
   "explorer.confirmDragAndDrop": false,
   "explorer.confirmPasteNative": false,
-  "editor.fontFamily": "\"CaskaydiaMono Nerd Font\"",
+  "editor.fontFamily": "\"JetBrainsMono Nerd Font\"",
   "git.confirmSync": false,
   "git.openRepositoryInParentFolders": "always",
   "[typescriptreact]": {
@@ -41,5 +41,7 @@
   },
   "typescript.updateImportsOnFileMove.enabled": "always",
   "workbench.sideBar.location": "right",
-  "git.enableSmartCommit": true
+  "git.enableSmartCommit": true,
+  "terminal.integrated.fontFamily": "CaskaydiaMono Nerd Font",
+  "terminal.integrated.fontSize": 16
 }
