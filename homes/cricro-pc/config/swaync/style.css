@@ -357,7 +357,7 @@ slider {
 }
 
 .widget-dnd {
-    margin: 0px;
+    margin: 8px;
     font-size: 1.1rem;
 }
 
@@ -382,6 +382,8 @@ slider {
 .widget-mpris .widget-mpris-player {
     background: #313244;
     padding: 7px;
+    margin: 8px;
+    border-radius: 8px;
 }
 
 .widget-mpris .widget-mpris-title {

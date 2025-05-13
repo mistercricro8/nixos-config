@@ -81,9 +81,9 @@ button:hover {
     margin-top: 2px;
     margin-bottom: 2px;
     margin-left: 4px;
-    margin-right: 12px;
+    margin-right: 10px;
     font-size: 16px;
-    min-width: 12px;
+    min-width: 16px;
 }
 
 #language {

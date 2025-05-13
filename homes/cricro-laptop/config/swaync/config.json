@@ -1,6 +1,4 @@
 {
-  "$schema": "/etc/xdg/swaync/configSchema.json",
-
   "positionX": "right",
   "positionY": "top",
   "control-center-margin-top": 20,
@@ -39,6 +37,6 @@
     "label": {
       "max-lines": 5,
       "text": "Label Text"
-    },
+    }
   }
 }

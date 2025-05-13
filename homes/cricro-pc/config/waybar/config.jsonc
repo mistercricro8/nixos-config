@@ -1,48 +1,51 @@
 {
   "position": "top",
-  "modules-left": ["hyprland/workspaces"],
-  "modules-center": ["hyprland/window", "hyprland/submap"],
+  "modules-left": [
+    "hyprland/window"
+  ],
+  "modules-center": ["hyprland/workspaces", "hyprland/submap"],
   "modules-right": [
     "hyprland/language",
     "network",
     "pulseaudio",
     "clock",
-    "custom/notifications",
+    "custom/notifications"
   ],
   "hyprland/window": {
-    "max-length": 60,
+    "format": "<span>󰈙   </span>{initialTitle}",
+    "max-length": 60
   },
   "hyprland/submap": {
-    "format": "({})",
+    "format": "({})"
   },
   "hyprland/language": {
     "format": "<span>    </span>{}",
     "format-es": "ES",
-    "format-pt": "PT",
+    "format-pt": "PT"
   },
   "custom/notifications": {
     "tooltip": false,
     "format": "{icon}",
     "format-icons": {
-      "notification": "<span foreground='red'><sup></sup></span>",
-      "none": "",
-      "dnd-notification": "<span foreground='red'><sup></sup></span>",
-      "dnd-none": "",
-      "inhibited-notification": "<span foreground='red'><sup></sup></span>",
-      "inhibited-none": "",
-      "dnd-inhibited-notification": "<span foreground='red'><sup></sup></span>",
-      "dnd-inhibited-none": "",
+      "notification": "󰂚<span foreground='red'><sup></sup></span>",
+      "none": "󰂚",
+      "dnd-notification": "󰂛<span foreground='red'><sup></sup></span>",
+      "dnd-none": "󰂛",
+      "inhibited-notification": "󰂚<span foreground='red'><sup></sup></span>",
+      "inhibited-none": "󰂚",
+      "dnd-inhibited-notification": "󰂛<span foreground='red'><sup></sup></span>",
+      "dnd-inhibited-none": "󰂛"
     },
     "return-type": "json",
     "exec-if": "which swaync-client",
     "exec": "swaync-client -swb",
     "on-click": "swaync-client -t -sw",
     "on-click-right": "swaync-client -d -sw",
-    "escape": true,
+    "escape": true
   },
   "clock": {
     "format": "<span>   </span>{:%a %d %H:%M}",
-    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
   },
   "network": {
     "interval": 2,
@@ -50,14 +53,14 @@
     "format-wifi": "?",
     "format-linked": "!",
     "format-disconnected": "<span>   </span>Disconnected",
-    "tooltip-format-ethernet": "{ipaddr}",
+    "tooltip-format-ethernet": "{ipaddr}"
   },
   "pulseaudio": {
     "format": "<span>{icon} </span> {volume}%",
     "format-muted": "",
     "format-icons": {
-      "default": ["", "", " "],
+      "default": ["", "", " "]
     },
-    "on-click": "pavucontrol",
-  },
+    "on-click": "pavucontrol"
+  }
 }
