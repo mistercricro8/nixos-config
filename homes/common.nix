@@ -86,6 +86,8 @@ in
         detachhead.basedpyright
         catppuccin.catppuccin-vsc
         catppuccin.catppuccin-vsc-icons
+        Prisma.prisma
+        ms-azuretools.vscode-docker
       ])
       ++ (with pkgs.vscode-extensions; [
         github.copilot
