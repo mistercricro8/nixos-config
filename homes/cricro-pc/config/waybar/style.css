@@ -210,7 +210,6 @@ tooltip label {
   background: @sky;
   margin: 0 -1px -2px 0;
   padding: 0 0 0 3px;
-  text-shadow: 0 0 1.5px rgba(0, 0, 0, 1);
 }
 
 #custom-distroright {
@@ -454,19 +453,18 @@ tooltip label,
 /* ──────────────────────────────────────────────────┤ left & right arrows ├───
 */
 #custom-leftworkspace,
+#custom-workspaceright,
 #custom-lefttemp,
 #custom-tempmemory,
 #custom-memorycpu,
 #custom-leftdistro,
-#custom-leftaudio,
-#custom-audionotif,
-#custom-left8,
-#custom-notifpower,
-#custom-workspaceright,
 #custom-distroright,
 #custom-timedate,
 #custom-datevpn,
 #custom-vpnright,
+#custom-leftaudio,
+#custom-audionotif,
+#custom-notifpower,
 #custom-powerright {
   font-size: 20px;
 }
@@ -474,7 +472,6 @@ tooltip label,
 /* ─────────────────────────────────────────────────┤ left & right inverse ├───
 */
 #custom-cpuright,
-#custom-leftin2,
 #custom-leftidle {
   font-size: 20.5px;
 }

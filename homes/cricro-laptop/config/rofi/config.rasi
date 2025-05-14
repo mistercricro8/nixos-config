@@ -1,4 +1,4 @@
-@import "mocha"
+@import "theme"
 
 * {
   selected-active-foreground:  @background;
@@ -35,7 +35,7 @@ window {
     border:           1;
     padding:          5;
     rounding:         2;
-    font:             'CaskaydiaMono 14';
+    font:             'JetBrainsMono 14';
     border-radius:    4;
 }
 mainbox {

@@ -10,66 +10,60 @@
   // ──────────────────────────────────────────────────────────┤ positions ├───
 
   "modules-left": [
-    // "custom/ws",            // window icon
-    "custom/leftworkspace",
+    "custom/ws",            // window icon
+    "custom/left1",
 
     "hyprland/workspaces",  // workspaces
-    "custom/workspaceright",
+    "custom/right1",
 
+    "custom/paddw",
     "hyprland/window"       // window title
   ],
 
   "modules-center": [
-    // "custom/paddc",
-    "custom/lefttemp",
+    "custom/paddc",
+    "custom/left2",
     "custom/temperature",   // temperature
 
-    "custom/tempmemory",
+    "custom/left3",
     "memory",               // memory
 
-    "custom/memorycpu",
+    "custom/left4",
     "cpu",                  // cpu
-    "custom/cpuright",
+    "custom/leftin1",
 
-    "custom/leftdistro",
+    "custom/left5",
     "custom/distro",        // distro icon
-    "custom/distroright",
+    "custom/right2",
 
-    "custom/leftidle",
+    "custom/rightin1",
     "idle_inhibitor",       // idle inhibitor
     "clock#time",           // time
-    "custom/timedate",
+    "custom/right3",
 
     "clock#date",           // date
-    "custom/datewifi",
-    
-    "custom/wifi",
-    "custom/wifivpn",
+    "custom/right4",
 
-    "custom/vpn",             // vpn
-    // "bluetooth",            // bluetooth
-    // "custom/update",        // system update
-    "custom/vpnright"
+    "custom/wifi",          // wi-fi
+    "bluetooth",            // bluetooth
+    "custom/update",        // system update
+    "custom/right5"
   ],
 
   "modules-right": [
-    // "mpris",                // media info
+    "mpris",                // media info
 
-    "custom/leftaudio",
+    "custom/left6",
     "pulseaudio",           // output device
 
-    "custom/audionotif",
-    "custom/notifications",     // notifications
-
-    "custom/notifbacklight",
+    "custom/left7",
     "backlight",            // brightness
 
-    "custom/backlightbattery",
+    "custom/left8",
     "battery",              // battery
 
-    "custom/batterypower",
-    "custom/power",          // power button
-    "custom/powerright"
+    "custom/leftin2",
+    "custom/power"          // power button
   ],
 
   // ────────────────────────────────────────────────────────┤ window icon ├───
@@ -87,7 +81,14 @@
 
   "hyprland/workspaces": {
     "on-scroll-up": "hyprctl dispatch workspace -1",
-    "on-scroll-down": "hyprctl dispatch workspace +1"
+    "on-scroll-down": "hyprctl dispatch workspace +1",
+    "persistent-workspaces": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [],
+      "5": []
+    }
   },
 
   // ─────────────────────────────────────────────────────────────┤ window ├───
@@ -125,10 +126,10 @@
 
       // ────────────────────────────────────────────────────── development ───
 
-      "(.*) - VSCodium": 
+      "(.*) - Visual Studio Code": 
         "<span foreground='#89b4fa'>󰨞 </span> $1",
-      "(.*)VSCodium": 
-        "<span foreground='#89b4fa'>󰨞 </span> VSCodium",
+      "(.*)Visual Studio Code": 
+        "<span foreground='#89b4fa'>󰨞 </span> Visual Studio Code",
 
       "nvim": 
         "<span foreground='#a6e3a1'> </span> Neovim",
@@ -211,7 +212,7 @@
       "critical": 90
     },
 
-    "format": " {percentage}%",
+    "format": "󰘚 {percentage}%",
     "format-critical": "󰀦 {percentage}%",
     "tooltip": false,
     // "tooltip-format": "Memory Used: {used:0.1f} GB / {total:0.1f} GB",
@@ -223,7 +224,7 @@
   // ────────────────────────────────────────────────────────────────┤ cpu ├───
 
   "cpu": {
-    "format": " {usage}%",
+    "format": "󰻠 {usage}%",
     "tooltip": false,
     "interval": 5,
     "min-length": 6,
@@ -233,7 +234,7 @@
   // ─────────────────────────────────────────────────────────────┤ distro ├───
 
   "custom/distro": {
-    "format": " ",
+    "format": " ",
     "tooltip": false
   },
 
@@ -265,7 +266,7 @@
   // ───────────────────────────────────────────────────────────────┤ date ├───
 
   "clock#date": {
-    "format": "󰨳 {:%d-%m}",
+    "format": "󰨳 {:%m-%d}",
     "tooltip-format": "<tt>{calendar}</tt>",
 
     "calendar": {
@@ -292,23 +293,6 @@
     "max-length": 8
   },
 
-  // ──────────────────────────────────────────────────────────────┤ vpn ├───
-  "custom/vpn": {
-    "tooltip": false,
-    "signal": 1,
-    "format": "{icon}",
-    "format-icons": {
-      "Running": "<span>󱚽 VPN up</span>",
-      "Stopped": "<span>󱚼 VPN down</span>"
-    },
-    "return-type": "json",
-    "exec-if": "which tailscale",
-    "exec": "tailscale status --json | jq --unbuffered --compact-output '{alt: .BackendState}' && kill -s SIGRTMIN+1 $(pgrep waybar)",
-    "on-click": "pkexec tailscale up",
-    "on-click-right": "pkexec tailscale down",
-    "escape": true
-  },
-  
   // ──────────────────────────────────────────────────────────────┤ wi-fi ├───
 
   "custom/wifi": {
@@ -401,27 +385,6 @@
     "max-length": 6
   },
 
-  "custom/notifications": {
-    "tooltip": false,
-    "format": "{icon}",
-    "format-icons": {
-      "notification": "󰂚<span foreground='red'><sup></sup></span>",
-      "none": "󰂚",
-      "dnd-notification": "󰂛<span foreground='red'><sup></sup></span>",
-      "dnd-none": "󰂛",
-      "inhibited-notification": "󰂚<span foreground='red'><sup></sup></span>",
-      "inhibited-none": "󰂚",
-      "dnd-inhibited-notification": "󰂛<span foreground='red'><sup></sup></span>",
-      "dnd-inhibited-none": "󰂛"
-    },
-    "return-type": "json",
-    "exec-if": "which swaync-client",
-    "exec": "swaync-client -swb",
-    "on-click": "swaync-client -t -sw",
-    "on-click-right": "swaync-client -d -sw",
-    "escape": true
-  },
-
   // ─────────────────────────────────────────────────────────┤ brightness ├───
 
   "backlight": {
@@ -464,6 +427,11 @@
 
   // ────────────────────────────────────────────────────────────┤ padding ├───
 
+  "custom/paddw": {
+    "format": " ",
+    "tooltip": false
+  },
+
   "custom/paddc": {
     "format": " ",
     "tooltip": false
@@ -471,88 +439,76 @@
 
   // ────────────────────────────────────────────────────────┤ left arrows ├───
 
-  "custom/leftworkspace": {
+  "custom/left1": {
     "format": "",
     "tooltip": false
   },
-  "custom/lefttemp": {
+  "custom/left2": {
     "format": "",
     "tooltip": false
   },
-  "custom/tempmemory": {
+  "custom/left3": {
     "format": "",
     "tooltip": false
   },
-  "custom/memorycpu": {
+  "custom/left4": {
     "format": "",
     "tooltip": false
   },
-  "custom/leftdistro": {
+  "custom/left5": {
     "format": "",
     "tooltip": false
   },
-  "custom/leftaudio": {
+  "custom/left6": {
     "format": "",
     "tooltip": false
   },
-  "custom/audionotif": {
+  "custom/left7": {
     "format": "",
     "tooltip": false
   },
-  "custom/notifbacklight": {
-    "format": "",
-    "tooltip": false
-  },
-  "custom/backlightbattery": {
-    "format": "",
-    "tooltip": false
-  },
-  "custom/batterypower": {
+  "custom/left8": {
     "format": "",
     "tooltip": false
   },
 
   // ───────────────────────────────────────────────────────┤ right arrows ├───
 
-  "custom/workspaceright": {
+  "custom/right1": {
     "format": "",
     "tooltip": false
   },
-  "custom/distroright": {
+  "custom/right2": {
     "format": "",
     "tooltip": false
   },
-  "custom/timedate": {
+  "custom/right3": {
     "format": "",
     "tooltip": false
   },
-  "custom/datewifi": {
+  "custom/right4": {
     "format": "",
     "tooltip": false
   },
-  "custom/wifivpn": {
-    "format": "",
-    "tooltip": false
-  },
-  "custom/vpnright": {
-    "format": "",
-    "tooltip": false
-  },
-  "custom/powerright": {
+  "custom/right5": {
     "format": "",
     "tooltip": false
   },
 
   // ───────────────────────────────────────────────────────┤ left inverse ├───
 
-  "custom/cpuright": {
+  "custom/leftin1": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/leftin2": {
     "format": "",
     "tooltip": false
   },
 
   // ──────────────────────────────────────────────────────┤ right inverse ├───
 
-  "custom/leftidle": {
+  "custom/rightin1": {
     "format": "",
     "tooltip": false
   }

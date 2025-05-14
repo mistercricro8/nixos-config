@@ -1,152 +1,521 @@
-@import "mocha.css";
+@import "theme.css";
 
+/* ───────────────────────────────────────────────────────────────┤ global ├───
+*/
 * {
-  font-family: "caskaydia-mono Nerd Font Mono Bold";
-  font-size: 14px;
-  min-height: 20px; /* todo change */
-  font-weight: bold;
-}
-
-window#waybar {
-  background: transparent;
-  background-color: @crust;
-  color: @overlay0;
-  transition-property: background-color;
-  transition-duration: 0.1s;
-  border-bottom: 1px solid @overlay1;
-}
-
-#window {
-  margin: 6px;
-  padding-left: 8px;
-  padding-right: 8px;
-}
-
-button {
-  box-shadow: inset 0 -3px transparent;
+  min-height: 0;
   border: none;
-  border-radius: 0;
+  margin: 0;
+  padding: 0;
 }
 
-button:hover {
-  background: inherit;
-  color: @mauve;
-  border-top: 2px solid @mauve;
+/* ──────────────────────────────────────────────────────────┤ drop shadow ├───
+*/
+window#waybar {
+  background: @shadow;
 }
 
-#workspaces button {
+/* ───────────────────────────────────────────────────────────┤ background ├───
+*/
+window#waybar > box {
+  background: @main-bg;
+  margin: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────────┤ tooltips ├───
+*/
+tooltip {
+  background: @main-bg;
+  border: 1.5px solid @main-br;
+  border-radius: 8px;
+}
+
+tooltip label {
+  color: @main-fg;
+  margin: -1.5px 3px;
+}
+
+/* ──────────────────────────────────────────────────────────────┤ general ├───
+*/
+#custom-ws,
+#workspaces,
+#window,
+#custom-temperature,
+#memory,
+#cpu,
+#idle_inhibitor,
+#clock,
+#custom-wifi,
+#bluetooth,
+#custom-update,
+#mpris,
+#pulseaudio,
+#backlight,
+#battery,
+#custom-vpn,
+#custom-notifications,
+#custom-power {
+  opacity: 1;
   padding: 0 4px;
 }
 
-#workspaces button.focused {
-  background-color: rgba(0, 0, 0, 0.3);
+#custom-leftworkspace,
+#custom-lefttemp,
+#custom-tempmemory,
+#custom-memorycpu,
+#custom-leftdistro,
+#custom-leftaudio,
+#custom-audionotif,
+#custom-notifbacklight,
+#custom-backlightbattery,
+#custom-batterypower {
+  margin-bottom: 0;
+  text-shadow: -2px 0 2px rgba(0, 0, 0, 0.5);
+}
+
+#custom-workspaceright,
+#custom-distroright,
+#custom-timedate,
+#custom-datewifi,
+#custom-wifivpn,
+#custom-right5 {
+  margin-bottom: 0;
+  padding-right: 3px;
+  text-shadow: 2px 0 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ──────────────────────────────────────────────────────────┤ window icon ├───
+#custom-ws {
+  background: @main-bg;
+}
+
+#custom-ws:hover {
+  color: @hover-fg;
+}
+*/
+
+/* ───────────────────────────────────────────────────────────┤ workspaces ├───
+*/
+#custom-leftworkspace {
   color: @rosewater;
-  border-top: 2px solid @rosewater;
+  background: @main-bg;
+  margin-bottom: 0;
+  padding-left: 2px;
+}
+
+#workspaces {
+  background: @rosewater;
+}
+
+#workspaces button {
+  color: @overlay0;
+  border-radius: 8px;
+  box-shadow: none;
+  margin: 2px 0;
+  padding: 0 2px;
+  transition: none;
+}
+
+#workspaces button:hover {
+  color: @surface2;
+  background: @rosewater;
+  text-shadow: none;
 }
 
 #workspaces button.active {
-  background-color: rgba(0, 0, 0, 0.3);
-  color: @mauve;
-  border-top: 2px solid @mauve;
+  color: @base;
 }
 
-#workspaces button.urgent {
-  background-color: #eb4d4b;
+#custom-workspaceright {
+  color: @rosewater;
+  background: @main-bg;
+  text-shadow: 3px 0 2px rgba(0, 0, 0, 0.4);
+  margin-bottom: 0;
 }
 
-#pulseaudio,
-#clock,
-#battery,
-#cpu,
-#memory,
-#language,
-#disk,
-#temperature,
-#backlight,
-#wireplumber,
-#tray,
-#network,
-#mode,
-#submap,
-#scratchpad {
-  margin-top: 2px;
-  margin-bottom: 2px;
-  margin-left: 4px;
-  margin-right: 4px;
-  padding-left: 4px;
-  padding-right: 4px;
+/* ──────────────────────────────────────────────────────────┤ window ├───
+*/
+#window {
+  padding-left: 9px;
+  padding-right: 3px;
 }
 
-#custom-notifications {
-  margin-top: 2px;
-  margin-bottom: 2px;
-  margin-left: 4px;
-  margin-right: 8px;
-  font-size: 14px;
-  min-width: 14px;
+/* ──────────────────────────────────────────────────────────┤ temperature ├───
+#custom-paddc {
+  padding-right: 22px;
 }
+*/
 
-#submap {
-  color: @overlay2;
-}
-
-#clock {
-  color: @maroon;
-  border-bottom: 2px solid @maroon;
-}
-
-#clock.date {
-  color: @mauve;
-  border-bottom: 2px solid @mauve;
-}
-
-#language {
-  color: @peach;
-  border-bottom: 2px solid @peach;
-}
-
-#pulseaudio {
+#custom-lefttemp {
   color: @blue;
-  border-bottom: 2px solid @blue;
+  background: @main-bg;
+  padding-left: 3px;
 }
 
-#network {
+#custom-temperature {
+  background: @blue;
+  color: @base;
+  padding: 0 0 0 1px;
+}
+
+/* ───────────────────────────────────────────────────────────────┤ memory ├───
+*/
+#custom-tempmemory {
+  color: @sapphire;
+  background: @blue;
+  padding-left: 3px;
+}
+
+#memory {
+  background: @sapphire;
+  color: @base;
+  padding: 0 0 0 1px;
+}
+
+#memory.warning {
   color: @yellow;
-  border-bottom: 2px solid @yellow;
 }
 
-#backlight {
-  color: @sky;
-  border-bottom: 2px solid @sky;
-}
-
-#idle_inhibitor {
-  margin-right: 12px;
-  color: #7cb342;
-}
-
-#idle_inhibitor.activated {
+#memory.critical {
   color: @red;
 }
 
-#battery {
-  color: @green;
-  border-bottom: 2px solid @green;
+/* ──────────────────────────────────────────────────────────────────┤ cpu ├───
+*/
+#custom-memorycpu {
+  color: @sky;
+  background: @sapphire;
+  padding-left: 3px;
 }
 
-/* If workspaces is the leftmost module, omit left margin */
-.modules-left > widget:first-child > #workspaces {
-  margin-left: 0;
+#cpu {
+  color: @base;
+  background: @sky;
 }
 
-/* If workspaces is the rightmost module, omit right margin */
-.modules-right > widget:last-child > #workspaces {
-  margin-right: 0;
+#custom-cpuright {
+  color: @sky;
+  margin-bottom: -1px;
+}
+
+/* ──────────────────────────────────────────────────────────┤ distro icon ├───
+*/
+#custom-leftdistro {
+  color: @teal;
+  background: @main-bg;
+  text-shadow: none;
+  margin-bottom: -2px;
+  padding-left: 3px;
+}
+
+#custom-distro {
+  color: @base;
+  background: @teal;
+  margin: 0 -1px -2px 0;
+  padding: 0 0 0 3px;
+}
+
+#custom-distroright {
+  color: @teal;
+  background: @main-bg;
+  text-shadow: none;
+  margin-bottom: -2px;
+}
+
+/* ─────────────────────────────────────────────────────────────────┤ time ├───
+*/
+#custom-leftidle {
+  color: @sky;
+  margin-bottom: -1px;
+}
+
+#idle_inhibitor {
+  background: @sky;
+  padding: 0 0 0 7px;
+  color: @base;
+}
+
+#idle_inhibitor:hover {
+  color: @surface2;
+}
+
+#clock.time {
+  background: @sky;
+  margin-left: -2px;
+  padding: 0 3px 0 0;
+  color: @base;
+}
+
+/* ─────────────────────────────────────────────────────────────────┤ date ├───
+*/
+#custom-timedate {
+  color: @sky;
+  background: @sapphire;
+}
+
+#clock.date {
+  background: @sapphire;
+  color: @base;
+}
+
+#clock.date:hover {
+  color: @surface2;
+}
+
+/* ────────────────────────────────────────────────────────────────┤ wi-fi ├───
+*/
+#custom-datewifi {
+  color: @sapphire;
+  background: @blue;
+}
+
+#custom-wifi {
+  background: @blue;
+  color: @base;
+  padding: 0 8px 0 5px;
+}
+
+#custom-wifi:hover {
+  color: @surface2;
+}
+
+/* ────────────────────────────────────────────────────────────┤ bluetooth ├───
+  #bluetooth {
+  background: @tray;
+  padding-right: 5px;
+}
+
+#bluetooth:hover {
+  color: @hover-fg;
+  }
+  */
+
+/* ────────────────────────────────────────────────────────┤ vpn ├───
+  */
+#custom-wifivpn {
+  color: @blue;
+  background: @lavender;
 }
 
 #custom-vpn {
+  color: @base;
+  background: @lavender;
+  padding-right: 5px;
+}
+
+#custom-vpn:hover {
+  color: @surface2;
+}
+
+#custom-vpnright {
   color: @lavender;
-  border-radius: 15px;
-  padding-left: 6px;
-  padding-right: 6px;
+  background: @main-bg;
+}
+
+/* ────────────────────────────────────────────────────────┤ system update ├───
+#custom-update {
+  padding-right: 8px;
+  background: @tray;
+}
+
+#custom-update:hover {
+  color: @hover-fg;
+}
+
+#custom-right5 {
+  color: @tray;
+  background: @main-bg;
+}
+*/
+
+/* ───────────────────────────────────────────────────────────┤ media info ├───
+*/
+#mpris {
+  background: @main-bg;
+  padding: 0 9px 0;
+}
+
+#mpris:hover {
+  color: @hover-fg;
+}
+
+/* ────────────────────────────────────────────────────────┤ output device ├───
+*/
+#custom-leftaudio {
+  color: @red;
+  background: @main-bg;
+  padding-left: 3px;
+}
+
+#pulseaudio {
+  color: @base;
+  background: @red;
+}
+
+#pulseaudio:hover {
+  color: @surface2;
+}
+
+/* ─────────────────────────────────────────────────────────┤ notifications ├───
+*/
+#custom-audionotif {
+  color: @mauve;
+  background: @red;
+  padding-left: 2px;
+}
+
+#custom-notifications {
+  color: @base;
+  padding: 0 9px 0 6px;
+  background: @mauve;
+}
+
+#custom-notifications:hover {
+  color: @surface2;
+}
+ 
+/* ───────────────────────────────────────────────────────────┤ brightness ├───
+*/
+#custom-notifbacklight {
+  color: @pink;
+  background: @mauve;
+}
+
+#backlight {
+  background: @pink;
+  color: @base;
+}
+
+/* ──────────────────────────────────────────────────────────────┤ battery ├───
+*/
+#custom-backlightbattery {
+  color: @flamingo;
+  background: @pink;
+  padding-left: 2px;
+}
+
+#battery {
+  color: @base;
+  background: @flamingo;
+}
+
+#battery.charging {
+  color: @base;
+}
+
+#battery.warning {
+  color: @base;
+}
+
+#battery.critical {
+  color: @base;
+}
+
+/* ─────────────────────────────────────────────────────────┤ power button ├───
+*/
+
+#custom-batterypower {
+  color: @rosewater;
+  background: @flamingo;
+  padding-left: 2px;
+}
+
+#custom-power {
+  color: @base;
+  background: @rosewater;
+  padding: 0 3px 0 9px;
+}
+
+#custom-powerright {
+  color: @rosewater;
+  background: @main-bg;
+  padding-right: 2px;
+}
+
+#custom-power:hover {
+  color: @surface2;
+}
+
+/* ───────────────────────────────────────────────────────────┤ font sizes ├───
+*/
+/*
+  NOTE: Be careful when changing font sizes, as they can affect alignment.
+
+  Try adjusting whole numbers first, then refine with decimals.
+
+  If you increase or decrease a value, make the same change to all properties
+  in this section to keep the layout consistent.
+*/
+
+* {
+  font-family: "JetBrainsMono Nerd Font";
+  font-size: 14px;
+  font-weight: bold;
+}
+
+tooltip label,
+#window label,
+#mpris {
+  font-weight: normal;
+}
+
+/* ──────────────────────────────────────────────────┤ left & right arrows ├───
+*/
+#custom-leftworkspace,
+#custom-workspaceright,
+#custom-lefttemp,
+#custom-tempmemory,
+#custom-memorycpu,
+#custom-leftdistro,
+#custom-distroright,
+#custom-timedate,
+#custom-datewifi,
+#custom-wifivpn,
+#custom-vpnright,
+#custom-leftaudio,
+#custom-audionotif,
+#custom-notifbacklight,
+#custom-backlightbattery,
+#custom-batterypower,
+#custom-powerright {
+  font-size: 20px;
+}
+
+/* ─────────────────────────────────────────────────┤ left & right inverse ├───
+*/
+#custom-cpuright,
+#custom-leftidle {
+  font-size: 20.5px;
+}
+
+/* ──────────────────────────────────────────────────────────┤ distro icon ├───
+*/
+#custom-distro {
+  font-size: 18px;
+}
+
+#custom-leftdistro,
+#custom-distroright {
+  font-size: 21px;
+}
+
+/*
+  Adjust these properties as well to keep the design consistent.
+*/
+
+/* ───────────────────────────────────────────────────────────┤ workspaces ├───
+*/
+#workspaces button {
+  border-radius: 8px;
+  padding: 0 4px;
+}
+
+#workspaces button.active {
+  padding: 0 6px;
+}
+
+/* ───────────────────────────────────────────────────────────┤ power button ├───
+*/
+#custom-power {
+  font-size: 16px;
 }
