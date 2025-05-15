@@ -64,8 +64,10 @@ tooltip label {
 #custom-tempmemory,
 #custom-memorycpu,
 #custom-leftdistro,
-#custom-leftaudio,
+#custom-langaudio,
 #custom-audionotif,
+#custom-leftnetwork,
+#custom-networklang,
 #custom-notifpower {
   margin-bottom: 0;
   text-shadow: -2px 0 2px rgba(0, 0, 0, 0.5);
@@ -331,11 +333,40 @@ tooltip label {
   color: @hover-fg;
 }
 
+/* ────────────────────────────────────────────────────────┤ network ├───
+*/
+#custom-leftnetwork {
+  color: @red;
+  background: @main-bg;
+}
+
+#network {
+  color: @base;
+  background: @red;
+  padding: 0 6px 0 6px;
+}
+
+
+/* ────────────────────────────────────────────────────────┤ language ├───
+*/
+#custom-networklang {
+  color: @mauve;
+  background: @red;
+  padding-left: 3px;
+}
+
+#language {
+  color: @base;
+  background: @mauve;
+  padding: 0 6px 0 6px;
+}
+
+
 /* ────────────────────────────────────────────────────────┤ output device ├───
 */
-#custom-leftaudio {
+#custom-langaudio {
   color: @pink;
-  background: @main-bg;
+  background: @mauve;
   padding-left: 3px;
 }
 
@@ -462,7 +493,9 @@ tooltip label,
 #custom-timedate,
 #custom-datevpn,
 #custom-vpnright,
-#custom-leftaudio,
+#custom-leftnetwork,
+#custom-networklang,
+#custom-langaudio,
 #custom-audionotif,
 #custom-notifpower,
 #custom-powerright {
