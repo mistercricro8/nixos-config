@@ -39,7 +39,6 @@ in
     audio-recorder
     davinci-resolve
     catppuccin-cursors.mochaYellow
-    nwg-displays
   ];
 
   programs.mpv = {

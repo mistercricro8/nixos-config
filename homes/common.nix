@@ -75,6 +75,7 @@ in
     bottom
     lazygit
     jq
+    nwg-displays
     lm_sensors
   ];
 

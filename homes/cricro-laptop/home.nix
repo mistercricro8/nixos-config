@@ -20,7 +20,7 @@ in
     mpv
     jflap
     catppuccin-cursors.mochaYellow
-    nwg-displays
+    unityhub
   ];
 
   home.file = (

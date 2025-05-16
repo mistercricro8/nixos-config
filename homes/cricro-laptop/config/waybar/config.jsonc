@@ -58,7 +58,10 @@
     "custom/leftaudio",
     "pulseaudio",           // output device
 
-    "custom/audionotif",
+    "custom/audiolang",
+    "hyprland/language",     // language
+
+    "custom/langnotif",
     "custom/notifications",     // notifications
 
     "custom/notifbacklight",
@@ -422,6 +425,14 @@
     "escape": true
   },
 
+  // ─────────────────────────────────────────────────────────┤ language ├───
+  "hyprland/language": {
+    "format": "<span>  </span>{}",
+    "format-es": "ES",
+    "format-pt": "PT",
+    "format-en": "US"
+  },
+
   // ─────────────────────────────────────────────────────────┤ brightness ├───
 
   "backlight": {
@@ -495,7 +506,11 @@
     "format": "",
     "tooltip": false
   },
-  "custom/audionotif": {
+  "custom/audiolang": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/langnotif": {
     "format": "",
     "tooltip": false
   },

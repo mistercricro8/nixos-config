@@ -65,7 +65,8 @@ tooltip label {
 #custom-memorycpu,
 #custom-leftdistro,
 #custom-leftaudio,
-#custom-audionotif,
+#custom-audiolang,
+#custom-langnotif,
 #custom-notifbacklight,
 #custom-backlightbattery,
 #custom-batterypower {
@@ -342,26 +343,39 @@ tooltip label {
 /* ────────────────────────────────────────────────────────┤ output device ├───
 */
 #custom-leftaudio {
-  color: @red;
+  color: @maroon;
   background: @main-bg;
-  padding-left: 3px;
 }
 
 #pulseaudio {
   color: @base;
-  background: @red;
+  background: @maroon;
+  padding: 0 2px 0 0;
 }
 
 #pulseaudio:hover {
   color: @surface2;
 }
 
+/* ───────────────────────────────────────────────────────────┤ language ├───
+*/
+#custom-audiolang {
+  color: @red;
+  background: @maroon;
+  padding-left: 2px;
+}
+
+#language {
+  color: @base;
+  background: @red;
+  padding: 0 6px 0 4px;
+}
+
 /* ─────────────────────────────────────────────────────────┤ notifications ├───
 */
-#custom-audionotif {
+#custom-langnotif {
   color: @mauve;
   background: @red;
-  padding-left: 2px;
 }
 
 #custom-notifications {
@@ -373,7 +387,7 @@ tooltip label {
 #custom-notifications:hover {
   color: @surface2;
 }
- 
+
 /* ───────────────────────────────────────────────────────────┤ brightness ├───
 */
 #custom-notifbacklight {
@@ -473,7 +487,8 @@ tooltip label,
 #custom-wifivpn,
 #custom-vpnright,
 #custom-leftaudio,
-#custom-audionotif,
+#custom-audiolang,
+#custom-langnotif,
 #custom-notifbacklight,
 #custom-backlightbattery,
 #custom-batterypower,
