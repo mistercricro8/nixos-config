@@ -79,7 +79,7 @@
   };
 
   # ------------- very very important -------------
-  nixpkgs.config.allowUnfree = true;
+  # nixpkgs.config.allowUnfree = true;
 
   # ------------- programs!! -------------
   # programs.firefox.enable = true;

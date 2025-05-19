@@ -17,7 +17,10 @@
       url = "github:catppuccin/grub";
       flake = false;
     };
-    vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
+    vscode-extensions = {
+      url = "github:nix-community/nix-vscode-extensions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -27,13 +30,19 @@
     } @ inputs:
     let
       system = "x86_64-linux";
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
     in
     {
       nixosConfigurations = {
         cricro-pc = nixpkgs.lib.nixosSystem {
           inherit system;
+          inherit pkgs;
           modules = [
             ./hosts/cricro-pc/configuration.nix
+            (import ./homes/cricro-pc/overlays.nix)
             home-manager.nixosModules.home-manager
             {
               home-manager = {
@@ -49,8 +58,10 @@
         };
         cricro-laptop = nixpkgs.lib.nixosSystem {
           inherit system;
+          inherit pkgs;
           modules = [
             ./hosts/cricro-laptop/configuration.nix
+            (import ./homes/cricro-pc/overlays.nix)
             home-manager.nixosModules.home-manager
             {
               home-manager = {

@@ -84,25 +84,25 @@ in
     package = pkgs.vscodium;
     mutableExtensionsDir = false;
     profiles.default = {
-      extensions = (with vscode-extra-extensions.vscode-marketplace; [
+      extensions = (with pkgs.vscode-marketplace; [
         ms-vscode.vscode-typescript-next
         catppuccin.catppuccin-vsc
         catppuccin.catppuccin-vsc-icons
         prisma.prisma
         ms-azuretools.vscode-docker
-      ])
-      ++ (with pkgs.vscode-extensions; [
+        visualstudioexptteam.vscodeintellicode
+        ms-python.vscode-pylance
         github.copilot
         ms-vscode.cpptools
         jnoortheen.nix-ide
-        visualstudioexptteam.vscodeintellicode
         bradlc.vscode-tailwindcss
-        ms-python.vscode-pylance
         dbaeumer.vscode-eslint
         esbenp.prettier-vscode
         ms-python.python
         ms-python.debugpy
         ms-python.black-formatter
+      ])
+      ++ (with pkgs.vscode-extensions; [
       ]);
     };
   };
