@@ -86,7 +86,6 @@ in
     profiles.default = {
       extensions = (with vscode-extra-extensions.vscode-marketplace; [
         ms-vscode.vscode-typescript-next
-        detachhead.basedpyright
         catppuccin.catppuccin-vsc
         catppuccin.catppuccin-vsc-icons
         prisma.prisma
@@ -98,6 +97,7 @@ in
         jnoortheen.nix-ide
         visualstudioexptteam.vscodeintellicode
         bradlc.vscode-tailwindcss
+        ms-python.vscode-pylance
         dbaeumer.vscode-eslint
         esbenp.prettier-vscode
         ms-python.python
