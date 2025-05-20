@@ -29,7 +29,7 @@
   },
   "svelte.enable-ts-plugin": true,
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "charliermarsh.ruff"
   },
   "basedpyright.analysis.typeCheckingMode": "standard",
   "basedpyright.analysis.diagnosticSeverityOverrides": {
@@ -43,5 +43,13 @@
   "workbench.sideBar.location": "right",
   "git.enableSmartCommit": true,
   "terminal.integrated.fontFamily": "CaskaydiaMono Nerd Font",
-  "terminal.integrated.fontSize": 16
+  "terminal.integrated.fontSize": 16,
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false
+  },
+  "python.languageServer": "Jedi",
+  "ruff.nativeServer": "on"
 }

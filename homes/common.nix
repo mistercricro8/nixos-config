@@ -77,6 +77,7 @@ in
     jq
     nwg-displays
     lm_sensors
+    ruff
   ];
 
   programs.vscode = {
@@ -91,7 +92,6 @@ in
         prisma.prisma
         ms-azuretools.vscode-docker
         visualstudioexptteam.vscodeintellicode
-        ms-python.vscode-pylance
         github.copilot
         ms-vscode.cpptools
         jnoortheen.nix-ide
@@ -100,7 +100,9 @@ in
         esbenp.prettier-vscode
         ms-python.python
         ms-python.debugpy
-        ms-python.black-formatter
+        charliermarsh.ruff
+        # ms-python.vscode-pylance
+        # ms-python.black-formatter
       ])
       ++ (with pkgs.vscode-extensions; [
       ]);
