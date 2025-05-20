@@ -50,6 +50,13 @@
     "markdown": false,
     "scminput": false
   },
-  "python.languageServer": "Jedi",
-  "ruff.nativeServer": "on"
+  "python.languageServer": "None",
+  "ruff.nativeServer": "on",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "[dockercompose]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
+  "basedpyright.analysis.inlayHints.variableTypes": false
 }
