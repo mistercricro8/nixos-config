@@ -78,6 +78,7 @@ in
     nwg-displays
     lm_sensors
     ruff
+    clang-tools
   ];
 
   programs.vscode = {
