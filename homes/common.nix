@@ -101,6 +101,7 @@ in
         ms-python.python
         ms-python.debugpy
         charliermarsh.ruff
+        detachhead.basedpyright
         # ms-python.vscode-pylance
         # ms-python.black-formatter
       ])
