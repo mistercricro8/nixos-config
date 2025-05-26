@@ -93,7 +93,7 @@ in
         ms-azuretools.vscode-docker
         visualstudioexptteam.vscodeintellicode
         github.copilot
-        ms-vscode.cpptools
+        llvm-vs-code-extensions.vscode-clangd
         jnoortheen.nix-ide
         bradlc.vscode-tailwindcss
         dbaeumer.vscode-eslint
