@@ -9,9 +9,13 @@ if [ "$1" == "--copy" ]; then
   cp $HOME/nixos-config/apps/devflake-init/base.nix flake.nix
 else
   git add .
-  if [ ! -f .gitignore ]; then
-    printf '.direnv\n.envrc' >>.gitignore
+
+  touch .gitignore
+  grep -Pzo '.direnv\n.envrc' .gitignore
+  if [ $? -ne 0 ]; then
+    printf '.direnv\n.envrc\n' >> .gitignore
   fi
+
   echo "use flake" >>.envrc
   direnv allow
 fi
