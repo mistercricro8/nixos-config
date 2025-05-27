@@ -58,5 +58,6 @@
   "[dockercompose]": {
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
   },
-  "basedpyright.analysis.inlayHints.variableTypes": false
+  "basedpyright.analysis.inlayHints.variableTypes": false,
+  "terminal.integrated.enableMultiLinePasteWarning": "never"
 }
