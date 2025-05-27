@@ -50,6 +50,7 @@
     "markdown": false,
     "scminput": false
   },
+<<<<<<< Updated upstream
   "python.languageServer": "None",
   "ruff.nativeServer": "on",
   "editor.codeActionsOnSave": {
@@ -59,4 +60,7 @@
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
   },
   "basedpyright.analysis.inlayHints.variableTypes": false
+=======
+  "ruff.nativeServer": "on"
+>>>>>>> Stashed changes
 }
