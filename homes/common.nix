@@ -42,6 +42,7 @@ in
     swaynotificationcenter
     pavucontrol
     waybar
+    discord
     rofi-wayland
     wl-clipboard
     cliphist
@@ -151,6 +152,7 @@ in
       devflake-init = "bash $nixhome/apps/devflake-init/init.sh";
       nix-reload = "cd $nixhome && sudo nixos-rebuild switch --flake";
       nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
+      ss = "ssh ubuntu@dev.mistercricro8.me";
       cls = "clear";
     };
 

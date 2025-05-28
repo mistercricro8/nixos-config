@@ -32,7 +32,6 @@ in
 
   home.packages = with pkgs; [
     libreoffice
-    discord
     obs-studio
     playerctl
     pavucontrol
