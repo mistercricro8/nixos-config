@@ -27,6 +27,9 @@
     HandlePowerKey=ignore
   '';
 
+  # ------------- nix store -------------
+  nix.settings.trusted-users = [ "root" "cricro" ];
+
   # ------------- networking -------------
   networking.networkmanager.enable = true;
 

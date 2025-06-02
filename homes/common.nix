@@ -80,6 +80,7 @@ in
     lm_sensors
     ruff
     clang-tools
+    devenv
   ];
 
   programs.vscode = {
