@@ -21,6 +21,7 @@ in
     jflap
     catppuccin-cursors.mochaYellow
     unityhub
+    postman
   ];
 
   home.file = (
