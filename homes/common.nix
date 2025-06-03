@@ -7,10 +7,6 @@
 let
   import-dicts = [
     {
-      folder = "common/nixvim";
-      imports = builtins.attrNames (builtins.readDir ./common/nixvim);
-    }
-    {
       folder = "common/packages";
       imports = builtins.attrNames (builtins.readDir ./common/packages);
     }
@@ -24,14 +20,12 @@ let
         )
         dicts
     );
-  nixvim = inputs.nixvim.homeManagerModules.nixvim;
   vscode-extra-extensions = inputs.vscode-extensions.extensions.${pkgs.system};
 in
 {
   imports =
     mkImports import-dicts
     ++ [
-      nixvim
     ];
 
   home.username = "cricro";
