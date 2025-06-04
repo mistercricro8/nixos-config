@@ -1,8 +1,9 @@
-{ config
-, pkgs
-, inputs
-, lib
-, ...
+{
+  config,
+  pkgs,
+  inputs,
+  lib,
+  ...
 }:
 let
   import-dicts = [
@@ -11,22 +12,14 @@ let
       imports = builtins.attrNames (builtins.readDir ./common/packages);
     }
   ];
-  mkImports = dicts:
-    builtins.concatLists (
-      builtins.map
-        (
-          d:
-          builtins.map (imp: ./${d.folder}/${imp}) d.imports
-        )
-        dicts
-    );
+  mkImports =
+    dicts:
+    builtins.concatLists (builtins.map (d: builtins.map (imp: ./${d.folder}/${imp}) d.imports) dicts);
   vscode-extra-extensions = inputs.vscode-extensions.extensions.${pkgs.system};
 in
 {
-  imports =
-    mkImports import-dicts
-    ++ [
-    ];
+  imports = mkImports import-dicts ++ [
+  ];
 
   home.username = "cricro";
   home.homeDirectory = "/home/cricro";
@@ -75,6 +68,8 @@ in
     ruff
     clang-tools
     devenv
+    nixfmt-rfc-style
+    nixd
   ];
 
   programs.vscode = {
@@ -82,28 +77,29 @@ in
     package = pkgs.vscodium;
     mutableExtensionsDir = false;
     profiles.default = {
-      extensions = (with pkgs.vscode-marketplace; [
-        ms-vscode.vscode-typescript-next
-        catppuccin.catppuccin-vsc
-        catppuccin.catppuccin-vsc-icons
-        prisma.prisma
-        ms-azuretools.vscode-docker
-        visualstudioexptteam.vscodeintellicode
-        github.copilot
-        llvm-vs-code-extensions.vscode-clangd
-        jnoortheen.nix-ide
-        bradlc.vscode-tailwindcss
-        dbaeumer.vscode-eslint
-        esbenp.prettier-vscode
-        ms-python.python
-        ms-python.debugpy
-        charliermarsh.ruff
-        detachhead.basedpyright
-        # ms-python.vscode-pylance
-        # ms-python.black-formatter
-      ])
-      ++ (with pkgs.vscode-extensions; [
-      ]);
+      extensions =
+        (with pkgs.vscode-marketplace; [
+          ms-vscode.vscode-typescript-next
+          catppuccin.catppuccin-vsc
+          catppuccin.catppuccin-vsc-icons
+          prisma.prisma
+          ms-azuretools.vscode-docker
+          visualstudioexptteam.vscodeintellicode
+          github.copilot
+          llvm-vs-code-extensions.vscode-clangd
+          jnoortheen.nix-ide
+          bradlc.vscode-tailwindcss
+          dbaeumer.vscode-eslint
+          esbenp.prettier-vscode
+          ms-python.python
+          ms-python.debugpy
+          charliermarsh.ruff
+          detachhead.basedpyright
+          # ms-python.vscode-pylance
+          # ms-python.black-formatter
+        ])
+        ++ (with pkgs.vscode-extensions; [
+        ]);
     };
   };
 
@@ -114,7 +110,10 @@ in
       name = "VSCodium";
       genericName = "Wayland";
       exec = "codium --ozone-platform=wayland";
-      categories = [ "TextEditor" "IDE" ];
+      categories = [
+        "TextEditor"
+        "IDE"
+      ];
       mimeType = [ "text/plain" ];
     };
   };

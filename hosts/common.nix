@@ -28,7 +28,10 @@
   '';
 
   # ------------- nix store -------------
-  nix.settings.trusted-users = [ "root" "cricro" ];
+  nix.settings.trusted-users = [
+    "root"
+    "cricro"
+  ];
 
   # ------------- networking -------------
   networking.networkmanager.enable = true;

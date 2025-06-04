@@ -31,6 +31,17 @@
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
+
+  "nix.enableLanguageServer": true,
+  "nix.serverPath": "nixd",
+  "nix.serverSettings": {
+    "nixd": {
+      "formatting": {
+        "command": ["nixfmt"]
+      }
+    }
+  },
+
   "basedpyright.analysis.typeCheckingMode": "standard",
   "basedpyright.analysis.diagnosticSeverityOverrides": {
     "reportIncompatibleMethodOverride": "none",

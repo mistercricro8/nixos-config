@@ -22,8 +22,7 @@
           packages = with pkgs; [
           ];
           buildInputs = [ pkgs.bashInteractive ];
-          shellHook = ''
-          '';
+          shellHook = '''';
         };
     };
 }
