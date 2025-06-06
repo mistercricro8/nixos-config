@@ -70,5 +70,6 @@
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
   },
   "basedpyright.analysis.inlayHints.variableTypes": false,
-  "terminal.integrated.enableMultiLinePasteWarning": "never"
+  "terminal.integrated.enableMultiLinePasteWarning": "never",
+  "redhat.telemetry.enabled": false
 }

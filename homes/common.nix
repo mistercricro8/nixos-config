@@ -71,6 +71,7 @@ in
     devenv
     nixfmt-rfc-style
     nixd
+    openjdk # figure a better way to install vscode extensions per shell
   ];
 
   programs.vscode = {
@@ -96,6 +97,8 @@ in
           ms-python.debugpy
           charliermarsh.ruff
           detachhead.basedpyright
+          redhat.java
+          vscjava.vscode-java-debug
           # ms-python.vscode-pylance
           # ms-python.black-formatter
         ])
