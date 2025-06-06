@@ -13,7 +13,6 @@ in
 {
   imports = [ ../common.nix ];
   home.packages = with pkgs; [
-    libreoffice
     obs-studio
     droidcam
     cheese

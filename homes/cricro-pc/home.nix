@@ -31,7 +31,6 @@ in
   ];
 
   home.packages = with pkgs; [
-    libreoffice
     obs-studio
     playerctl
     pavucontrol
