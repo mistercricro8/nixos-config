@@ -35,7 +35,7 @@ in
     playerctl
     pavucontrol
     audio-recorder
-    davinci-resolve
+    # davinci-resolve
     catppuccin-cursors.mochaYellow
   ];
 

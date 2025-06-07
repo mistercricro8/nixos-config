@@ -73,6 +73,7 @@ in
     nixd
     openjdk # figure a better way to install vscode extensions per shell
     wine64
+    mysql-workbench
   ];
 
   programs.vscode = {
