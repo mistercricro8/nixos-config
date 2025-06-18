@@ -93,12 +93,8 @@
   services.locate.enable = true;
 
   # ------------- docker -------------
-  virtualisation.docker = {
+  virtualisation.podman = {
     enable = true;
-    rootless = {
-      enable = true;
-      setSocketVariable = true;
-    };
   };
 
   # ------------- security -------------

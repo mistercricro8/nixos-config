@@ -101,6 +101,7 @@ in
           detachhead.basedpyright
           redhat.java
           vscjava.vscode-java-debug
+          cweijan.vscode-mysql-client2
           # ms-python.vscode-pylance
           # ms-python.black-formatter
         ])
@@ -154,6 +155,7 @@ in
       nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
       ss = "ssh ubuntu@dev.mistercricro8.me";
       cls = "clear";
+      docker = "podman";
     };
 
     history = {
