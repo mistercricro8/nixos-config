@@ -104,12 +104,13 @@ in
           vscjava.vscode-java-debug
           vscjava.vscode-java-dependency
           vscjava.vscode-maven
-          github.copilot-chat
+          # github.copilot-chat
           # ms-python.vscode-pylance
           # ms-python.black-formatter
         ])
         ++ [
-          # (pkgs.forVSCodeVersion "1.101.03933").vscode-marketplace-release.github.copilot-chat
+          # TODO: lock this to curr version
+          (pkgs.forVSCodeVersion "1.101.0").vscode-marketplace-release.github.copilot-chat
         ];
     };
   };
