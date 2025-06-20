@@ -65,5 +65,6 @@
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
   },
   "basedpyright.analysis.inlayHints.variableTypes": false,
-  "javascript.updateImportsOnFileMove.enabled": "always"
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "database-client.autoSync": true
 }

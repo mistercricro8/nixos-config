@@ -15,6 +15,11 @@
         src = inputs.catppuccin-grub;
         installPhase = "cp -r src/catppuccin-mocha-grub-theme $out";
       };
+      extraEntries = ''
+        menuentry 'Reboot to Firmware Interface' {
+          fwsetup
+        }
+      '';
     };
     loader.efi.canTouchEfiVariables = true;
     kernelPackages = pkgs.linuxPackages;
