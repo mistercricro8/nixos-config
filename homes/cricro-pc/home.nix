@@ -36,7 +36,6 @@ in
     pavucontrol
     audio-recorder
     # davinci-resolve
-    catppuccin-cursors.mochaYellow
   ];
 
   programs.mpv = {
@@ -58,6 +57,12 @@ in
         config.lib.file.mkOutOfStoreSymlink "${thisHomeDir}/other-links/VSCodium/settings.json";
       ".config/VSCodium/User/keybindings.json".source =
         config.lib.file.mkOutOfStoreSymlink "${thisHomeDir}/other-links/VSCodium/keybindings.json";
+      ".config/Code/User/settings.json".source =
+        config.lib.file.mkOutOfStoreSymlink "${thisHomeDir}/other-links/Code/settings.json";
+      ".config/Code/User/keybindings.json".source =
+        config.lib.file.mkOutOfStoreSymlink "${thisHomeDir}/other-links/Code/keybindings.json";
+      ".jdks/current".source =
+        config.lib.file.mkOutOfStoreSymlink "${pkgs.jdk24}";
     }
   );
 }

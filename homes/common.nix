@@ -1,8 +1,6 @@
 {
   config,
   pkgs,
-  inputs,
-  lib,
   ...
 }:
 let
@@ -15,7 +13,6 @@ let
   mkImports =
     dicts:
     builtins.concatLists (builtins.map (d: builtins.map (imp: ./${d.folder}/${imp}) d.imports) dicts);
-  vscode-extra-extensions = inputs.vscode-extensions.extensions.${pkgs.system};
 in
 {
   imports = mkImports import-dicts ++ [
@@ -40,6 +37,7 @@ in
     catppuccin-gtk
     nwg-look
     brightnessctl
+    catppuccin-cursors.mochaYellow
     htop
     tree
     grim
@@ -71,14 +69,14 @@ in
     devenv
     nixfmt-rfc-style
     nixd
-    openjdk # figure a better way to install vscode extensions per shell
     wine64
-    mysql-workbench
+    tldr
+    jdk24
   ];
 
   programs.vscode = {
     enable = true;
-    package = pkgs.vscodium;
+    # package = pkgs.vscodium;
     mutableExtensionsDir = false;
     profiles.default = {
       extensions =
@@ -99,18 +97,22 @@ in
           ms-python.debugpy
           charliermarsh.ruff
           detachhead.basedpyright
-          redhat.java
           vscjava.vscode-java-debug
           cweijan.vscode-mysql-client2
+          vscjava.vscode-java-pack
+          redhat.java
+          vscjava.vscode-java-debug
+          vscjava.vscode-java-dependency
+          vscjava.vscode-maven
+          github.copilot-chat
           # ms-python.vscode-pylance
           # ms-python.black-formatter
         ])
-        ++ (with pkgs.vscode-extensions; [
-        ]);
+        ++ [
+          # (pkgs.forVSCodeVersion "1.101.03933").vscode-marketplace-release.github.copilot-chat
+        ];
     };
   };
-
-  home.sessionVariables.NIXOS_OZONE_WL = "1";
 
   xdg.desktopEntries = {
     VSCodium = {
@@ -138,6 +140,8 @@ in
     syntaxHighlighting.enable = true;
 
     initContent = ''
+      export NIXOS_OZONE_WL=1
+      export JAVA_HOME="${pkgs.jdk}"
       export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin"
       nixhome="$HOME/nixos-config"
       eval "$(direnv hook zsh)"
@@ -149,7 +153,8 @@ in
 
     shellAliases = {
       codium = "codium --ozone-platform=wayland";
-      nix-config = "cd $nixhome && codium .";
+      code = "code --ozone-platform=wayland";
+      nix-config = "cd $nixhome && code .";
       devflake-init = "bash $nixhome/apps/devflake-init/init.sh";
       nix-reload = "cd $nixhome && sudo nixos-rebuild switch --flake";
       nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
