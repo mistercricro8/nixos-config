@@ -66,5 +66,6 @@
   },
   "basedpyright.analysis.inlayHints.variableTypes": false,
   "javascript.updateImportsOnFileMove.enabled": "always",
-  "java.jdt.ls.java.home": "/home/cricro/.jdks/current/lib/openjdk"
+  "java.jdt.ls.java.home": "/home/cricro/.jdks/current/lib/openjdk",
+  "database-client.autoSync": true
 }

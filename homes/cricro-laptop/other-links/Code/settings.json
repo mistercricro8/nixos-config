@@ -69,7 +69,7 @@
   "basedpyright.analysis.inlayHints.variableTypes": false,
   "terminal.integrated.enableMultiLinePasteWarning": "never",
   "redhat.telemetry.enabled": false,
-  "database-client.autoSync": true,
   "javascript.updateImportsOnFileMove.enabled": "always",
-  "java.jdt.ls.java.home": "/home/cricro/.jdks/current/lib/openjdk"
+  "java.jdt.ls.java.home": "/home/cricro/.jdks/current/lib/openjdk",
+  "database-client.autoSync": true
 }
