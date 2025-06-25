@@ -457,6 +457,8 @@
     "format-icons": ["󰂎", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
     "format-charging": " {capacity}%",
 
+    "on-click": "~/.config/waybar/scripts/battery-menu.sh",
+
     "tooltip-format": "Discharging: {time}",
     "tooltip-format-charging": "Charging: {time}",
     "interval": 1,
