@@ -23,7 +23,7 @@ in
   home.stateVersion = "24.11";
 
   home.packages = with pkgs; [
-    libreoffice-qt
+    libreoffice-fresh
     swaynotificationcenter
     pavucontrol
     waybar
