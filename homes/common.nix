@@ -55,7 +55,6 @@ in
     rnote
     fd
     bottom
-    lazygit
     jq
     nwg-displays
     lm_sensors
@@ -95,6 +94,7 @@ in
           vscjava.vscode-java-debug
           vscjava.vscode-java-dependency
           vscjava.vscode-maven
+          chaitanyashahare.lazygit
           # github.copilot-chat
           # ms-python.vscode-pylance
           # ms-python.black-formatter
@@ -120,7 +120,7 @@ in
     VSCode = {
       name = "VSCode";
       genericName = "Wayland";
-      exec = "codium --ozone-platform=wayland";
+      exec = "code --ozone-platform=wayland";
       categories = [
         "TextEditor"
         "IDE"

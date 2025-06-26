@@ -5,6 +5,7 @@
     clang-tools
     nixfmt-rfc-style
     jdk24
+    lazygit
     # gcc
     # cmake
     # stdenv.cc.cc.lib
