@@ -47,11 +47,7 @@ in
     swaylock
     (brave.override {
       commandLineArgs = [
-        "--enable-features=VaapiVideoDecodeLinuxGL"
-        "--use-gl=angle"
-        "--use-angle=gl"
         "--ozone-platform=wayland"
-        "--password-store=gnome"
       ];
     })
     micro
@@ -120,6 +116,36 @@ in
         "IDE"
       ];
       mimeType = [ "text/plain" ];
+    };
+    VSCode = {
+      name = "VSCode";
+      genericName = "Wayland";
+      exec = "codium --ozone-platform=wayland";
+      categories = [
+        "TextEditor"
+        "IDE"
+      ];
+      mimeType = [ "text/plain" ];
+    };
+    Postman = {
+      name = "Postman";
+      genericName = "Wayland";
+      exec = "postman --ozone-platform=wayland";
+      categories = [
+        "Development"
+        "Network"
+      ];
+      mimeType = [ "application/json" ];
+    };
+    Discord = {
+      name = "Discord";
+      genericName = "Wayland";
+      exec = "discord --ozone-platform=wayland";
+      categories = [
+        "Network"
+        "InstantMessaging"
+      ];
+      mimeType = [ ];
     };
   };
 
