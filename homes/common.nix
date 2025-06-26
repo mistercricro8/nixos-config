@@ -31,6 +31,7 @@ in
     rofi-wayland
     wl-clipboard
     cliphist
+    obs-studio
     nemo
     nerd-fonts.caskaydia-mono
     nerd-fonts.jetbrains-mono
@@ -56,22 +57,16 @@ in
     micro
     lorien
     rnote
-    jflap
-    zed-editor
     fd
     bottom
     lazygit
     jq
     nwg-displays
     lm_sensors
-    ruff
-    clang-tools
     devenv
-    nixfmt-rfc-style
     nixd
     wine64
     tldr
-    jdk24
   ];
 
   programs.vscode = {

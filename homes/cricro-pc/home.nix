@@ -31,9 +31,7 @@ in
   ];
 
   home.packages = with pkgs; [
-    obs-studio
     playerctl
-    pavucontrol
     audio-recorder
     # davinci-resolve
   ];

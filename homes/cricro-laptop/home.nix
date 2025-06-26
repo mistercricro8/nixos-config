@@ -13,10 +13,6 @@ in
 {
   imports = [ ../common.nix ];
   home.packages = with pkgs; [
-    obs-studio
-    mpv
-    jflap
-    postman
   ];
 
   home.file = (
