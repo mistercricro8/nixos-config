@@ -27,11 +27,6 @@
     extraModulePackages = [ pkgs.linuxPackages.v4l2loopback ];
   };
 
-  # ------------- acpi -------------
-  services.logind.extraConfig = ''
-    HandlePowerKey=ignore
-  '';
-
   # ------------- nix store -------------
   nix.settings.trusted-users = [
     "root"
@@ -48,6 +43,7 @@
   ];
   nix.settings = {
     substituters = [ "https://hyprland.cachix.org" ];
+    trusted-substituters = [ "https://hyprland.cachix.org" ];
     trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
   };
 
@@ -55,6 +51,8 @@
   programs.hyprland = {
     enable = true;
     withUWSM = true;
+    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
+    portalPackage = inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland;
     xwayland.enable = true;
   };
 

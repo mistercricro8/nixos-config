@@ -62,6 +62,7 @@ in
     nixd
     wine64
     tldr
+    nix-output-monitor
   ];
 
   programs.vscode = {
@@ -95,6 +96,7 @@ in
           vscjava.vscode-java-dependency
           vscjava.vscode-maven
           chaitanyashahare.lazygit
+
           # github.copilot-chat
           # ms-python.vscode-pylance
           # ms-python.black-formatter
@@ -171,6 +173,9 @@ in
       bindkey '^[[3;5~' kill-word
       bindkey '^[[1;5C' forward-word
       bindkey '^[[1;5D' backward-word
+      nix-reload() {
+        cd $nixhome && sudo nixos-rebuild switch --flake $1 |& nom
+      }
     '';
 
     shellAliases = {
@@ -178,9 +183,7 @@ in
       code = "code --ozone-platform=wayland";
       nix-config = "cd $nixhome && code .";
       devflake-init = "bash $nixhome/apps/devflake-init/init.sh";
-      nix-reload = "cd $nixhome && sudo nixos-rebuild switch --flake";
       nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
-      ss = "ssh ubuntu@dev.mistercricro8.me";
       cls = "clear";
       docker = "podman";
     };
@@ -206,6 +209,11 @@ in
   };
 
   services.gnome-keyring.enable = true;
+
+  wayland.windowManager.hyprland = {
+    plugins = [
+    ];
+  };
 
   # wayland.windowManager.sway = {
   #   enable = true;

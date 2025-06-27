@@ -19,6 +19,11 @@ in
   # ------------- networking -------------
   networking.hostName = "cricro-laptop";
 
+  # ------------- acpi -------------
+  services.logind.extraConfig = ''
+    HandlePowerKey=ignore
+  '';
+
   # ------------- additional system packages -------------
   environment.systemPackages =
     with pkgs;
@@ -27,7 +32,6 @@ in
       qemu
       quickemu
       libguestfs-with-appliance
-      cowsay
     ];
 
   # ------------- laptop networking -------------

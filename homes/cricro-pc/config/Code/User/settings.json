@@ -31,7 +31,14 @@
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
-
+  "basedpyright.analysis.typeCheckingMode": "standard",
+  "basedpyright.analysis.diagnosticSeverityOverrides": {
+    "reportIncompatibleMethodOverride": "none",
+    "reportAttributeAccessIssue": "none"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "nix.enableLanguageServer": true,
   "nix.serverPath": "nixd",
   "nix.serverSettings": {
@@ -40,15 +47,6 @@
         "command": ["nixfmt"]
       }
     }
-  },
-
-  "basedpyright.analysis.typeCheckingMode": "standard",
-  "basedpyright.analysis.diagnosticSeverityOverrides": {
-    "reportIncompatibleMethodOverride": "none",
-    "reportAttributeAccessIssue": "none"
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "typescript.updateImportsOnFileMove.enabled": "always",
   "workbench.sideBar.location": "right",
@@ -67,9 +65,7 @@
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
   },
   "basedpyright.analysis.inlayHints.variableTypes": false,
-  "terminal.integrated.enableMultiLinePasteWarning": "never",
-  "redhat.telemetry.enabled": false,
-  "database-client.autoSync": true,
   "javascript.updateImportsOnFileMove.enabled": "always",
   "java.jdt.ls.java.home": "/home/cricro/.jdks/current/lib/openjdk",
+  "database-client.autoSync": true
 }
