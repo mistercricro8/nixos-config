@@ -48,6 +48,7 @@ in
     (brave.override {
       commandLineArgs = [
         "--ozone-platform=wayland"
+        "--password-store=gnome"
       ];
     })
     micro
