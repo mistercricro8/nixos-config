@@ -64,7 +64,6 @@ in
     wine64
     tldr
     nix-output-monitor
-    auto-cpufreq
   ];
 
   programs.vscode = {
