@@ -97,6 +97,7 @@ in
           vscjava.vscode-java-dependency
           vscjava.vscode-maven
           chaitanyashahare.lazygit
+          tomoki1207.pdf
 
           # github.copilot-chat
           # ms-python.vscode-pylance
