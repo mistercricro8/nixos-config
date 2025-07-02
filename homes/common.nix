@@ -98,6 +98,7 @@ in
           vscjava.vscode-maven
           chaitanyashahare.lazygit
           tomoki1207.pdf
+          bbenoist.Doxygen
 
           # github.copilot-chat
           # ms-python.vscode-pylance
