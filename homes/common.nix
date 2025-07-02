@@ -99,6 +99,7 @@ in
           chaitanyashahare.lazygit
           tomoki1207.pdf
           bbenoist.doxygen
+          ms-vscode.cpptools
 
           # github.copilot-chat
           # ms-python.vscode-pylance
