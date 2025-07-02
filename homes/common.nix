@@ -98,7 +98,7 @@ in
           vscjava.vscode-maven
           chaitanyashahare.lazygit
           tomoki1207.pdf
-          bbenoist.Doxygen
+          bbenoist.doxygen
 
           # github.copilot-chat
           # ms-python.vscode-pylance
