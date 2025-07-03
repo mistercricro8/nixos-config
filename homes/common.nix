@@ -107,7 +107,7 @@ in
         ])
         ++ [
           # TODO: lock this to curr version
-          (pkgs.forVSCodeVersion "1.101.1").vscode-marketplace-release.github.copilot-chat
+          (pkgs.forVSCodeVersion pkgs.vscode.version).vscode-marketplace-release.github.copilot-chat
         ];
     };
   };
