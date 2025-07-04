@@ -11,9 +11,9 @@ else
   git add .
 
   touch .gitignore
-  grep -Pzo '.direnv\n.envrc' .gitignore
+  grep -Pzo '.direnv' .gitignore
   if [ $? -ne 0 ]; then
-    printf '.direnv\n.envrc\n' >> .gitignore
+    printf '.direnv\n' >> .gitignore
   fi
 
   echo "use flake" >>.envrc
