@@ -274,14 +274,14 @@
     "signal": 1,
     "format": "{icon}",
     "format-icons": {
-      "Running": "<span>󱚽 VPN up</span>",
-      "Stopped": "<span>󱚼 VPN down</span>"
+      "set": "<span>󱚽 VPN up</span>",
+      "not_set": "<span>󱚼 VPN down</span>"
     },
     "return-type": "json",
     "exec-if": "which tailscale",
-    "exec": "tailscale status --json | jq --unbuffered --compact-output '{alt: .BackendState}' && kill -s SIGRTMIN+1 $(pgrep waybar)",
-    "on-click": "pkexec tailscale up",
-    "on-click-right": "pkexec tailscale down",
+    "exec": "tailscale status --peers --json | jq --unbuffered --compact-output 'if .ExitNodeStatus != null then {alt:\"set\"} else {alt:\"not_set\"} end' && kill -s SIGRTMIN+1 $(pgrep waybar)",
+    "on-click": "pkexec tailscale set --exit-node=cricro-vm",
+    "on-click-right": "pkexec tailscale set --exit-node=",
     "escape": true
   },
 

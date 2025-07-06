@@ -60,6 +60,7 @@ in
     playerctl
     audio-recorder
     split-monitor-workspaces-hypr
+    blender
     # davinci-resolve
   ];
 
