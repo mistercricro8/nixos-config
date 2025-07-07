@@ -100,6 +100,7 @@ in
           tomoki1207.pdf
           bbenoist.doxygen
           ms-vscode.cpptools
+          eamodio.gitlens
 
           # github.copilot-chat
           # ms-python.vscode-pylance
