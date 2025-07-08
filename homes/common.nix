@@ -101,6 +101,7 @@ in
           bbenoist.doxygen
           ms-vscode.cpptools
           eamodio.gitlens
+          ms-vsliveshare.vsliveshare
 
           # github.copilot-chat
           # ms-python.vscode-pylance
