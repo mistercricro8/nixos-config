@@ -102,6 +102,7 @@ in
           ms-vscode.cpptools
           eamodio.gitlens
           ms-vsliveshare.vsliveshare
+          golang.go
 
           # github.copilot-chat
           # ms-python.vscode-pylance
@@ -172,6 +173,7 @@ in
     initContent = ''
       export NIXOS_OZONE_WL=1
       export JAVA_HOME="${pkgs.jdk}"
+      export GOROOT="${pkgs.go}/lib/go"
       export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin"
       nixhome="$HOME/nixos-config"
       eval "$(direnv hook zsh)"
