@@ -69,5 +69,6 @@
   "java.jdt.ls.java.home": "/home/cricro/.jdks/current/lib/openjdk",
   "database-client.autoSync": true,
   "C_Cpp.autocomplete": "disabled",
-  "C_Cpp.intelliSenseEngine": "disabled"
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "security.workspace.trust.untrustedFiles": "open"
 }

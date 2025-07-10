@@ -209,11 +209,17 @@ in
     gitCredentialHelper = {
       enable = true;
     };
+    settings = {
+      editor = "code --wait";
+    };
   };
 
   programs.git = {
     enable = true;
-    extraConfig.init.defaultBranch = "main";
+    extraConfig = {
+      init.defaultBranch = "main";
+      core.editor = "code --wait";
+    };
   };
 
   services.gnome-keyring.enable = true;
