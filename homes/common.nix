@@ -64,6 +64,7 @@ in
     wine64
     tldr
     nix-output-monitor
+    nettools
   ];
 
   programs.vscode = {
