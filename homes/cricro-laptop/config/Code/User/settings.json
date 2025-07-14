@@ -70,5 +70,6 @@
   "database-client.autoSync": true,
   "C_Cpp.autocomplete": "disabled",
   "C_Cpp.intelliSenseEngine": "disabled",
-  "security.workspace.trust.untrustedFiles": "open"
+  "security.workspace.trust.untrustedFiles": "open",
+  "powermode.presets": "exploding-rift"
 }

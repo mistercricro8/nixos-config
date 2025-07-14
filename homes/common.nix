@@ -104,6 +104,7 @@ in
           eamodio.gitlens
           ms-vsliveshare.vsliveshare
           golang.go
+          hoovercj.vscode-power-mode
 
           # github.copilot-chat
           # ms-python.vscode-pylance
