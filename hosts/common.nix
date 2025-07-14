@@ -90,14 +90,6 @@
   # ------------- very very important -------------
   # nixpkgs.config.allowUnfree = true;
 
-  # ------------- swap -------------
-  swapDevices = [
-    {
-      device = "/var/swap/swapfile01_16G";
-      size = 16 * 1024;
-    }
-  ];
-
   # ------------- programs!! -------------
   # programs.firefox.enable = true;
   programs.zsh.enable = true;
