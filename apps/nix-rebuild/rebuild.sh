@@ -2,6 +2,7 @@ set -e
 
 pushd $HOME/nixos-config
 
+echo "Reminder to input the password as nom noms the prompt"
 sudo nixos-rebuild switch --flake $1 2>&1 | tee last-rebuild.log | nom
 
 if [ "${PIPESTATUS[0]}" -ne 0 ]; then
