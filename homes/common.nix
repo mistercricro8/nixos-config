@@ -64,7 +64,8 @@ in
     wine64
     tldr
     nix-output-monitor
-    nettools
+    # net-tools
+    uutils-coreutils-noprefix
   ];
 
   programs.vscode = {

@@ -54,7 +54,10 @@
   "terminal.integrated.fontFamily": "CaskaydiaMono Nerd Font",
   "terminal.integrated.fontSize": 16,
   "github.copilot.enable": {
-    "*": true
+    "*": true,
+    "plaintext": false,
+    "markdown": true,
+    "scminput": false
   },
   "python.languageServer": "None",
   "ruff.nativeServer": "on",
@@ -68,5 +71,7 @@
   "javascript.updateImportsOnFileMove.enabled": "always",
   "java.jdt.ls.java.home": "/home/cricro/.jdks/current/lib/openjdk",
   "database-client.autoSync": true,
-  "powermode.presets": "exploding-rift"
+  "powermode.presets": "exploding-rift",
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "C_Cpp.intelliSenseEngine": "disabled"
 }
