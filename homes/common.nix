@@ -65,7 +65,7 @@ in
     tldr
     nix-output-monitor
     net-tools
-    uutils-coreutils
+    bat
   ];
 
   programs.vscode = {
@@ -178,6 +178,7 @@ in
       cls = "clear";
       docker = "podman";
       nix-rebuild = "bash ~/nixos-config/apps/nix-rebuild/rebuild.sh";
+      cat = "bat";
     };
     shellInit = ''
       export NIXOS_OZONE_WL=1
