@@ -66,6 +66,9 @@ in
     nix-output-monitor
     net-tools
     bat
+    eza
+    du-dust
+    hyperfine
   ];
 
   programs.vscode = {
