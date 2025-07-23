@@ -54,8 +54,9 @@ in
   networking.networkmanager.wifi.backend = "iwd";
 
   # ------------- users -------------
+  programs.fish.enable = true;
   users = {
-    defaultUserShell = pkgs.zsh;
+    defaultUserShell = pkgs.fish;
     users.cricro = {
       isNormalUser = true;
       description = "Christian";

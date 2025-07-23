@@ -33,8 +33,9 @@ in
   networking.hostName = "cricro-pc";
 
   # ------------- users -------------
+  programs.fish.enable = true;
   users = {
-    defaultUserShell = pkgs.zsh;
+    defaultUserShell = pkgs.fish;
     users.cricro = {
       isNormalUser = true;
       description = "Christian";

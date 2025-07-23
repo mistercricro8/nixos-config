@@ -64,8 +64,8 @@ in
     wine64
     tldr
     nix-output-monitor
-    # net-tools
-    uutils-coreutils-noprefix
+    net-tools
+    uutils-coreutils
   ];
 
   programs.vscode = {
@@ -167,8 +167,30 @@ in
     nix-direnv.enable = true;
   };
 
-  programs.zsh = {
+  programs.fish = {
     enable = true;
+    shellAliases = {
+      codium = "codium --ozone-platform=wayland";
+      code = "code --ozone-platform=wayland";
+      nix-config = "cd ~/nixos-config && code .";
+      devflake-init = "bash ~/nixos-config/apps/devflake-init/init.sh";
+      nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
+      cls = "clear";
+      docker = "podman";
+      nix-rebuild = "bash ~/nixos-config/apps/nix-rebuild/rebuild.sh";
+    };
+    shellInit = ''
+      export NIXOS_OZONE_WL=1
+      export JAVA_HOME="${pkgs.jdk}"
+      export GOROOT="${pkgs.go}/lib/go"
+      export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin"
+      export NIXHOME="$HOME/nixos-config"
+      direnv hook fish | source;
+    '';
+  };
+
+  programs.zsh = {
+    enable = false;
     enableCompletion = true;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
