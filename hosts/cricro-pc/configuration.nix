@@ -42,6 +42,7 @@ in
       extraGroups = [
         "networkmanager"
         "wheel"
+        "dialout"
         "cdrom"
       ];
       packages = with pkgs; [ ];
