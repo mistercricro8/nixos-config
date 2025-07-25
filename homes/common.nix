@@ -22,58 +22,13 @@ in
   home.homeDirectory = "/home/cricro";
   home.stateVersion = "24.11";
 
+  # temp / testing
   home.packages = with pkgs; [
-    libreoffice-fresh
-    swaynotificationcenter
-    pavucontrol
-    waybar
-    discord
-    rofi-wayland
-    wl-clipboard
-    cliphist
-    obs-studio
-    nemo
-    nerd-fonts.caskaydia-mono
-    nerd-fonts.jetbrains-mono
-    catppuccin-gtk
-    nwg-look
-    brightnessctl
-    catppuccin-cursors.mochaYellow
-    htop
-    tree
-    grim
-    slurp
-    swaybg
-    swaylock
-    (brave.override {
-      commandLineArgs = [
-        "--ozone-platform=wayland"
-        "--password-store=gnome"
-      ];
-    })
-    micro
-    lorien
-    rnote
-    fd
-    bottom
-    jq
-    nwg-displays
-    lm_sensors
-    devenv
-    nixd
-    wine64
-    tldr
-    nix-output-monitor
-    net-tools
-    bat
-    eza
-    du-dust
-    hyperfine
+    
   ];
 
   programs.vscode = {
     enable = true;
-    # package = pkgs.vscodium;
     mutableExtensionsDir = false;
     profiles.default = {
       extensions =
@@ -109,29 +64,14 @@ in
           ms-vsliveshare.vsliveshare
           golang.go
           hoovercj.vscode-power-mode
-
-          # github.copilot-chat
-          # ms-python.vscode-pylance
-          # ms-python.black-formatter
         ])
         ++ [
-          # TODO: lock this to curr version
           (pkgs.forVSCodeVersion pkgs.vscode.version).vscode-marketplace-release.github.copilot-chat
         ];
     };
   };
 
   xdg.desktopEntries = {
-    VSCodium = {
-      name = "VSCodium";
-      genericName = "Wayland";
-      exec = "codium --ozone-platform=wayland";
-      categories = [
-        "TextEditor"
-        "IDE"
-      ];
-      mimeType = [ "text/plain" ];
-    };
     VSCode = {
       name = "VSCode";
       genericName = "Wayland";
@@ -175,7 +115,7 @@ in
     shellAliases = {
       codium = "codium --ozone-platform=wayland";
       code = "code --ozone-platform=wayland";
-      nix-config = "cd ~/nixos-config && code .";
+      nix-config = "cd ~/nixos-config && code . && exit";
       devflake-init = "bash ~/nixos-config/apps/devflake-init/init.sh";
       nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
       cls = "clear";
@@ -191,44 +131,6 @@ in
       export NIXHOME="$HOME/nixos-config"
       direnv hook fish | source;
     '';
-  };
-
-  programs.zsh = {
-    enable = false;
-    enableCompletion = true;
-    autosuggestion.enable = true;
-    syntaxHighlighting.enable = true;
-
-    initContent = ''
-      export NIXOS_OZONE_WL=1
-      export JAVA_HOME="${pkgs.jdk}"
-      export GOROOT="${pkgs.go}/lib/go"
-      export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin"
-      nixhome="$HOME/nixos-config"
-      eval "$(direnv hook zsh)"
-      bindkey '^H' backward-kill-word
-      bindkey '^[[3;5~' kill-word
-      bindkey '^[[1;5C' forward-word
-      bindkey '^[[1;5D' backward-word
-      nix-reload() {
-        cd $nixhome && sudo nixos-rebuild switch --flake $1 |& nom
-      }
-    '';
-
-    shellAliases = {
-      codium = "codium --ozone-platform=wayland";
-      code = "code --ozone-platform=wayland";
-      nix-config = "cd $nixhome && code .";
-      devflake-init = "bash $nixhome/apps/devflake-init/init.sh";
-      nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
-      cls = "clear";
-      docker = "podman";
-    };
-
-    history = {
-      size = 10000;
-      path = "${config.xdg.dataHome}/zsh/history";
-    };
   };
 
   programs.starship.enable = true;

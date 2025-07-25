@@ -19,7 +19,8 @@ nixos_ver=$(echo "$current_gen" | jq -r '.nixosVersion')
 
 current="NixOS generation $gen_num ($gen_date): nixos $nixos_ver"
 
-git commit -am "$current"
+git add .
+git commit -m "$current"
 
 popd
 

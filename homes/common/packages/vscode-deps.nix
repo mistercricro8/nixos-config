@@ -7,8 +7,6 @@
     jdk24
     lazygit
     go
-    # gcc
-    # cmake
-    # stdenv.cc.cc.lib
+    nixd
   ];
 }
