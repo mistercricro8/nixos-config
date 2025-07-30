@@ -115,6 +115,7 @@ in
     shellAliases = {
       codium = "codium --ozone-platform=wayland";
       code = "code --ozone-platform=wayland";
+      ccode = "code --ozone-platform=wayland . && exit";
       nix-config = "cd ~/nixos-config && code . && exit";
       devflake-init = "bash ~/nixos-config/apps/devflake-init/init.sh";
       nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
