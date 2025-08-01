@@ -19,11 +19,6 @@ in
   # ------------- networking -------------
   networking.hostName = "cricro-laptop";
 
-  # ------------- steam -------------
-  programs.steam = {
-    enable = true;
-  };
-
   # ------------- acpi -------------
   services.logind.extraConfig = ''
     HandlePowerKey=ignore
