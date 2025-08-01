@@ -1,5 +1,8 @@
 { pkgs, inputs, ... }:
 
+let
+  hyprpkgs = inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.system};
+in
 {
   # ------------- boot and stuffs -------------
   boot = {
@@ -25,6 +28,13 @@
     kernelPackages = pkgs.linuxPackages;
     kernelModules = [ "v4l2loopback" ];
     extraModulePackages = [ pkgs.linuxPackages.v4l2loopback ];
+  };
+
+  # ------------- hardware -------------
+  hardware = {
+    graphics = {
+      package = hyprpkgs.mesa;
+    };
   };
 
   # ------------- nix store -------------
