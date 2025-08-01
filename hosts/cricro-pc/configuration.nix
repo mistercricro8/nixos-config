@@ -75,7 +75,7 @@ in
         "directory mask" = "0755";
         "force user" = "LaEsquina";
       };
-      "Videos Medicina" = {
+      "Medicina" = {
         "path" = "/home/LaEsquina/la-esquina-store/Medicina";
         "guest ok" = "no";
         "create mask" = "0644";
