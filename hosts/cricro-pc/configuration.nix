@@ -62,14 +62,21 @@ in
         "security" = "user";
       };
       "files" = {
-        "path" = "/home/LaEsquina/LaEsquinaStore/laesquina-management/files";
+        "path" = "/home/LaEsquina/la-esquina-store/laesquina-management/files";
         "guest ok" = "no";
         "create mask" = "0644";
         "directory mask" = "0755";
         "force user" = "LaEsquina";
       };
       "Archivos" = {
-        "path" = "/home/LaEsquina/LaEsquinaStore/Archivos";
+        "path" = "/home/LaEsquina/la-esquina-store/Archivos";
+        "guest ok" = "no";
+        "create mask" = "0644";
+        "directory mask" = "0755";
+        "force user" = "LaEsquina";
+      };
+      "Videos Medicina" = {
+        "path" = "/home/LaEsquina/la-esquina-store/Medicina";
         "guest ok" = "no";
         "create mask" = "0644";
         "directory mask" = "0755";
