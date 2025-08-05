@@ -8,5 +8,7 @@
     lazygit
     go
     nixd
+    shellcheck
+    shfmt
   ];
 }

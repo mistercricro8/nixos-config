@@ -18,5 +18,7 @@
     rnote
     nwg-displays
     devenv
+    wineWowPackages.stable
+    winetricks
   ];
 }

@@ -7,5 +7,8 @@
     net-tools
     lm_sensors
     usbutils
+    unzip
+    zip
+    rar
   ];
 }

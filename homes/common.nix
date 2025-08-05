@@ -63,7 +63,7 @@ in
           eamodio.gitlens
           ms-vsliveshare.vsliveshare
           golang.go
-          hoovercj.vscode-power-mode
+          mads-hartmann.bash-ide-vscode
         ])
         ++ [
           (pkgs.forVSCodeVersion pkgs.vscode.version).vscode-marketplace-release.github.copilot-chat
