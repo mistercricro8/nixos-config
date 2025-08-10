@@ -64,6 +64,7 @@ in
           ms-vsliveshare.vsliveshare
           golang.go
           mads-hartmann.bash-ide-vscode
+          ms-vscode-remote.remote-ssh
         ])
         ++ [
           (pkgs.forVSCodeVersion pkgs.vscode.version).vscode-marketplace-release.github.copilot-chat

@@ -20,5 +20,6 @@
     devenv
     wineWowPackages.stable
     winetricks
+    filezilla
   ];
 }
