@@ -21,5 +21,6 @@
     wineWowPackages.stable
     winetricks
     filezilla
+    librewolf
   ];
 }
