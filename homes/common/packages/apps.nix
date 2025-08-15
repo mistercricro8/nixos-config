@@ -22,5 +22,6 @@
     winetricks
     filezilla
     librewolf
+    firefox
   ];
 }
