@@ -103,6 +103,7 @@ git add .
 if [[ "$update_flake" == true ]]; then
     echo "Updating flake..."
     nix flake update
+    git add .
 fi
 
 echo "Reminder to input the password as nom noms the prompt"
