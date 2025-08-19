@@ -67,7 +67,7 @@ in
           ms-vscode-remote.remote-ssh
         ])
         ++ [
-          (pkgs.forVSCodeVersion pkgs.vscode.version).vscode-marketplace-release.github.copilot-chat
+          (pkgs.forVSCodeVersion "1.103.1").vscode-marketplace-release.github.copilot-chat
         ];
     };
   };

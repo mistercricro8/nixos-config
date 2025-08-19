@@ -12,7 +12,6 @@
     slurp
     tldr
     hyperfine
-    wineWowPackages.stable
-    winetricks
+    nh
   ];
 }
