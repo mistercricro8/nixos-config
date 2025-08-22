@@ -24,6 +24,11 @@ in
     HandlePowerKey=ignore
   '';
 
+  # ------------- steam -------------
+  programs.steam = {
+    enable = true;
+  };
+
   # ------------- additional system packages -------------
   environment.systemPackages =
     with pkgs;
