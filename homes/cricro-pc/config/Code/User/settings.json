@@ -73,5 +73,6 @@
   "database-client.autoSync": true,
   "powermode.presets": "exploding-rift",
   "github.copilot.nextEditSuggestions.enabled": true,
-  "C_Cpp.intelliSenseEngine": "disabled"
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "terminal.integrated.enableMultiLinePasteWarning": "never"
 }

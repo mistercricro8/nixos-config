@@ -120,9 +120,8 @@ if [[ "$no_commit" == false ]]; then
 
     gen_num=$(echo "$current_gen" | jq -r '.generation')
     gen_date=$(echo "$current_gen" | jq -r '.date')
-    nixos_ver=$(echo "$current_gen" | jq -r '.nixosVersion')
 
-    current="NixOS generation $gen_num ($gen_date): nixos $nixos_ver"
+    current="NixOS generation $gen_num ($gen_date): derivation $derivation"
     git commit -m "$current"
 
     if [[ "$push" == true ]]; then
