@@ -125,6 +125,7 @@ if [[ "$no_commit" == false ]]; then
     
     echo
     echo "Enter commit message (description):"
+    notify-send -e "Awaiting commit message..."
     read -r commit_message
     
     if [[ -n "$commit_message" ]]; then

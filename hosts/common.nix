@@ -91,6 +91,13 @@ in
   # ------------- printing stuff -------------
   services.printing.enable = true;
 
+  # ------------- ssh -------------
+  services.openssh = {
+    enable = true;
+    settings.PasswordAuthentication = false;
+    settings.KbdInteractiveAuthentication = false;
+  };
+
   # ------------- audio/video stuff -------------
   services.pulseaudio.enable = false;
   services.pipewire = {

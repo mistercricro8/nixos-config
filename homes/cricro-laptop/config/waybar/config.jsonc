@@ -307,7 +307,7 @@
     "return-type": "json",
     "exec-if": "which tailscale",
     "exec": "tailscale status --peers --json | jq --unbuffered --compact-output 'if .ExitNodeStatus != null then {alt:\"set\"} else {alt:\"not_set\"} end' && kill -s SIGRTMIN+1 $(pgrep waybar)",
-    "on-click": "pkexec tailscale set --exit-node=cricro-vm",
+    "on-click": "pkexec tailscale set --exit-node=cricro-vm --exit-node-allow-lan-access=true",
     "on-click-right": "pkexec tailscale set --exit-node=",
     "escape": true
   },
