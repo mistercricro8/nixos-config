@@ -122,7 +122,16 @@ if [[ "$no_commit" == false ]]; then
     gen_date=$(echo "$current_gen" | jq -r '.date')
 
     current="NixOS generation $gen_num ($gen_date): derivation $derivation"
-    git commit -m "$current"
+    
+    echo
+    echo "Enter commit message (description):"
+    read -r commit_message
+    
+    if [[ -n "$commit_message" ]]; then
+        git commit -m "$current" -m "$commit_message"
+    else
+        git commit -m "$current"
+    fi
 
     if [[ "$push" == true ]]; then
         git push

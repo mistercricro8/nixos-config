@@ -22,9 +22,9 @@ in
   home.homeDirectory = "/home/cricro";
   home.stateVersion = "24.11";
 
-  # temp / testing
   home.packages = with pkgs; [
-    
+    # kind of waiting for https://github.com/hyprwm/xdg-desktop-portal-hyprland/pull/308
+    # rustdesk-flutter
   ];
 
   programs.vscode = {
@@ -120,7 +120,6 @@ in
       devflake-init = "bash ~/nixos-config/apps/devflake-init/init.sh";
       nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
       cls = "clear";
-      docker = "podman";
       nix-rebuild = "bash ~/nixos-config/apps/nix-rebuild/rebuild.sh";
       cat = "bat";
     };

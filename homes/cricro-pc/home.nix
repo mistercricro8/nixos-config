@@ -8,6 +8,7 @@
 let
   split-monitor-workspaces-hypr =
     inputs.split-monitor-workspaces.packages.${pkgs.system}.split-monitor-workspaces;
+  winapps-toplevel = inputs.winapps.packages.${pkgs.system};
   storeDir = "${config.home.homeDirectory}/store";
   thisHomeDir = "${config.home.homeDirectory}/nixos-config/homes/cricro-pc";
   pathIsDir = path: builtins.pathExists (toString path + "/.");
@@ -56,13 +57,19 @@ in
     ../common.nix
   ];
 
-  home.packages = with pkgs; [
-    playerctl
-    audio-recorder
-    split-monitor-workspaces-hypr
-    blender
-    # davinci-resolve
-  ];
+  home.packages =
+    with pkgs;
+    [
+      playerctl
+      audio-recorder
+      split-monitor-workspaces-hypr
+      blender
+      # davinci-resolve
+    ]
+    ++ [
+      winapps-toplevel.winapps
+      winapps-toplevel.winapps-launcher
+    ];
 
   programs.mpv = {
     enable = true;

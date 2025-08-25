@@ -1,4 +1,9 @@
-{ pkgs, inputs, ... }:
+{
+  pkgs,
+  inputs,
+  lib,
+  ...
+}:
 
 let
   hyprpkgs = inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.system};
@@ -105,8 +110,12 @@ in
   services.locate.enable = true;
 
   # ------------- docker -------------
-  virtualisation.podman = {
+  virtualisation.docker = {
     enable = true;
+  };
+  systemd.user.services.docker = {
+    enable = true;
+    wantedBy = lib.mkForce [ ];
   };
 
   # ------------- security -------------

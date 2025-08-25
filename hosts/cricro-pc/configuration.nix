@@ -44,6 +44,7 @@ in
         "wheel"
         "dialout"
         "cdrom"
+        "docker"
       ];
       packages = with pkgs; [ ];
     };
