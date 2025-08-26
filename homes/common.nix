@@ -120,6 +120,8 @@ in
       devflake-init = "bash ~/nixos-config/apps/devflake-init/init.sh";
       nix-cleanup = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
       cls = "clear";
+      docker-on = "sudo systemctl start docker.service docker.socket";
+      docker-off = "sudo systemctl stop docker.service docker.socket";
       nix-rebuild = "bash ~/nixos-config/apps/nix-rebuild/rebuild.sh";
       cat = "bat";
     };

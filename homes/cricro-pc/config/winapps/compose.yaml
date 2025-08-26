@@ -19,7 +19,7 @@ services:
     cap_add:
       - NET_ADMIN
     stop_grace_period: 120s
-    restart: on-failure
+    restart: no
     volumes:
       - /home/cricro/store/winapps-data:/storage
       - ${HOME}:/shared

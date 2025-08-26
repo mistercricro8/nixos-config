@@ -120,10 +120,7 @@ in
   virtualisation.docker = {
     enable = true;
   };
-  systemd.user.services.docker = {
-    enable = true;
-    wantedBy = lib.mkForce [ ];
-  };
+  systemd.services.docker.wantedBy = lib.mkForce [ ];
 
   # ------------- security -------------
   security.rtkit.enable = true;
