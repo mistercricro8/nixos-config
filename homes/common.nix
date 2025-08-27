@@ -16,6 +16,7 @@ let
 in
 {
   imports = mkImports import-dicts ++ [
+    ./common/vscode-profiles.nix
   ];
 
   home.username = "cricro";
@@ -30,46 +31,6 @@ in
   programs.vscode = {
     enable = true;
     mutableExtensionsDir = false;
-    profiles.default = {
-      extensions =
-        (with pkgs.vscode-marketplace; [
-          ms-vscode.vscode-typescript-next
-          catppuccin.catppuccin-vsc
-          catppuccin.catppuccin-vsc-icons
-          prisma.prisma
-          ms-azuretools.vscode-docker
-          visualstudioexptteam.vscodeintellicode
-          github.copilot
-          llvm-vs-code-extensions.vscode-clangd
-          jnoortheen.nix-ide
-          bradlc.vscode-tailwindcss
-          dbaeumer.vscode-eslint
-          esbenp.prettier-vscode
-          ms-python.python
-          ms-python.debugpy
-          charliermarsh.ruff
-          detachhead.basedpyright
-          vscjava.vscode-java-debug
-          cweijan.vscode-mysql-client2
-          vscjava.vscode-java-pack
-          redhat.java
-          vscjava.vscode-java-debug
-          vscjava.vscode-java-dependency
-          vscjava.vscode-maven
-          chaitanyashahare.lazygit
-          tomoki1207.pdf
-          bbenoist.doxygen
-          ms-vscode.cpptools
-          eamodio.gitlens
-          ms-vsliveshare.vsliveshare
-          golang.go
-          mads-hartmann.bash-ide-vscode
-          ms-vscode-remote.remote-ssh
-        ])
-        ++ [
-          (pkgs.forVSCodeVersion "1.103.1").vscode-marketplace-release.github.copilot-chat
-        ];
-    };
   };
 
   xdg.desktopEntries = {
