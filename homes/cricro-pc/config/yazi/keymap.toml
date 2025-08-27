@@ -1,0 +1,6 @@
+[mgr]
+append_keymap = [
+    { on = [ "<C-n>" ], run = '''
+        shell 'ripdrag "$@" -a -x 2>/dev/null &' --confirm
+    ''' },
+]

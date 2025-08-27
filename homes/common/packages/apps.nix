@@ -17,6 +17,7 @@
     lorien
     rnote
     nwg-displays
+    yazi
     devenv
     wineWowPackages.stable
     winetricks

@@ -26,6 +26,7 @@ in
   home.packages = with pkgs; [
     # kind of waiting for https://github.com/hyprwm/xdg-desktop-portal-hyprland/pull/308
     # rustdesk-flutter
+    yazi
   ];
 
   programs.vscode = {
@@ -92,7 +93,16 @@ in
       export GOROOT="${pkgs.go}/lib/go"
       export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin"
       export NIXHOME="$HOME/nixos-config"
-      direnv hook fish | source;
+      function y
+      	set tmp (mktemp -t "yazi-cwd.XXXXXX")
+      	yazi $argv --cwd-file="$tmp"
+      	if read -z cwd < "$tmp"; and [ -n "$cwd" ]; and [ "$cwd" != "$PWD" ]
+      		builtin cd -- "$cwd"
+      	end
+      	rm -f -- "$tmp"
+      end
+      direnv hook fish | source
+      zoxide init fish | source
     '';
   };
 
