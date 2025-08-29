@@ -7,12 +7,14 @@ services:
     environment:
       VERSION: "10"
       RAM_SIZE: "6G"
-      CPU_CORES: "2"
+      CPU_CORES: "3"
       DISK_SIZE: "100G"
       USERNAME: "cricro"
       PASSWORD: "1234"
       HOME: "${HOME}"
+      ARGUMENTS: "-chardev serial,path=/dev/ttyACM0,id=hostusbserial -device usb-serial,chardev=hostusbserial"
     ports:
+      - 2222:22
       - 8006:8006
       - 3389:3389/tcp
       - 3389:3389/udp
@@ -27,3 +29,4 @@ services:
     devices:
       - /dev/kvm
       - /dev/net/tun
+      - /dev/ttyACM0

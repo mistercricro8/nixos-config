@@ -65,6 +65,15 @@ in
       ];
       mimeType = [ ];
     };
+    LaserGRBL = {
+      name = "LaserGRBL";
+      exec = "winapps manual LaserGRBL.exe";
+      categories = [
+        "Graphics"
+        "Printing"
+      ];
+      mimeType = [ ];
+    };
   };
 
   programs.direnv = {
