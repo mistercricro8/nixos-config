@@ -53,5 +53,13 @@
     {
         "key": "ctrl+k ctrl+right",
         "command": "-workbench.action.focusRightGroup"
+    },
+    {
+        "key": "ctrl+shift+g space",
+        "command": "lazygit.openLazygit"
+    },
+    {
+        "key": "ctrl+g g",
+        "command": "-lazygit.openLazygit"
     }
 ]

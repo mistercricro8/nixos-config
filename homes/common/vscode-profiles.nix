@@ -20,6 +20,7 @@ let
       cweijan.vscode-mysql-client2
       mads-hartmann.bash-ide-vscode
       esbenp.prettier-vscode
+      ms-azuretools.vscode-docker
     ]
     ++ [
       (pkgs.forVSCodeVersion "1.103.1").vscode-marketplace-release.github.copilot-chat
@@ -40,7 +41,6 @@ let
       prisma.prisma
       dbaeumer.vscode-eslint
       visualstudioexptteam.vscodeintellicode
-      ms-azuretools.vscode-docker
     ]);
 
   python-pkgs =

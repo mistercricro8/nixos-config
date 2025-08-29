@@ -86,6 +86,10 @@ in
       docker-off = "sudo systemctl stop docker.service docker.socket";
       nix-rebuild = "bash ~/nixos-config/apps/nix-rebuild/rebuild.sh";
       cat = "bat";
+      rcat = "bat -p";
+      ls = "eza";
+      ll = "eza -l";
+      l = "eza -la";
     };
     shellInit = ''
       export NIXOS_OZONE_WL=1
@@ -93,7 +97,7 @@ in
       export GOROOT="${pkgs.go}/lib/go"
       export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin"
       export NIXHOME="$HOME/nixos-config"
-      function y
+      function e
       	set tmp (mktemp -t "yazi-cwd.XXXXXX")
       	yazi $argv --cwd-file="$tmp"
       	if read -z cwd < "$tmp"; and [ -n "$cwd" ]; and [ "$cwd" != "$PWD" ]

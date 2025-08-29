@@ -55,11 +55,10 @@
   "terminal.integrated.fontSize": 16,
   "github.copilot.enable": {
     "*": true,
-    "plaintext": false,
     "markdown": true,
-    "scminput": false
+    "scminput": false,
+    "plaintext": true
   },
-  "python.languageServer": "None",
   "ruff.nativeServer": "on",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
@@ -74,5 +73,6 @@
   "powermode.presets": "exploding-rift",
   "github.copilot.nextEditSuggestions.enabled": true,
   "C_Cpp.intelliSenseEngine": "disabled",
-  "terminal.integrated.enableMultiLinePasteWarning": "never"
+  "terminal.integrated.enableMultiLinePasteWarning": "never",
+  "python.analysis.typeCheckingMode": "standard"
 }
