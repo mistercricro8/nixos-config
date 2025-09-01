@@ -49,7 +49,7 @@ let
       ms-python.python
       ms-python.debugpy
       charliermarsh.ruff
-      ms-python.vscode-pylance
+      detachhead.basedpyright
     ]);
 
   java-pkgs =
