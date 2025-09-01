@@ -31,6 +31,10 @@ in
 
   # ------------- networking -------------
   networking.hostName = "cricro-pc";
+  networking.interfaces.enp5s0.ipv4.addresses = [{
+    address = "192.168.1.68";
+    prefixLength = 32;
+  }];
 
   # ------------- users -------------
   programs.fish.enable = true;

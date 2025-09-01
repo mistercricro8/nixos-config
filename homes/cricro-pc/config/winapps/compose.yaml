@@ -12,7 +12,7 @@ services:
       USERNAME: "cricro"
       PASSWORD: "1234"
       HOME: "${HOME}"
-      ARGUMENTS: "-chardev serial,path=/dev/ttyACM0,id=hostusbserial -device usb-serial,chardev=hostusbserial"
+      # ARGUMENTS: "-chardev serial,path=/dev/ttyACM0,id=hostusbserial -device usb-serial,chardev=hostusbserial"
     ports:
       - 2222:22
       - 8006:8006
@@ -29,4 +29,4 @@ services:
     devices:
       - /dev/kvm
       - /dev/net/tun
-      - /dev/ttyACM0
+      # - /dev/ttyACM0
