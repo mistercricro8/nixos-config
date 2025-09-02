@@ -1,44 +1,55 @@
 {
-  "catppuccin.accentColor": "mauve",
-  "editor.semanticHighlighting.enabled": true,
-  "terminal.integrated.minimumContrastRatio": 1,
-  "window.titleBarStyle": "custom",
-  "workbench.colorTheme": "Catppuccin Mocha",
-  "workbench.iconTheme": "catppuccin-mocha",
-  "[jsonc]": {
+  "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "editor.minimap.enabled": false,
-  "explorer.confirmDelete": false,
-  "explorer.confirmDragAndDrop": false,
-  "explorer.confirmPasteNative": false,
-  "editor.fontFamily": "\"JetBrainsMono Nerd Font\"",
-  "git.confirmSync": false,
-  "git.openRepositoryInParentFolders": "always",
-  "[typescriptreact]": {
+  "[dockercompose]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "[css]": {
+  "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "svelte.enable-ts-plugin": true,
-  "[python]": {
-    "editor.defaultFormatter": "charliermarsh.ruff"
-  },
-  "basedpyright.analysis.typeCheckingMode": "standard",
-  "basedpyright.analysis.diagnosticSeverityOverrides": {
-    "reportIncompatibleMethodOverride": "none",
-    "reportAttributeAccessIssue": "none"
-  },
-  "[javascript]": {
+  "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "basedpyright.analysis.diagnosticSeverityOverrides": {
+    "reportAttributeAccessIssue": "none",
+    "reportIncompatibleMethodOverride": "none"
+  },
+  "basedpyright.analysis.inlayHints.variableTypes": false,
+  "basedpyright.analysis.typeCheckingMode": "standard",
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "catppuccin.accentColor": "mauve",
+  "database-client.autoSync": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.fontFamily": "\"JetBrainsMono Nerd Font\"",
+  "editor.minimap.enabled": false,
+  "editor.semanticHighlighting.enabled": true,
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.confirmPasteNative": false,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.openRepositoryInParentFolders": "always",
+  "github.copilot.enable": {
+    "*": true
+  },
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "java.jdt.ls.java.home": "/home/cricro/.jdks/current/lib/openjdk",
+  "javascript.updateImportsOnFileMove.enabled": "always",
   "nix.enableLanguageServer": true,
   "nix.serverPath": "nixd",
   "nix.serverSettings": {
@@ -48,29 +59,18 @@
       }
     }
   },
-  "typescript.updateImportsOnFileMove.enabled": "always",
-  "workbench.sideBar.location": "right",
-  "git.enableSmartCommit": true,
-  "terminal.integrated.fontFamily": "CaskaydiaMono Nerd Font",
-  "terminal.integrated.fontSize": 16,
-  "github.copilot.enable": {
-    "*": true
-  },
+  "powermode.presets": "exploding-rift",
   "python.languageServer": "None",
   "ruff.nativeServer": "on",
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
-  },
-  "[dockercompose]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "basedpyright.analysis.inlayHints.variableTypes": false,
-  "javascript.updateImportsOnFileMove.enabled": "always",
-  "java.jdt.ls.java.home": "/home/cricro/.jdks/current/lib/openjdk",
-  "database-client.autoSync": true,
-  "C_Cpp.autocomplete": "disabled",
-  "C_Cpp.intelliSenseEngine": "disabled",
-  "security.workspace.trust.untrustedFiles": "open",
-  "powermode.presets": "exploding-rift",
-  "github.copilot.nextEditSuggestions.enabled": true
+  "svelte.enable-ts-plugin": true,
+  "terminal.integrated.enableMultiLinePasteWarning": "never",
+  "terminal.integrated.fontFamily": "CaskaydiaMono Nerd Font",
+  "terminal.integrated.fontSize": 16,
+  "terminal.integrated.minimumContrastRatio": 1,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "window.titleBarStyle": "custom",
+  "workbench.colorTheme": "Catppuccin Mocha",
+  "workbench.iconTheme": "catppuccin-mocha",
+  "workbench.sideBar.location": "right",
+  "editor.tabSize": 2
 }
