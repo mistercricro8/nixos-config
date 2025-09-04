@@ -24,5 +24,6 @@
     filezilla
     librewolf
     firefox
+    yazi
   ];
 }

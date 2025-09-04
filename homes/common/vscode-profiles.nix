@@ -79,6 +79,7 @@ in
 {
   programs.vscode.profiles = {
     default.extensions = common-pkgs;
+    default-remote.extensions = remote-pkgs;
     python.extensions = python-pkgs;
     python-remote.extensions = python-pkgs ++ remote-pkgs;
     web.extensions = web-pkgs;

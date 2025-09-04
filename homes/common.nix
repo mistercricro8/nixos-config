@@ -26,7 +26,8 @@ in
   home.packages = with pkgs; [
     # kind of waiting for https://github.com/hyprwm/xdg-desktop-portal-hyprland/pull/308
     # rustdesk-flutter
-    yazi
+
+    colmena
   ];
 
   programs.vscode = {

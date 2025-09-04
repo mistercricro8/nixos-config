@@ -5,6 +5,9 @@
     nixpkgs = {
       url = "github:nixos/nixpkgs/nixos-unstable";
     };
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -28,58 +31,93 @@
       url = "github:winapps-org/winapps";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
     {
       nixpkgs,
       home-manager,
+      sops-nix,
+      flake-utils,
       ...
     }@inputs:
     let
-      system = "x86_64-linux";
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+      # system = "x86_64-linux"; # !!
+      mkHMconfig = homefile: {
+        home-manager = {
+          useGlobalPkgs = true;
+          useUserPackages = true;
+          backupFileExtension = "backup";
+          extraSpecialArgs = { inherit inputs; };
+          users.cricro = homefile;
+        };
+      };
       pkgs = import nixpkgs {
-        inherit system;
         config.allowUnfree = true;
       };
     in
-    {
+    flake-utils.lib.eachSystem systems (system: {
+      devShells.default =
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          };
+        in
+        pkgs.mkShell {
+          packages = with pkgs; [
+            terraform
+            oci-cli
+          ];
+          buildInputs = with pkgs; [ bashInteractive ];
+          shellHook = ''
+            export TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache
+          '';
+        };
+    })
+    // {
       nixosConfigurations = {
         cricro-pc = nixpkgs.lib.nixosSystem {
-          inherit system;
+          system = "x86_64-linux";
           inherit pkgs;
           modules = [
             ./hosts/cricro-pc/configuration.nix
             (import ./homes/cricro-pc/overlays.nix)
+            sops-nix.nixosModules.sops
             home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                backupFileExtension = "backup";
-                extraSpecialArgs = { inherit inputs; };
-                users.cricro = ./homes/cricro-pc/home.nix;
-              };
-            }
+            (mkHMconfig ./homes/cricro-pc/home.nix)
           ];
           specialArgs = { inherit inputs; };
         };
         cricro-laptop = nixpkgs.lib.nixosSystem {
-          inherit system;
+          system = "x86_64-linux";
           inherit pkgs;
           modules = [
             ./hosts/cricro-laptop/configuration.nix
             (import ./homes/cricro-pc/overlays.nix)
+            sops-nix.nixosModules.sops
             home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                backupFileExtension = "backup";
-                extraSpecialArgs = { inherit inputs; };
-                users.cricro = ./homes/cricro-laptop/home.nix;
-              };
-            }
+            (mkHMconfig ./homes/cricro-laptop/home.nix)
+          ];
+          specialArgs = { inherit inputs; };
+        };
+        cricro-vm = nixpkgs.lib.nixosSystem {
+          system = "aarch64-linux";
+          inherit pkgs;
+          modules = [
+            ./hosts/cricro-vm/configuration.nix
+            (import ./homes/cricro-vm/overlays.nix)
+            sops-nix.nixosModules.sops
+            # home-manager.nixosModules.home-manager
+            # (mkHMconfig ./homes/cricro-vm/home.nix)
           ];
           specialArgs = { inherit inputs; };
         };
