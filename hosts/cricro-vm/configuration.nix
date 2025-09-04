@@ -13,6 +13,7 @@
         efiSupport = true;
   };
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.efi.efiSysMountPoint = "/boot/efi";
 
   virtualisation.docker = {
     enable = true;
@@ -43,6 +44,7 @@
     packages = with pkgs; [
       micro
       git
+      jq
     ];
   };
 }
