@@ -50,7 +50,6 @@
         "x86_64-linux"
         "aarch64-linux"
       ];
-      # system = "x86_64-linux"; # !!
       mkHMconfig = homefile: {
         home-manager = {
           useGlobalPkgs = true;
@@ -60,9 +59,13 @@
           users.cricro = homefile;
         };
       };
-      pkgs = import nixpkgs {
-        config.allowUnfree = true;
-      };
+      allPkgs = nixpkgs.lib.genAttrs systems (
+        system:
+        import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        }
+      );
     in
     flake-utils.lib.eachSystem systems (system: {
       devShells.default =
@@ -85,42 +88,57 @@
     })
     // {
       nixosConfigurations = {
-        cricro-pc = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          inherit pkgs;
-          modules = [
-            ./hosts/cricro-pc/configuration.nix
-            (import ./homes/cricro-pc/overlays.nix)
-            sops-nix.nixosModules.sops
-            home-manager.nixosModules.home-manager
-            (mkHMconfig ./homes/cricro-pc/home.nix)
-          ];
-          specialArgs = { inherit inputs; };
-        };
-        cricro-laptop = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          inherit pkgs;
-          modules = [
-            ./hosts/cricro-laptop/configuration.nix
-            (import ./homes/cricro-pc/overlays.nix)
-            sops-nix.nixosModules.sops
-            home-manager.nixosModules.home-manager
-            (mkHMconfig ./homes/cricro-laptop/home.nix)
-          ];
-          specialArgs = { inherit inputs; };
-        };
-        cricro-vm = nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
-          inherit pkgs;
-          modules = [
-            ./hosts/cricro-vm/configuration.nix
-            (import ./homes/cricro-vm/overlays.nix)
-            sops-nix.nixosModules.sops
-            # home-manager.nixosModules.home-manager
-            # (mkHMconfig ./homes/cricro-vm/home.nix)
-          ];
-          specialArgs = { inherit inputs; };
-        };
+        cricro-pc =
+          let
+            system = "x86_64-linux";
+            pkgs = allPkgs.${system};
+          in
+          nixpkgs.lib.nixosSystem {
+            inherit system;
+            inherit pkgs;
+            modules = [
+              ./hosts/cricro-pc/configuration.nix
+              (import ./homes/cricro-pc/overlays.nix)
+              sops-nix.nixosModules.sops
+              home-manager.nixosModules.home-manager
+              (mkHMconfig ./homes/cricro-pc/home.nix)
+            ];
+            specialArgs = { inherit inputs; };
+          };
+        cricro-laptop =
+          let
+            system = "x86_64-linux";
+            pkgs = allPkgs.${system};
+          in
+          nixpkgs.lib.nixosSystem {
+            inherit system;
+            inherit pkgs;
+            modules = [
+              ./hosts/cricro-laptop/configuration.nix
+              (import ./homes/cricro-pc/overlays.nix)
+              sops-nix.nixosModules.sops
+              home-manager.nixosModules.home-manager
+              (mkHMconfig ./homes/cricro-laptop/home.nix)
+            ];
+            specialArgs = { inherit inputs; };
+          };
+        cricro-vm =
+          let
+            system = "aarch64-linux";
+            pkgs = allPkgs.${system};
+          in
+          nixpkgs.lib.nixosSystem {
+            inherit system;
+            inherit pkgs;
+            modules = [
+              ./hosts/cricro-vm/configuration.nix
+              (import ./homes/cricro-vm/overlays.nix)
+              sops-nix.nixosModules.sops
+              # home-manager.nixosModules.home-manager
+              # (mkHMconfig ./homes/cricro-vm/home.nix)
+            ];
+            specialArgs = { inherit inputs; };
+          };
       };
     };
 }

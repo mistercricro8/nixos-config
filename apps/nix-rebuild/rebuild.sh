@@ -11,6 +11,7 @@ args=("$@")
 no_commit=false
 push=false
 update_flake=false
+no_exec_mode=false
 test_mode=false
 
 # ---------------- Parsing ----------------
@@ -27,7 +28,8 @@ for arg in "${args[@]}"; do
             echo "  --no-commit         Skip committing changes to git"
             echo "  --push              Push changes to the remote repository"
             echo "  --update-flake      Update the flake before rebuilding"
-            echo "  --test              Only executes until the summary step"
+            echo "  --no-exec           Only executes until the summary step"
+            echo "  --test              Calls test to nixos-rebuild instead of switch"
             exit 0
             ;;
         --no-commit)
@@ -38,6 +40,9 @@ for arg in "${args[@]}"; do
             ;;
         --update-flake)
             update_flake=true
+            ;;
+        --no-exec)
+            no_exec_mode=true
             ;;
         --test)
             test_mode=true
@@ -86,13 +91,16 @@ fi
 if [[ "$update_flake" == true ]]; then
     echo "  Flake will be updated before rebuilding."
 fi
+if [[ "$test_mode" == true ]]; then
+    echo "  NixOS rebuild will be run in test mode."
+fi
 
 echo
 
 echo -e "Enter to ${RED}proceed${RESET}."
 read -r
 
-if [[ "$test_mode" == true ]]; then
+if [[ "$no_exec_mode" == true ]]; then
     exit 0
 fi
 
@@ -107,7 +115,12 @@ if [[ "$update_flake" == true ]]; then
 fi
 
 echo "Reminder to input the password as nom noms the prompt"
-sudo nixos-rebuild switch --flake "${derivation}" 2>&1 | tee last-rebuild.log | nom
+if [[ "$test_mode" == true ]]; then
+    rebuild_command="test"
+else
+    rebuild_command="switch"
+fi
+sudo nixos-rebuild "${rebuild_command}" --flake "${derivation}" 2>&1 | tee last-rebuild.log | nom
 
 if [ "${PIPESTATUS[0]}" -ne 0 ]; then
     grep --color error last-rebuild.log
@@ -122,12 +135,12 @@ if [[ "$no_commit" == false ]]; then
     gen_date=$(echo "$current_gen" | jq -r '.date')
 
     current="NixOS generation $gen_num ($gen_date): derivation $derivation"
-    
+
     echo
     echo "Enter commit message (description):"
     notify-send -e "Awaiting commit message..."
     read -r commit_message
-    
+
     if [[ -n "$commit_message" ]]; then
         git commit -m "$current" -m "$commit_message"
     else
