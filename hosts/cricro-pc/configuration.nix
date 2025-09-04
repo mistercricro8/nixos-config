@@ -31,10 +31,18 @@ in
 
   # ------------- networking -------------
   networking.hostName = "cricro-pc";
-  networking.interfaces.enp5s0.ipv4.addresses = [{
-    address = "192.168.1.68";
-    prefixLength = 32;
-  }];
+  networking.networkmanager.ensureProfiles.profiles = {
+    "ethernet" = {
+      connection.type = "ethernet";
+      connection.id = "ethernet_1";
+      connection.interface-name = "enp5s0";
+      connection.autoconnect = true;
+      ipv4.method = "manual";
+      ipv4.addresses = "192.168.1.68/32";
+      ipv4.gateway = "192.168.1.1";
+      ipv4.dns = "200.48.225.130";
+    };
+  };
 
   # ------------- users -------------
   programs.fish.enable = true;
