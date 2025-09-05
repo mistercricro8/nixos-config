@@ -7,6 +7,10 @@
     })
   ];
 
+  boot.binfmt.emulatedSystems = [
+    "x86_64-linux"
+  ];
+
   services.vscode-server.enable = true;
 
   boot.tmp.cleanOnBoot = true;
@@ -35,6 +39,35 @@
     "nix-command"
     "flakes"
   ];
+
+  nix.settings.trusted-users = [
+    "nixremote"
+  ];
+
+  users.users.nixremote = {
+    description = "Remote builds user";
+    isNormalUser = true;
+    openssh.authorizedKeys.keys = [
+      # cricro-vm
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKnCUevyXnMK0jLKEEBQYSF5UoCiBQt7WZMbIo9y6/Nc root@instance-01"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKPFlwEmkVmbWX2MTZtgQHQXFHqbIxc5dO4leGX1qFfI cricro@instance-01"
+      # cricro-laptop-linux
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMJyzkR8auawdWuIKq7Yrp0kFz/+nfvDKeli4lF+mgfQ root@cricro-laptop"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIQvMNCGvxpPmwxCBPiOf9o/B5tZymCRBg8Y7wgwsL57 cricro@cricro-laptop"
+      # cricro-pc-windows
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICk894y0LXcl7iDLmaIkEa3SrW9NPoGHDVer+pjDen35 cricro@cricro-pc"
+      # cricro-pc-linux
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKCYtYcsQkILXoEtIUx0U/k5iSOxjmEWXZb4uQBiAZna root@cricro-pc"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINWJOoS+mMH5g17O2uvmD33ZGFIz0fIhyx+8CIGUx8gP cricro@cricro-pc"
+    ];
+    homeMode = "500";
+  };
+
+  nix.settings = {
+    substituters = [ "https://hyprland.cachix.org" ];
+    trusted-substituters = [ "https://hyprland.cachix.org" ];
+    trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
+  };
 
   users.users.cricro = {
         isNormalUser = true;
