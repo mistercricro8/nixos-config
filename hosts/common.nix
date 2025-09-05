@@ -110,6 +110,19 @@ in
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKCYtYcsQkILXoEtIUx0U/k5iSOxjmEWXZb4uQBiAZna root@cricro-pc"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINWJOoS+mMH5g17O2uvmD33ZGFIz0fIhyx+8CIGUx8gP cricro@cricro-pc"
   ];
+  # ------------- remote building -------------
+  nix.buildMachines = [
+    {
+      hostName = "100.64.0.1";
+      sshUser = "nixremote";
+      systems = [ "x86_64-linux" "aarch64-linux" ];
+      protocol = "ssh-ng";
+    }
+  ];
+  nix.distributedBuilds = true;
+  nix.extraOptions = ''
+	  builders-use-substitutes = true
+	'';
 
   # ------------- audio/video stuff -------------
   services.pulseaudio.enable = false;
