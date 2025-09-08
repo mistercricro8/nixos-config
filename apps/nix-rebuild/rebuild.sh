@@ -120,7 +120,7 @@ if [[ "$test_mode" == true ]]; then
 else
     rebuild_command="switch"
 fi
-sudo nixos-rebuild "${rebuild_command}" --flake "${derivation}" 2>&1 | tee last-rebuild.log | nom
+sudo nixos-rebuild "${rebuild_command}" --show-trace --flake "${derivation}" 2>&1 | tee last-rebuild.log | nom
 
 if [ "${PIPESTATUS[0]}" -ne 0 ]; then
     grep --color error last-rebuild.log

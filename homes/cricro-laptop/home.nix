@@ -1,7 +1,12 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  config,
+  rootCfgPath,
+  ...
+}:
 
 let
-  thisHomeDir = "${config.home.homeDirectory}/nixos-config/homes/cricro-laptop";
+  thisHomeDir = config.home.homeDirectory + "/nixos-config/homes/cricro-laptop";
   pathIsDir = path: builtins.pathExists (toString path + "/.");
   mkRecursiveEntries =
     dir: prefix:
@@ -28,6 +33,9 @@ let
           ]
       ) items
     );
+
+  home-file-generators = import (rootCfgPath + "/lib/home-file-generators.nix") { inherit config; };
+  mkRecursiveEntries2 = home-file-generators.mkRecursiveEntries;
 in
 {
   imports = [ ../common.nix ];
@@ -36,7 +44,7 @@ in
   ];
 
   home.file = (
-    builtins.listToAttrs (mkRecursiveEntries ./config "")
+    builtins.listToAttrs (mkRecursiveEntries2 ./config "" thisHomeDir)
     // {
       ".icons".source = "${pkgs.catppuccin-cursors.mochaYellow}";
       ".jdks/current".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.jdk24}";
