@@ -3,3 +3,5 @@
 
 
 terraform
+unsorted
+.sops.yaml

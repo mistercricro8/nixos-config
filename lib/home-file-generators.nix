@@ -1,33 +1,44 @@
+# Generators for home-manager home.file entries
+
 { config, ... }:
 
 let
   utils = import ./utils.nix { };
 in
 rec {
-  mkRecursiveEntries =
-    dir: prefix: configDir:
+
+  # Generate home.file entries for all files in a directory, preserving the directory structure.
+  # dir (path): the current directory to read files recursively from
+  # prefix (str): accumulated prefix, should be "" when called externally
+  # originDir (path): the origin directory from which to create symlinks
+  # outDir (str): the output directory for the generated symlinks
+  # returns: attrset usable directly in home.file
+  mkRecursiveFiles =
+    dir: prefix: originDir: outDir:
     let
       items = builtins.attrNames (builtins.readDir dir);
     in
-    builtins.concatLists (
-      map (
-        name:
-        let
-          fullPath = "${dir}/${name}";
-          relPath = if prefix == "" then name else "${prefix}/${name}";
-        in
-        if utils.isPathDir fullPath then
-          mkRecursiveEntries fullPath relPath configDir
-        else
-          [
-            {
-              name = ".config/${relPath}";
-              value = {
-                source = config.lib.file.mkOutOfStoreSymlink "${configDir}/config/${relPath}";
-              };
-            }
-          ]
-      ) items
+    builtins.listToAttrs (
+      builtins.concatLists (
+        map (
+          name:
+          let
+            fullPath = "${dir}/${name}";
+            relPath = if prefix == "" then name else "${prefix}/${name}";
+          in
+          if utils.isPathDir fullPath then
+            mkRecursiveFiles fullPath relPath originDir outDir
+          else
+            [
+              {
+                name = "${outDir}/${relPath}";
+                value = {
+                  source = config.lib.file.mkOutOfStoreSymlink "${originDir}/config/${relPath}";
+                };
+              }
+            ]
+        ) items
+      )
     );
 
 }

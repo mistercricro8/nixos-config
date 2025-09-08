@@ -6,6 +6,8 @@ pushd "$HOME"/nixos-config &>/dev/null
 RED='\033[0;31m'
 RESET='\033[0m'
 
+AUTOROLLBACK_WAIT_TIME=60
+
 args=("$@")
 
 no_commit=false
@@ -13,6 +15,7 @@ push=false
 update_flake=false
 no_exec_mode=false
 test_mode=false
+autorollback=false
 
 # ---------------- Parsing ----------------
 
@@ -29,6 +32,7 @@ for arg in "${args[@]}"; do
             echo "  --push              Push changes to the remote repository"
             echo "  --update-flake      Update the flake before rebuilding"
             echo "  --no-exec           Only executes until the summary step"
+            echo "  --autorollback      Automatically rollback on failure to remove /tmp/nixos-rebuild-rollback"
             echo "  --test              Calls test to nixos-rebuild instead of switch"
             exit 0
             ;;
@@ -46,6 +50,9 @@ for arg in "${args[@]}"; do
             ;;
         --test)
             test_mode=true
+            ;;
+        --autorollback)
+            autorollback=true
             ;;
         *)
             echo "Unknown option: $arg"
@@ -94,6 +101,9 @@ fi
 if [[ "$test_mode" == true ]]; then
     echo "  NixOS rebuild will be run in test mode."
 fi
+if [[ "$autorollback" == true ]]; then
+    echo "  After the rebuild, manually remove /tmp/nixos-rebuild-rollback to ensure connectivity."
+fi
 
 echo
 
@@ -120,12 +130,38 @@ if [[ "$test_mode" == true ]]; then
 else
     rebuild_command="switch"
 fi
+
 sudo nixos-rebuild "${rebuild_command}" --show-trace --flake "${derivation}" 2>&1 | tee last-rebuild.log | nom
 
 if [ "${PIPESTATUS[0]}" -ne 0 ]; then
     grep --color error last-rebuild.log
     notify-send -e "NixOS rebuild failed." --icon=dialog-error
     exit 1
+fi
+
+if [[ "$autorollback" == true ]]; then
+    touch /tmp/nixos-rebuild-rollback
+    echo "==============================="
+    echo "Autorollback is enabled."
+    echo "Manually remove the file /tmp/nixos-rebuild-rollback"
+    echo "==============================="
+
+    remaining_time=$AUTOROLLBACK_WAIT_TIME
+    will_rollback=true
+    while [[ $remaining_time -gt 0 ]]; do
+        if [[ ! -f /tmp/nixos-rebuild-rollback ]]; then
+            echo "Autorollback cancelled."
+            break
+        fi
+        wall "Rollback in $remaining_time seconds. Remove /tmp/nixos-rebuild-rollback to prevent it."
+        sleep 10
+        ((remaining_time -= 10))
+    done
+    will_rollback=$([[ -f /tmp/nixos-rebuild-rollback ]])
+
+    if [[ $will_rollback == true ]]; then
+        sudo nixos-rebuild rollback --flake "${derivation}"
+    fi
 fi
 
 if [[ "$no_commit" == false ]]; then

@@ -1,4 +1,5 @@
 {
+  rootCfgPath,
   config,
   pkgs,
   ...
@@ -13,9 +14,11 @@ let
   mkImports =
     dicts:
     builtins.concatLists (builtins.map (d: builtins.map (imp: ./${d.folder}/${imp}) d.imports) dicts);
+  import-generators = import (rootCfgPath + "/lib/import-generators.nix") { inherit config; };
+  mkFolderImports = import-generators.mkFolderImports;
 in
 {
-  imports = mkImports import-dicts ++ [
+  imports = mkFolderImports ./common/packages null ++ [
     ./common/vscode-profiles.nix
   ];
 
@@ -26,6 +29,7 @@ in
   home.packages = with pkgs; [
     # kind of waiting for https://github.com/hyprwm/xdg-desktop-portal-hyprland/pull/308
     # rustdesk-flutter
+    bottles
   ];
 
   programs.vscode = {
