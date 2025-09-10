@@ -72,5 +72,8 @@
   "workbench.colorTheme": "Catppuccin Mocha",
   "workbench.iconTheme": "catppuccin-mocha",
   "workbench.sideBar.location": "right",
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "workbench.editorAssociations": {
+    "git-rebase-todo": "default"
+  }
 }

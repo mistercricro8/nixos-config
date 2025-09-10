@@ -27,7 +27,7 @@ rec {
             relPath = if prefix == "" then name else "${prefix}/${name}";
           in
           if utils.isPathDir fullPath then
-            mkRecursiveFiles fullPath relPath originDir outDir
+            builtins.attrValues (builtins.mapAttrs (name: value: { inherit name value; }) (mkRecursiveFiles fullPath relPath originDir outDir))
           else
             [
               {

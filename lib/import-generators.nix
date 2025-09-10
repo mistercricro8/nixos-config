@@ -1,4 +1,4 @@
-# Generators for home-manager import entries
+# Generators for module import entries
 
 { config, ... }:
 
@@ -20,5 +20,5 @@
         else
           builtins.filter (name: builtins.elem name filter) moduleNames;
     in
-    builtins.concatLists (builtins.map (name: dir + "/${name}.nix") filteredNames);
+    builtins.map (name: dir + "/${name}.nix") filteredNames;
 }

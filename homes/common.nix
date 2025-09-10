@@ -18,7 +18,7 @@ let
   mkFolderImports = import-generators.mkFolderImports;
 in
 {
-  imports = mkFolderImports ./common/packages null ++ [
+  imports = (mkFolderImports ./common/packages null) ++ [
     ./common/vscode-profiles.nix
   ];
 
@@ -30,6 +30,7 @@ in
     # kind of waiting for https://github.com/hyprwm/xdg-desktop-portal-hyprland/pull/308
     # rustdesk-flutter
     bottles
+    unityhub
   ];
 
   programs.vscode = {
