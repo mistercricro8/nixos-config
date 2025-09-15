@@ -120,9 +120,7 @@ in
     }
   ];
   nix.distributedBuilds = true;
-  nix.extraOptions = ''
-	  builders-use-substitutes = true
-	'';
+  nix.settings.builders-use-substitutes = true;
 
   # ------------- audio/video stuff -------------
   services.pulseaudio.enable = false;

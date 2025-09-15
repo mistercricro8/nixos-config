@@ -1,6 +1,6 @@
 # Generators for module import entries
 
-{ config, ... }:
+{ ... }:
 
 {
   # Generate a filtered list of imports from a folder of modules.

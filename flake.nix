@@ -12,6 +12,9 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    catppuccin = {
+      url = "github:catppuccin/nix";
+    };
     catppuccin-grub = {
       url = "github:catppuccin/grub";
       flake = false;
@@ -43,6 +46,7 @@
       home-manager,
       sops-nix,
       flake-utils,
+      catppuccin,
       ...
     }@inputs:
     let
@@ -101,10 +105,11 @@
             inherit pkgs;
             modules = [
               ./hosts/cricro-pc/configuration.nix
-              (import ./homes/cricro-pc/overlays.nix)
+              catppuccin.nixosModules.catppuccin
               sops-nix.nixosModules.sops
+              (import ./hosts/modules/overlays/default.nix)
               home-manager.nixosModules.home-manager
-              (mkHMconfig ./homes/cricro-pc/home.nix)
+              (mkHMconfig ./home-manager/per-home/cricro-pc.nix)
             ];
             specialArgs = { inherit inputs; };
           };
@@ -118,10 +123,11 @@
             inherit pkgs;
             modules = [
               ./hosts/cricro-laptop/configuration.nix
-              (import ./homes/cricro-pc/overlays.nix)
+              catppuccin.nixosModules.catppuccin
               sops-nix.nixosModules.sops
+              (import ./hosts/modules/overlays/default.nix)
               home-manager.nixosModules.home-manager
-              (mkHMconfig ./homes/cricro-laptop/home.nix)
+              (mkHMconfig ./home-manager/per-home/cricro-laptop.nix)
             ];
             specialArgs = { inherit inputs; };
           };
@@ -135,10 +141,11 @@
             inherit pkgs;
             modules = [
               ./hosts/cricro-vm/configuration.nix
-              (import ./homes/cricro-vm/overlays.nix)
+              catppuccin.nixosModules.catppuccin
               sops-nix.nixosModules.sops
+              (import ./hosts/modules/overlays/default.nix)
               # home-manager.nixosModules.home-manager
-              # (mkHMconfig ./homes/cricro-vm/home.nix)
+              # (mkHMconfig ./home-manager/per-home/cricro-vm.nix)
             ];
             specialArgs = { inherit inputs; };
           };
