@@ -62,6 +62,7 @@
           extraSpecialArgs = {
             inherit inputs;
             rootCfgPath = ./.;
+            rootCfgPathAbs = "/home/cricro/nixos-config";
           };
           users.cricro = homefile;
         };

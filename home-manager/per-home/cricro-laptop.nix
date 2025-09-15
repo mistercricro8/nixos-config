@@ -2,6 +2,7 @@
   pkgs,
   config,
   rootCfgPath,
+  rootCfgPathAbs,
   ...
 }:
 
@@ -10,7 +11,7 @@ let
   mkRecursiveFiles = home-file-generators.mkRecursiveFiles;
 
   home-manager-modules = rootCfgPath + "/home-manager/modules";
-  config-origin = rootCfgPath + "/home-manager/config-dirs/cricro-laptop";
+  config-origin = rootCfgPathAbs + "/home-manager/config-dirs/cricro-laptop";
 in
 {
   imports = [
@@ -26,7 +27,7 @@ in
   ];
 
   home.file = (
-    (mkRecursiveFiles config-origin "" config-origin ".config")
+    (mkRecursiveFiles ../config-dirs/cricro-laptop config-origin "" ".config")
     // {
       ".icons".source = "${pkgs.catppuccin-cursors.mochaYellow}";
       ".jdks/current".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.jdk24}";
