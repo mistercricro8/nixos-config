@@ -27,7 +27,7 @@ rec {
             relPath = if prefix == "" then name else "${prefix}/${name}";
           in
           if utils.isPathDir fullPath then
-            builtins.attrValues (builtins.mapAttrs (name: value: { inherit name value; }) (mkRecursiveFiles fullPath relPath absOriginDir outDir))
+            builtins.attrValues (builtins.mapAttrs (name: value: { inherit name value; }) (mkRecursiveFiles fullPath absOriginDir relPath outDir))
           else
             [
               {
@@ -42,7 +42,7 @@ rec {
     );
 
   # Generate home.file entries for all selected files in a directory.
-  # originDir (path): the directory to read files from, (has to be an absolute path? TODO check)
+  # originDir (path): the directory to read files from, HAS to be an absolute path due to how symlinks are created
   # selection (list of str): list of file names to include
   # outDir (str): the output directory for the generated symlinks
   # returns: attrset usable directly in home.file
