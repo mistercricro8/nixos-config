@@ -27,16 +27,6 @@ in
     bottles
   ];
 
-  xdg.desktopEntries.Discord = {
-    name = "Discord";
-    genericName = "Wayland";
-    exec = "discord --ozone-platform=wayland";
-    categories = [
-      "Network"
-      "InstantMessaging"
-    ];
-  };
-
   catppuccin.obs = {
     enable = true;
     flavor = catppuccin-consts.flavor;

@@ -71,8 +71,15 @@
       ls = "eza";
       ll = "eza -l";
       l = "eza -la";
+
     };
     functions = {
+      cd = {
+        body = ''
+          echo try using z
+          z $argv
+        '';
+      };
       e = {
         body = ''
           set tmp (mktemp -t "yazi-cwd.XXXXXX")

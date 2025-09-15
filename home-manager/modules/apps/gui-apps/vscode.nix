@@ -80,17 +80,6 @@ in
     mutableExtensionsDir = false;
   };
 
-  xdg.desktopEntries.VSCode = {
-    name = "VSCode";
-    genericName = "Wayland";
-    exec = "code --ozone-platform=wayland";
-    categories = [
-      "TextEditor"
-      "IDE"
-    ];
-    mimeType = [ "text/plain" ];
-  };
-
   home.packages = with pkgs; [
     ruff
     clang-tools
