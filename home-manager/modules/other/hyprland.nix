@@ -13,7 +13,7 @@
     hyprcursor
     swaynotificationcenter
     waybar
-    rofi-wayland
+    rofi
     wl-clipboard
     cliphist
     catppuccin-cursors.mochaYellow

@@ -36,6 +36,7 @@ in
     (home-manager-modules + "/apps/gui-apps/vscode.nix")
     (home-manager-modules + "/apps/gui-apps/winapps.nix")
     (home-manager-modules + "/apps/cli-apps/default.nix")
+    (home-manager-modules + "/apps/cli-apps/x86_64-only.nix")
     (home-manager-modules + "/apps/semester.nix")
     (home-manager-modules + "/fonts/default.nix")
     (home-manager-modules + "/system/default.nix")

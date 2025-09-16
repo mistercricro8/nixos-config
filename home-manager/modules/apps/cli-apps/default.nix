@@ -6,7 +6,6 @@
 }:
 {
   home.packages = with pkgs; [
-    # stablished
     htop
     tree
     btop
@@ -21,16 +20,11 @@
     resvg
     p7zip
     sops
-    #rar
     ffmpeg
     tldr
     hyperfine
     nh
     playerctl
-
-    # testing
-    #wineWowPackages.stable # TODO checking whether bottles depends on these
-    #winetricks
   ];
 
   programs.micro.enable = true;

@@ -144,7 +144,7 @@ if [[ "$local_only" == true ]]; then
 fi
 echo "Will execute: sudo nixos-rebuild ${rebuild_command} ${builders_args[*]} --show-trace --flake ${derivation}"
 echo "Reminder to input the password as nom noms the prompt"
-sudo nixos-rebuild "${rebuild_command}" "${builders_args[@]}" --show-trace --flake "${derivation}" 2>&1 | tee last-rebuild.log
+sudo nixos-rebuild "${rebuild_command}" "${builders_args[@]}" --show-trace --flake "${derivation}" 2>&1 | tee last-rebuild.log | nom
 
 if [ "${PIPESTATUS[0]}" -ne 0 ]; then
     grep --color error last-rebuild.log
