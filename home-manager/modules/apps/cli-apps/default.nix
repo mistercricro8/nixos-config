@@ -21,7 +21,7 @@
     resvg
     p7zip
     sops
-    rar
+    #rar
     ffmpeg
     tldr
     hyperfine
@@ -29,8 +29,8 @@
     playerctl
 
     # testing
-    wineWowPackages.stable # TODO checking whether bottles depends on these
-    winetricks
+    #wineWowPackages.stable # TODO checking whether bottles depends on these
+    #winetricks
   ];
 
   programs.micro.enable = true;
