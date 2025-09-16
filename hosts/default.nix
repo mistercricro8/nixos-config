@@ -50,9 +50,9 @@ in
 
   # ------------- main user -------------
   programs.fish.enable = true;
+  users.defaultUserShell = pkgs.fish;
   users.users.cricro = {
     isNormalUser = true;
-    shell = pkgs.fish;
     description = "Christian";
     extraGroups = [
       "networkmanager"
