@@ -16,6 +16,11 @@
     nix-direnv.enable = true;
   };
 
+  catppuccin = {
+    flavor = "mocha";
+    accent = "yellow";
+  };
+
   programs.zoxide = {
     enable = true;
     enableFishIntegration = true;

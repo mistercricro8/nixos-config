@@ -67,6 +67,27 @@
           users.cricro = homefile;
         };
       };
+      mkNixosConfig =
+        hostname: system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          };
+        in
+        nixpkgs.lib.nixosSystem {
+          inherit system;
+          inherit pkgs;
+          modules = [
+            ./hosts/per-host/${hostname}.nix
+            catppuccin.nixosModules.catppuccin
+            sops-nix.nixosModules.sops
+            (import ./hosts/modules/overlays/default.nix)
+            home-manager.nixosModules.home-manager
+            (mkHMconfig ./home-manager/per-home/${hostname}.nix)
+          ];
+          specialArgs = { inherit inputs; rootCfgPath = ./.; };
+        };
       allPkgs = nixpkgs.lib.genAttrs systems (
         system:
         import nixpkgs {
@@ -96,24 +117,7 @@
     })
     // {
       nixosConfigurations = {
-        cricro-pc =
-          let
-            system = "x86_64-linux";
-            pkgs = allPkgs.${system};
-          in
-          nixpkgs.lib.nixosSystem {
-            inherit system;
-            inherit pkgs;
-            modules = [
-              ./hosts/cricro-pc/configuration.nix
-              catppuccin.nixosModules.catppuccin
-              sops-nix.nixosModules.sops
-              (import ./hosts/modules/overlays/default.nix)
-              home-manager.nixosModules.home-manager
-              (mkHMconfig ./home-manager/per-home/cricro-pc.nix)
-            ];
-            specialArgs = { inherit inputs; };
-          };
+        cricro-pc = mkNixosConfig "cricro-pc" "x86_64-linux";
         cricro-laptop =
           let
             system = "x86_64-linux";
@@ -123,7 +127,7 @@
             inherit system;
             inherit pkgs;
             modules = [
-              ./hosts/cricro-laptop/configuration.nix
+              ./hosts/per-host/cricro-laptop.nix
               catppuccin.nixosModules.catppuccin
               sops-nix.nixosModules.sops
               (import ./hosts/modules/overlays/default.nix)
@@ -141,12 +145,12 @@
             inherit system;
             inherit pkgs;
             modules = [
-              ./hosts/cricro-vm/configuration.nix
+              ./hosts/per-host/cricro-vm.nix
               catppuccin.nixosModules.catppuccin
               sops-nix.nixosModules.sops
               (import ./hosts/modules/overlays/default.nix)
-              # home-manager.nixosModules.home-manager
-              # (mkHMconfig ./home-manager/per-home/cricro-vm.nix)
+              home-manager.nixosModules.home-manager
+              (mkHMconfig ./home-manager/per-home/cricro-vm.nix)
             ];
             specialArgs = { inherit inputs; };
           };

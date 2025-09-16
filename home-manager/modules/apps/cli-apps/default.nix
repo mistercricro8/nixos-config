@@ -1,31 +1,23 @@
 # General CLI apps used often
 
 {
-  rootCfgPath,
   pkgs,
   ...
 }:
-let
-  catppuccin-consts = import (rootCfgPath + "/constants/catppuccin.nix") { };
-in
 {
   home.packages = with pkgs; [
     # stablished
     htop
     tree
-    micro
-    yazi
     btop
     fd
     nix-output-monitor
-    bat
     eza
     du-dust
     jq
     poppler
     ripgrep
     ripdrag
-    fzf
     resvg
     p7zip
     sops
@@ -41,31 +33,29 @@ in
     winetricks
   ];
 
+  programs.micro.enable = true;
   catppuccin.micro = {
     enable = true;
-    flavor = catppuccin-consts.flavor;
     transparent = true;
   };
 
+  programs.yazi.enable = true;
   catppuccin.yazi = {
     enable = true;
-    flavor = catppuccin-consts.flavor;
-    accent = catppuccin-consts.accent;
   };
 
+  programs.btop.enable = true;
   catppuccin.btop = {
     enable = true;
-    flavor = catppuccin-consts.flavor;
   };
 
+  programs.bat.enable = true;
   catppuccin.bat = {
     enable = true;
-    flavor = catppuccin-consts.flavor;
   };
 
+  programs.fzf.enable = true;
   catppuccin.fzf = {
     enable = true;
-    flavor = catppuccin-consts.flavor;
   };
-
 }

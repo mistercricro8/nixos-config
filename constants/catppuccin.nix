@@ -1,5 +1,0 @@
-{ ... }:
-{
-  flavor = "mocha";
-  accent = "yellow";
-}

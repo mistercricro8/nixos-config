@@ -8,12 +8,14 @@ let
   hyprpkgs = inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.system};
 in
 {
+  # ------------- mesa hyprland package -------------
   hardware = {
     graphics = {
       package = hyprpkgs.mesa;
     };
   };
 
+  # ------------- hyprland -------------
   programs.hyprland = {
     enable = true;
     withUWSM = true;
