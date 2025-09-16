@@ -16,6 +16,7 @@ update_flake=false
 no_exec_mode=false
 test_mode=false
 autorollback=false
+local_only=false
 
 # ---------------- Parsing ----------------
 
@@ -33,6 +34,7 @@ for arg in "${args[@]}"; do
             echo "  --update-flake      Update the flake before rebuilding"
             echo "  --no-exec           Only executes until the summary step"
             echo "  --autorollback      Automatically rollback on failure to remove /tmp/nixos-rebuild-rollback"
+            echo "  --local-only        Don't use remote builders"
             echo "  --test              Calls test to nixos-rebuild instead of switch"
             exit 0
             ;;
@@ -53,6 +55,9 @@ for arg in "${args[@]}"; do
             ;;
         --autorollback)
             autorollback=true
+            ;;
+        --local-only)
+            local_only=true
             ;;
         *)
             echo "Unknown option: $arg"
@@ -101,6 +106,9 @@ fi
 if [[ "$test_mode" == true ]]; then
     echo "  NixOS rebuild will be run in test mode."
 fi
+if [[ "$local_only" == true ]]; then
+    echo "  Remote builders will NOT be used."
+fi
 if [[ "$autorollback" == true ]]; then
     echo "  After the rebuild, manually remove /tmp/nixos-rebuild-rollback to ensure connectivity."
 fi
@@ -124,14 +132,19 @@ if [[ "$update_flake" == true ]]; then
     git add .
 fi
 
-echo "Reminder to input the password as nom noms the prompt"
 if [[ "$test_mode" == true ]]; then
     rebuild_command="test"
 else
     rebuild_command="switch"
 fi
 
-sudo nixos-rebuild "${rebuild_command}" --show-trace --flake "${derivation}" 2>&1 | tee last-rebuild.log | nom
+builders_args=()
+if [[ "$local_only" == true ]]; then
+    builders_args=(--builders "")
+fi
+echo "Will execute: sudo nixos-rebuild ${rebuild_command} ${builders_args[*]} --show-trace --flake ${derivation}"
+echo "Reminder to input the password as nom noms the prompt"
+sudo nixos-rebuild "${rebuild_command}" "${builders_args[@]}" --show-trace --flake "${derivation}" 2>&1 | tee last-rebuild.log | nom
 
 if [ "${PIPESTATUS[0]}" -ne 0 ]; then
     grep --color error last-rebuild.log

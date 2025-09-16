@@ -52,6 +52,7 @@ in
   programs.fish.enable = true;
   users.users.cricro = {
     isNormalUser = true;
+    shell = pkgs.fish;
     description = "Christian";
     extraGroups = [
       "networkmanager"
