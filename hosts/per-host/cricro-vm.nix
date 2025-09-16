@@ -22,7 +22,7 @@ in
   # - mount whatever /boot was using to /boot/efi
   # - mkdir /boot
   # thankfully grub is kind enough to accept this
-  boot.efi.efiSysMountPoint = "/boot/efi";
+  boot.loader.efi.efiSysMountPoint = "/boot/efi";
 
   # ------------- time -------------
   time.timeZone = "America/Santiago";
