@@ -51,7 +51,6 @@ in
   # ------------- main user -------------
   programs.fish.enable = true;
   users.users.cricro = {
-    programs.fish.enable = true;
     isNormalUser = true;
     description = "Christian";
     extraGroups = [
@@ -67,10 +66,8 @@ in
 
   # ------------- remote building -------------
   nix.buildMachines = [
-    mkBuildMachine
-    "100.64.0.1"
-    mkBuildMachine
-    "100.64.0.8"
+    (mkBuildMachine "100.64.0.1")
+    (mkBuildMachine "100.64.0.8")
   ];
   nix.distributedBuilds = true;
   nix.settings.builders-use-substitutes = true;
