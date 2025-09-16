@@ -37,6 +37,10 @@ in
     "cricro"
   ];
 
+  # ------------- vscode-server -------------
+  # blehh its always useful
+  services.vscode-server.enable = true;
+
   # ------------- time -------------
   time.hardwareClockInLocalTime = true;
   i18n.defaultLocale = "en_US.UTF-8";

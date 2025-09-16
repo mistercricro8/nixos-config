@@ -15,6 +15,9 @@
     catppuccin = {
       url = "github:catppuccin/nix";
     };
+    vscode-server = {
+      url = "github:nix-community/nixos-vscode-server";
+    };
     catppuccin-grub = {
       url = "github:catppuccin/grub";
       flake = false;
@@ -46,6 +49,7 @@
       home-manager,
       sops-nix,
       flake-utils,
+      vscode-server,
       catppuccin,
       ...
     }@inputs:
@@ -81,20 +85,24 @@
           modules = [
             ./hosts/per-host/${hostname}.nix
             catppuccin.nixosModules.catppuccin
+            vscode-server.nixosModules.default
             sops-nix.nixosModules.sops
             (import ./hosts/modules/overlays/default.nix)
             home-manager.nixosModules.home-manager
             (mkHMconfig ./home-manager/per-home/${hostname}.nix)
           ];
-          specialArgs = { inherit inputs; rootCfgPath = ./.; };
+          specialArgs = {
+            inherit inputs;
+            rootCfgPath = ./.;
+          };
         };
-      allPkgs = nixpkgs.lib.genAttrs systems (
-        system:
-        import nixpkgs {
-          inherit system;
-          config.allowUnfree = true;
-        }
-      );
+      #allPkgs = nixpkgs.lib.genAttrs systems (
+      #  system:
+      #  import nixpkgs {
+      #    inherit system;
+      #    config.allowUnfree = true;
+      #  }
+      #);
     in
     flake-utils.lib.eachSystem systems (system: {
       devShells.default =
@@ -118,42 +126,8 @@
     // {
       nixosConfigurations = {
         cricro-pc = mkNixosConfig "cricro-pc" "x86_64-linux";
-        cricro-laptop =
-          let
-            system = "x86_64-linux";
-            pkgs = allPkgs.${system};
-          in
-          nixpkgs.lib.nixosSystem {
-            inherit system;
-            inherit pkgs;
-            modules = [
-              ./hosts/per-host/cricro-laptop.nix
-              catppuccin.nixosModules.catppuccin
-              sops-nix.nixosModules.sops
-              (import ./hosts/modules/overlays/default.nix)
-              home-manager.nixosModules.home-manager
-              (mkHMconfig ./home-manager/per-home/cricro-laptop.nix)
-            ];
-            specialArgs = { inherit inputs; };
-          };
-        cricro-vm =
-          let
-            system = "aarch64-linux";
-            pkgs = allPkgs.${system};
-          in
-          nixpkgs.lib.nixosSystem {
-            inherit system;
-            inherit pkgs;
-            modules = [
-              ./hosts/per-host/cricro-vm.nix
-              catppuccin.nixosModules.catppuccin
-              sops-nix.nixosModules.sops
-              (import ./hosts/modules/overlays/default.nix)
-              home-manager.nixosModules.home-manager
-              (mkHMconfig ./home-manager/per-home/cricro-vm.nix)
-            ];
-            specialArgs = { inherit inputs; };
-          };
+        cricro-laptop = mkNixosConfig "cricro-laptop" "x86_64-linux";
+        cricro-vm = mkNixosConfig "cricro-vm" "aarch64-linux";
       };
     };
 }

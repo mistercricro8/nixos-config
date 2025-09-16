@@ -1,8 +1,20 @@
 {
+  rootCfgPath,
   ...
 }:
 
+let
+  nixos-modules = rootCfgPath + "/hosts/modules";
+in
 {
+  imports = [
+    ../default.nix
+    (nixos-modules + "/boot/minimal.nix")
+    (nixos-modules + "/builder/default.nix")
+    (nixos-modules + "/hardware/cricro-vm.nix")
+    (nixos-modules + "/overlays/default.nix")
+  ];
+
   # ------------- boot -------------
   # repartitioning provisioned stuff scary
   # TODO update the terraform script to:
