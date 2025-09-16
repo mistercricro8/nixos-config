@@ -173,7 +173,7 @@ if [[ "$autorollback" == true ]]; then
     will_rollback=$([[ -f /tmp/nixos-rebuild-rollback ]])
 
     if [[ $will_rollback == true ]]; then
-        sudo nixos-rebuild rollback --flake "${derivation}"
+        sudo nixos-rebuild switch --rollback --flake "${derivation}"
     fi
 fi
 
