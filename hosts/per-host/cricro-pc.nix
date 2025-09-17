@@ -22,6 +22,9 @@ in
   # ------------- time -------------
   time.timeZone = "America/Lima";
 
+  # ------------- vpn -------------
+  services.tailscale.useRoutingFeatures = "client";
+
   # ------------- system stuff -------------
   system.stateVersion = "24.05";
 

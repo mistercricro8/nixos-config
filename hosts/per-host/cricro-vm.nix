@@ -28,6 +28,9 @@ in
   # ------------- time -------------
   time.timeZone = "America/Santiago";
 
+  # ------------- vpn -------------
+  services.tailscale.useRoutingFeatures = "server";
+
   # ------------- system stuff -------------
   # uhh perhaps look out to keep this synced with the nix infect terraform script
   system.stateVersion = "23.05";

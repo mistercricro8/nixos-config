@@ -23,6 +23,9 @@ in
   # ------------- time -------------
   time.timeZone = "America/Lima";
 
+  # ------------- vpn -------------
+  services.tailscale.useRoutingFeatures = "client";
+
   # ------------- system stuff -------------
   services.logind.settings.Login = {
     HandlePowerKey = "ignore";
