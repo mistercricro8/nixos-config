@@ -20,7 +20,7 @@ let
       ms-azuretools.vscode-docker
     ]
     ++ [
-      (pkgs.forVSCodeVersion "1.103.1").vscode-marketplace-release.github.copilot-chat
+      #(pkgs.forVSCodeVersion "1.103.1").vscode-marketplace-release.github.copilot-chat
     ];
 
   remote-pkgs =

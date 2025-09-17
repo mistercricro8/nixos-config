@@ -45,7 +45,7 @@
   "git.enableSmartCommit": true,
   "git.openRepositoryInParentFolders": "always",
   "github.copilot.enable": {
-    "*": true,
+    "*": true
   },
   "github.copilot.nextEditSuggestions.enabled": true,
   "java.jdt.ls.java.home": "/home/cricro/.jdks/current/lib/openjdk",
@@ -72,5 +72,6 @@
   "workbench.colorTheme": "Catppuccin Mocha",
   "workbench.iconTheme": "catppuccin-mocha",
   "workbench.sideBar.location": "right",
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "remote.SSH.useLocalServer": false
 }

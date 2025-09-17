@@ -13,6 +13,7 @@ in
     (nixos-modules + "/builder/default.nix")
     (nixos-modules + "/hardware/cricro-vm.nix")
     (nixos-modules + "/overlays/default.nix")
+    (nixos-modules + "/vpn/default.nix")
   ];
 
   # ------------- boot -------------

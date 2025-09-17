@@ -75,5 +75,6 @@
   "editor.tabSize": 2,
   "workbench.editorAssociations": {
     "git-rebase-todo": "default"
-  }
+  },
+  "remote.SSH.useLocalServer": false,
 }
