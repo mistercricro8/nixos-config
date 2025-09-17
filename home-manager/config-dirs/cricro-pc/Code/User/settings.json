@@ -73,5 +73,8 @@
   "workbench.iconTheme": "catppuccin-mocha",
   "workbench.sideBar.location": "right",
   "editor.tabSize": 2,
-  "remote.SSH.useLocalServer": false
+  "remote.SSH.useLocalServer": false,
+  "remote.SSH.remotePlatform": {
+    "cricro-vm": "linux"
+  },
 }

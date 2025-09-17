@@ -78,6 +78,6 @@
   },
   "remote.SSH.useLocalServer": false,
   "remote.SSH.remotePlatform": {
-    "dev.mistercricro8.me": "linux"
+    "cricro-vm": "linux"
   },
 }
