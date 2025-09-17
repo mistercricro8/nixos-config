@@ -83,10 +83,10 @@
           inherit system;
           inherit pkgs;
           modules = [
-            ./hosts/per-host/${hostname}.nix
             catppuccin.nixosModules.catppuccin
             vscode-server.nixosModules.default
             sops-nix.nixosModules.sops
+            ./hosts/per-host/${hostname}.nix
             (import ./hosts/modules/overlays/default.nix)
             home-manager.nixosModules.home-manager
             (mkHMconfig ./home-manager/per-home/${hostname}.nix)

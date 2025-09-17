@@ -77,4 +77,7 @@
     "git-rebase-todo": "default"
   },
   "remote.SSH.useLocalServer": false,
+  "remote.SSH.remotePlatform": {
+    "dev.mistercricro8.me": "linux"
+  },
 }
