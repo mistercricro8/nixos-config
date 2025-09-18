@@ -26,6 +26,9 @@ in
   # ------------- vpn -------------
   services.tailscale.useRoutingFeatures = "client";
 
+  # ------------- docker -------------
+  virtualisation.docker.enableOnBoot = false;
+
   # ------------- system stuff -------------
   services.logind.settings.Login = {
     HandlePowerKey = "ignore";

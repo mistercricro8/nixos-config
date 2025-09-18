@@ -31,6 +31,9 @@ in
   # ------------- networking -------------
   networking.hostName = "cricro-pc";
 
+  # ------------- docker -------------
+  virtualisation.docker.enableOnBoot = false;
+
   # ------------- other users -------------
   users.users.LaEsquina = {
     isNormalUser = true;

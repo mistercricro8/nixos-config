@@ -31,6 +31,11 @@ in
   # ------------- vpn -------------
   services.tailscale.useRoutingFeatures = "server";
 
+  # ------------- docker -------------
+  virtualisation.docker.daemon.settings = {
+    data-root = "/mnt/expanded/docker";
+  };
+
   # ------------- system stuff -------------
   # uhh perhaps look out to keep this synced with the nix infect terraform script
   system.stateVersion = "23.05";
