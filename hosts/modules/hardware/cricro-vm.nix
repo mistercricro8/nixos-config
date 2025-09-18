@@ -23,7 +23,7 @@
       fsType = "vfat";
     };
 
-  fileSystems."/home/cricro/store" =
+  fileSystems."/mnt/expanded" =
     { device = "/dev/disk/by-uuid/da7b3cb6-74a3-4867-96a8-1bbebb546a6f";
       fsType = "ext4";
     };
