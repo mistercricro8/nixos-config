@@ -52,7 +52,7 @@
     enable = true;
     extraConfig = {
       init.defaultBranch = "main";
-      core.editor = "code --wait";
+      # core.editor = "code --wait";
     };
   };
 
@@ -60,6 +60,12 @@
 
   programs.fish = {
     enable = true;
+    plugins = [
+      {
+        name = "done";
+        src = pkgs.fishPlugins.done;
+      }
+    ];
     shellAliases = {
       code = "code --ozone-platform=wayland";
       ccode = "code --ozone-platform=wayland . && exit";
@@ -76,7 +82,6 @@
       ls = "eza";
       ll = "eza -l";
       l = "eza -la";
-
     };
     functions = {
       cd = {
@@ -96,6 +101,10 @@
         '';
       };
     };
+    shellInit = ''
+      set -U __fish_greeting 
+      set -U __done_kitty_remote_control 1
+    '';
   };
 
   home.sessionVariables = {
@@ -103,6 +112,7 @@
     JAVA_HOME = "${pkgs.jdk}";
     GOROOT = "${pkgs.go}/lib/go";
     PATH = "$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin";
+    EDITOR = "code --wait";
   };
 
   programs.home-manager.enable = true;

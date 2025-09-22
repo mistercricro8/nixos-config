@@ -45,7 +45,11 @@
   "git.enableSmartCommit": true,
   "git.openRepositoryInParentFolders": "always",
   "github.copilot.enable": {
-    "*": true
+    "*": true,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false,
+    "yaml": false
   },
   "github.copilot.nextEditSuggestions.enabled": true,
   "java.jdt.ls.java.home": "/home/cricro/.jdks/current/lib/openjdk",
@@ -80,4 +84,6 @@
   "remote.SSH.remotePlatform": {
     "cricro-vm": "linux"
   },
+  "gitlens.ai.model": "vscode",
+  "gitlens.ai.vscode.model": "copilot:gpt-4.1",
 }
