@@ -1,5 +1,12 @@
 [Default Applications]
-application/pdf=okular.desktop
+application/pdf=sioyek.desktop
+image/jpeg=imv.desktop
+image/png=imv.desktop
+image/gif=imv.desktop
+image/bmp=imv.desktop
+image/tiff=imv.desktop
+image/x-icon=imv.desktop
+image/svg+xml=imv.desktop
 x-scheme-handler/http=firefox.desktop
 x-scheme-handler/https=firefox.desktop
 x-scheme-handler/chrome=firefox.desktop

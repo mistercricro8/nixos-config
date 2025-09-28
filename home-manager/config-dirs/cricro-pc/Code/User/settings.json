@@ -45,7 +45,10 @@
   "git.enableSmartCommit": true,
   "git.openRepositoryInParentFolders": "always",
   "github.copilot.enable": {
-    "*": true
+    "*": true,
+    "plaintext": true,
+    "markdown": false,
+    "scminput": false
   },
   "github.copilot.nextEditSuggestions.enabled": true,
   "java.jdt.ls.java.home": "/home/cricro/.jdks/current/lib/openjdk",

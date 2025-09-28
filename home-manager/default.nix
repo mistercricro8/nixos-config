@@ -28,16 +28,6 @@
 
   programs.starship.enable = true;
 
-  programs.mpv = {
-    enable = true;
-    package = pkgs.mpv-unwrapped.wrapper {
-      mpv = pkgs.mpv-unwrapped;
-      scripts = with pkgs.mpvScripts; [
-        mpris
-      ];
-    };
-  };
-
   programs.gh = {
     enable = true;
     gitCredentialHelper = {
@@ -56,7 +46,25 @@
     };
   };
 
+  programs.micro.enable = true;
+  catppuccin.micro = {
+    enable = true;
+    transparent = true;
+  };
+
+  programs.yazi.enable = true;
+  catppuccin.yazi.enable = true;
+
+  programs.bat.enable = true;
+  catppuccin.bat.enable = true;
+
   services.gnome-keyring.enable = true;
+
+  programs.atuin = {
+    enable = true;
+    enableFishIntegration = true;
+  };
+  catppuccin.atuin.enable = true;
 
   programs.fish = {
     enable = true;
@@ -106,6 +114,7 @@
       set -U __done_kitty_remote_control 1
     '';
   };
+  catppuccin.fish.enable = true;
 
   home.sessionVariables = {
     NIXOS_OZONE_WL = "1";
