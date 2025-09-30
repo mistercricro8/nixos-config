@@ -80,7 +80,6 @@ in
   # ------------- privileged programs -------------
   services.locate.enable = true;
   environment.systemPackages = with pkgs; [
-    kitty
     gparted
   ];
 

@@ -16,8 +16,7 @@
     rnote
     nwg-displays
     audio-recorder
-
-    # testing
+    kitty
     bottles
   ];
 

@@ -19,6 +19,7 @@ let
     # TODO fill this one in
     # android (ugh)
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIATB/aYqhhK/3O4G0NXvlySGDQudDWRUUO/QEbj6rUy5 u0_a361@localhost"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAwZZhjpbVwnQRKzTe9ai1sOa+Vi+91pK4VawPmBstxF u0_a253@localhost"
   ];
   # all the other keys yay yippee
   other-keys = [

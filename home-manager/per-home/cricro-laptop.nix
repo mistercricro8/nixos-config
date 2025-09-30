@@ -23,6 +23,7 @@ in
     (home-manager-modules + "/apps/semester.nix")
     (home-manager-modules + "/fonts/default.nix")
     (home-manager-modules + "/system/default.nix")
+    (home-manager-modules + "/system/for-laptops.nix")
     (home-manager-modules + "/other/hyprland.nix") # TODO rename the 'other' module :sob:
     (home-manager-modules + "/per-home/cricro-laptop.nix")
   ];

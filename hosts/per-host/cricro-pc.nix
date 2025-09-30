@@ -30,6 +30,7 @@ in
 
   # ------------- networking -------------
   networking.hostName = "cricro-pc";
+  networking.interfaces.enp5s0.wakeOnLan.enable = true;
 
   # ------------- docker -------------
   virtualisation.docker.enableOnBoot = false;

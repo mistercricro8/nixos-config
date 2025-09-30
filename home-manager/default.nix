@@ -2,14 +2,28 @@
 {
   pkgs,
   inputs,
+  #rootCfgPath,
   ...
 }:
 {
-  imports = [ inputs.catppuccin.homeModules.catppuccin ];
+  imports = [
+    inputs.catppuccin.homeModules.catppuccin
+    inputs.sops-nix.homeManagerModules.sops
+  ];
 
   home.username = "cricro";
   home.homeDirectory = "/home/cricro";
   home.stateVersion = "24.11";
+
+  #sops = {
+  #  age.keyFile = "/home/cricro/.config/sops/age/keys.txt";
+  #  secrets = {
+  #    kitty-rc-key = {
+  #      sopsFile = rootCfgPath + "/secrets/local-keys.yaml";
+  #      format = "yaml";
+  #    };
+  #  };
+  #};
 
   programs.direnv = {
     enable = true;
@@ -110,8 +124,7 @@
       };
     };
     shellInit = ''
-      set -U __fish_greeting 
-      set -U __done_kitty_remote_control 1
+      set -U __fish_greeting ""
     '';
   };
   catppuccin.fish.enable = true;
