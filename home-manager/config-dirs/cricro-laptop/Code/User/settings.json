@@ -46,7 +46,7 @@
   "git.openRepositoryInParentFolders": "always",
   "github.copilot.enable": {
     "*": true,
-    "plaintext": false,
+    "plaintext": true,
     "markdown": false,
     "scminput": false,
     "yaml": false
@@ -86,4 +86,5 @@
   },
   "gitlens.ai.model": "vscode",
   "gitlens.ai.vscode.model": "copilot:gpt-4.1",
+  "terminal.integrated.stickyScroll.enabled": false,
 }
