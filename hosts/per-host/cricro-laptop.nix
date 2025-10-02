@@ -11,7 +11,7 @@ in
     ../default.nix
     (nixos-modules + "/boot/default.nix")
     (nixos-modules + "/desktops/hyprland.nix")
-    (nixos-modules + "/desktops/sddm.nix")
+    (nixos-modules + "/desktops/kde.nix")
     (nixos-modules + "/hardware/cricro-laptop.nix")
     (nixos-modules + "/overlays/default.nix")
     (nixos-modules + "/peripherals/default.nix")

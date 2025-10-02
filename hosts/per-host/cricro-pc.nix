@@ -12,7 +12,7 @@ in
     (nixos-modules + "/boot/default.nix")
     (nixos-modules + "/builder/default.nix")
     (nixos-modules + "/desktops/hyprland.nix")
-    (nixos-modules + "/desktops/sddm.nix")
+    (nixos-modules + "/desktops/kde.nix")
     (nixos-modules + "/hardware/cricro-pc.nix")
     (nixos-modules + "/overlays/default.nix")
     (nixos-modules + "/peripherals/default.nix")
