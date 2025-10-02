@@ -16,7 +16,7 @@ let
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKPFlwEmkVmbWX2MTZtgQHQXFHqbIxc5dO4leGX1qFfI cricro@instance-01"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIQvMNCGvxpPmwxCBPiOf9o/B5tZymCRBg8Y7wgwsL57 cricro@cricro-laptop"
     # windows
-    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMhKGamcAqDuwcnGr/edN8cGfzgsWoO+SZnT6l3tVh1F cricro@cricro-pc
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMhKGamcAqDuwcnGr/edN8cGfzgsWoO+SZnT6l3tVh1F cricro@cricro-pc"
     # android (ugh)
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIATB/aYqhhK/3O4G0NXvlySGDQudDWRUUO/QEbj6rUy5 u0_a361@localhost"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAwZZhjpbVwnQRKzTe9ai1sOa+Vi+91pK4VawPmBstxF u0_a253@localhost"
