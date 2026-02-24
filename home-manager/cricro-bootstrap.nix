@@ -13,6 +13,7 @@
   };
 
   programs.yazi.enable = true;
+  programs.yazi.shellWrapperName = "y";
   services.gnome-keyring.enable = true;
 
   home.packages = with pkgs; [

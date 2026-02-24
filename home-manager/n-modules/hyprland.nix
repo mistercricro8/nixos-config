@@ -145,7 +145,7 @@ in
         ))
       ];
 
-      programs.dankMaterialShell = lib.mkIf ext.dms.enable {
+      programs.dank-material-shell = lib.mkIf ext.dms.enable {
         enable = true;
 
         systemd = {

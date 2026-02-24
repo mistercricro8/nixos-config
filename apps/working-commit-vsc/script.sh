@@ -14,7 +14,7 @@ exprs=(
   "extensions.vscode-marketplace-release.bbenoist.doxygen"
 )
 
-commits=$(gh search commits action --sort author-date -R nix-community/nix-vscode-extensions --json sha)
+commits=$(gh api repos/nix-community/nix-vscode-extensions/commits)
 
 for commit in $(echo "$commits" | jq -r '.[].sha'); do
   echo "----------------------------------------------------------------"

@@ -9,7 +9,7 @@
 }:
 let
   split-monitor-workspaces-hypr =
-    inputs.split-monitor-workspaces.packages.${pkgs.system}.split-monitor-workspaces;
+    inputs.split-monitor-workspaces.packages.${pkgs.stdenv.hostPlatform.system}.split-monitor-workspaces;
 
   storeDir = config.home.homeDirectory + "/store";
   storeDirs = [

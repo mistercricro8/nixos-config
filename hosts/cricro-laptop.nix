@@ -58,7 +58,7 @@ in
 
   # ------------- access point -------------
   environment.systemPackages = with pkgs; [
-    wireshark-qt
+    wireshark
     linux-wifi-hotspot
   ];
 

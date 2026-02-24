@@ -8,7 +8,7 @@
 
 let
   split-monitor-workspaces-hypr =
-    inputs.split-monitor-workspaces.packages.${pkgs.system}.split-monitor-workspaces;
+    inputs.split-monitor-workspaces.packages.${pkgs.stdenv.hostPlatform.system}.split-monitor-workspaces;
 
   home-manager-modules = rootCfgPath + "/home-manager/modules";
 in

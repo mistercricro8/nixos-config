@@ -7,7 +7,7 @@
 {
   imports = [
     inputs.catppuccin.homeModules.catppuccin
-    inputs.dms.homeModules.dankMaterialShell.default
+    inputs.dms.homeModules.dank-material-shell
   ];
 
   home.username = "cricro";
@@ -61,6 +61,7 @@
   };
 
   programs.yazi.enable = true;
+  programs.yazi.shellWrapperName = "y";
   catppuccin.yazi.enable = true;
 
   programs.bat.enable = true;

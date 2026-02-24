@@ -7,7 +7,6 @@
 {
   home.packages = with pkgs; [
     rar
-    wineWowPackages.stable
-    winetricks
+    wineWow64Packages.staging
   ];
 }

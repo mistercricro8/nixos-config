@@ -5,7 +5,7 @@
 }:
 
 let
-  hyprpkgs = inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.system};
+  hyprpkgs = inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system};
 in
 {
   # ------------- mesa hyprland package -------------
@@ -19,8 +19,9 @@ in
   programs.hyprland = {
     enable = true;
     withUWSM = true;
-    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
-    portalPackage = inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland;
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    portalPackage =
+      inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
     xwayland.enable = true;
   };
 
