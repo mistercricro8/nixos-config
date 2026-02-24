@@ -1,0 +1,536 @@
+@import "theme.css";
+
+/* ───────────────────────────────────────────────────────────────┤ global ├───
+*/
+* {
+  min-height: 0;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ──────────────────────────────────────────────────────────┤ drop shadow ├───
+*/
+window#waybar {
+  background: @shadow;
+}
+
+/* ───────────────────────────────────────────────────────────┤ background ├───
+*/
+window#waybar > box {
+  background: @main-bg;
+  margin: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────────┤ tooltips ├───
+*/
+tooltip {
+  background: @main-bg;
+  border: 1.5px solid @main-br;
+  border-radius: 8px;
+}
+
+tooltip label {
+  color: @main-fg;
+  margin: -1.5px 3px;
+}
+
+/* ──────────────────────────────────────────────────────────────┤ general ├───
+*/
+#custom-ws,
+#workspaces,
+#window,
+#custom-temperature,
+#memory,
+#cpu,
+#idle_inhibitor,
+#clock,
+#custom-wifi,
+#bluetooth,
+#custom-update,
+#mpris,
+#pulseaudio,
+#backlight,
+#battery,
+#custom-vpn,
+#custom-notifications,
+#custom-power {
+  opacity: 1;
+  padding: 0 4px;
+}
+
+#custom-leftworkspace,
+#custom-lefttemp,
+#custom-tempmemory,
+#custom-memorycpu,
+#custom-leftdistro,
+#custom-leftaudio,
+#custom-audiolang,
+#custom-langnotif,
+#custom-notifbacklight,
+#custom-backlightbattery,
+#custom-batterypower {
+  margin-bottom: 0;
+  text-shadow: -2px 0 2px rgba(0, 0, 0, 0.5);
+}
+
+#custom-workspaceright,
+#custom-distroright,
+#custom-timedate,
+#custom-datewifi,
+#custom-wifivpn,
+#custom-right5 {
+  margin-bottom: 0;
+  padding-right: 3px;
+  text-shadow: 2px 0 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ──────────────────────────────────────────────────────────┤ window icon ├───
+#custom-ws {
+  background: @main-bg;
+}
+
+#custom-ws:hover {
+  color: @hover-fg;
+}
+*/
+
+/* ───────────────────────────────────────────────────────────┤ workspaces ├───
+*/
+#custom-leftworkspace {
+  color: @rosewater;
+  background: @main-bg;
+  margin-bottom: 0;
+  padding-left: 2px;
+}
+
+#workspaces {
+  background: @rosewater;
+}
+
+#workspaces button {
+  color: @overlay0;
+  border-radius: 8px;
+  box-shadow: none;
+  margin: 2px 0;
+  padding: 0 2px;
+  transition: none;
+}
+
+#workspaces button:hover {
+  color: @surface2;
+  background: @rosewater;
+  text-shadow: none;
+}
+
+#workspaces button.active {
+  color: @base;
+}
+
+#custom-workspaceright {
+  color: @rosewater;
+  background: @main-bg;
+  text-shadow: 3px 0 2px rgba(0, 0, 0, 0.4);
+  margin-bottom: 0;
+}
+
+/* ──────────────────────────────────────────────────────────┤ window ├───
+*/
+#window {
+  padding-left: 9px;
+  padding-right: 3px;
+}
+
+/* ──────────────────────────────────────────────────────────┤ temperature ├───
+#custom-paddc {
+  padding-right: 22px;
+}
+*/
+
+#custom-lefttemp {
+  color: @blue;
+  background: @main-bg;
+  padding-left: 3px;
+}
+
+#custom-temperature {
+  background: @blue;
+  color: @base;
+  padding: 0 0 0 1px;
+}
+
+/* ───────────────────────────────────────────────────────────────┤ memory ├───
+*/
+#custom-tempmemory {
+  color: @sapphire;
+  background: @blue;
+  padding-left: 3px;
+}
+
+#memory {
+  background: @sapphire;
+  color: @base;
+  padding: 0 0 0 1px;
+}
+
+#memory.warning {
+  color: @yellow;
+}
+
+#memory.critical {
+  color: @red;
+}
+
+/* ──────────────────────────────────────────────────────────────────┤ cpu ├───
+*/
+#custom-memorycpu {
+  color: @sky;
+  background: @sapphire;
+  padding-left: 3px;
+}
+
+#cpu {
+  color: @base;
+  background: @sky;
+}
+
+#custom-cpuright {
+  color: @sky;
+  margin-bottom: -1px;
+}
+
+/* ──────────────────────────────────────────────────────────┤ distro icon ├───
+*/
+#custom-leftdistro {
+  color: @teal;
+  background: @main-bg;
+  text-shadow: none;
+  margin-bottom: -2px;
+  padding-left: 3px;
+}
+
+#custom-distro {
+  color: @base;
+  background: @teal;
+  margin: 0 -1px -2px 0;
+  padding: 0 0 0 3px;
+}
+
+#custom-distroright {
+  color: @teal;
+  background: @main-bg;
+  text-shadow: none;
+  margin-bottom: -2px;
+}
+
+/* ─────────────────────────────────────────────────────────────────┤ time ├───
+*/
+#custom-leftidle {
+  color: @sky;
+  margin-bottom: -1px;
+}
+
+#idle_inhibitor {
+  background: @sky;
+  padding: 0 0 0 7px;
+  color: @base;
+}
+
+#idle_inhibitor:hover {
+  color: @surface2;
+}
+
+#clock.time {
+  background: @sky;
+  margin-left: -2px;
+  padding: 0 3px 0 0;
+  color: @base;
+}
+
+/* ─────────────────────────────────────────────────────────────────┤ date ├───
+*/
+#custom-timedate {
+  color: @sky;
+  background: @sapphire;
+}
+
+#clock.date {
+  background: @sapphire;
+  color: @base;
+}
+
+#clock.date:hover {
+  color: @surface2;
+}
+
+/* ────────────────────────────────────────────────────────────────┤ wi-fi ├───
+*/
+#custom-datewifi {
+  color: @sapphire;
+  background: @blue;
+}
+
+#custom-wifi {
+  background: @blue;
+  color: @base;
+  padding: 0 8px 0 5px;
+}
+
+#custom-wifi:hover {
+  color: @surface2;
+}
+
+/* ────────────────────────────────────────────────────────────┤ bluetooth ├───
+  #bluetooth {
+  background: @tray;
+  padding-right: 5px;
+}
+
+#bluetooth:hover {
+  color: @hover-fg;
+  }
+  */
+
+/* ────────────────────────────────────────────────────────┤ vpn ├───
+  */
+#custom-wifivpn {
+  color: @blue;
+  background: @lavender;
+}
+
+#custom-vpn {
+  color: @base;
+  background: @lavender;
+  padding-right: 5px;
+}
+
+#custom-vpn:hover {
+  color: @surface2;
+}
+
+#custom-vpnright {
+  color: @lavender;
+  background: @main-bg;
+}
+
+/* ────────────────────────────────────────────────────────┤ system update ├───
+#custom-update {
+  padding-right: 8px;
+  background: @tray;
+}
+
+#custom-update:hover {
+  color: @hover-fg;
+}
+
+#custom-right5 {
+  color: @tray;
+  background: @main-bg;
+}
+*/
+
+/* ───────────────────────────────────────────────────────────┤ media info ├───
+*/
+#mpris {
+  background: @main-bg;
+  padding: 0 9px 0;
+}
+
+#mpris:hover {
+  color: @hover-fg;
+}
+
+/* ────────────────────────────────────────────────────────┤ output device ├───
+*/
+#custom-leftaudio {
+  color: @maroon;
+  background: @main-bg;
+}
+
+#pulseaudio {
+  color: @base;
+  background: @maroon;
+  padding: 0 2px 0 0;
+}
+
+#pulseaudio:hover {
+  color: @surface2;
+}
+
+/* ───────────────────────────────────────────────────────────┤ language ├───
+*/
+#custom-audiolang {
+  color: @red;
+  background: @maroon;
+  padding-left: 2px;
+}
+
+#language {
+  color: @base;
+  background: @red;
+  padding: 0 6px 0 4px;
+}
+
+/* ─────────────────────────────────────────────────────────┤ notifications ├───
+*/
+#custom-langnotif {
+  color: @mauve;
+  background: @red;
+}
+
+#custom-notifications {
+  color: @base;
+  padding: 0 9px 0 6px;
+  background: @mauve;
+}
+
+#custom-notifications:hover {
+  color: @surface2;
+}
+
+/* ───────────────────────────────────────────────────────────┤ brightness ├───
+*/
+#custom-notifbacklight {
+  color: @pink;
+  background: @mauve;
+}
+
+#backlight {
+  background: @pink;
+  color: @base;
+}
+
+/* ──────────────────────────────────────────────────────────────┤ battery ├───
+*/
+#custom-backlightbattery {
+  color: @flamingo;
+  background: @pink;
+  padding-left: 2px;
+}
+
+#battery {
+  color: @base;
+  background: @flamingo;
+}
+
+#battery.charging {
+  color: @base;
+}
+
+#battery.warning {
+  color: @base;
+}
+
+#battery.critical {
+  color: @base;
+}
+
+/* ─────────────────────────────────────────────────────────┤ power button ├───
+*/
+
+#custom-batterypower {
+  color: @rosewater;
+  background: @flamingo;
+  padding-left: 2px;
+}
+
+#custom-power {
+  color: @base;
+  background: @rosewater;
+  padding: 0 3px 0 9px;
+}
+
+#custom-powerright {
+  color: @rosewater;
+  background: @main-bg;
+  padding-right: 2px;
+}
+
+#custom-power:hover {
+  color: @surface2;
+}
+
+/* ───────────────────────────────────────────────────────────┤ font sizes ├───
+*/
+/*
+  NOTE: Be careful when changing font sizes, as they can affect alignment.
+
+  Try adjusting whole numbers first, then refine with decimals.
+
+  If you increase or decrease a value, make the same change to all properties
+  in this section to keep the layout consistent.
+*/
+
+* {
+  font-family: "JetBrainsMono Nerd Font";
+  font-size: 14px;
+  font-weight: bold;
+}
+
+tooltip label,
+#window label,
+#mpris {
+  font-weight: normal;
+}
+
+/* ──────────────────────────────────────────────────┤ left & right arrows ├───
+*/
+#custom-leftworkspace,
+#custom-workspaceright,
+#custom-lefttemp,
+#custom-tempmemory,
+#custom-memorycpu,
+#custom-leftdistro,
+#custom-distroright,
+#custom-timedate,
+#custom-datewifi,
+#custom-wifivpn,
+#custom-vpnright,
+#custom-leftaudio,
+#custom-audiolang,
+#custom-langnotif,
+#custom-notifbacklight,
+#custom-backlightbattery,
+#custom-batterypower,
+#custom-powerright {
+  font-size: 20px;
+}
+
+/* ─────────────────────────────────────────────────┤ left & right inverse ├───
+*/
+#custom-cpuright,
+#custom-leftidle {
+  font-size: 20.5px;
+}
+
+/* ──────────────────────────────────────────────────────────┤ distro icon ├───
+*/
+#custom-distro {
+  font-size: 18px;
+}
+
+#custom-leftdistro,
+#custom-distroright {
+  font-size: 21px;
+}
+
+/*
+  Adjust these properties as well to keep the design consistent.
+*/
+
+/* ───────────────────────────────────────────────────────────┤ workspaces ├───
+*/
+#workspaces button {
+  border-radius: 8px;
+  padding: 0 4px;
+}
+
+#workspaces button.active {
+  padding: 0 6px;
+}
+
+/* ───────────────────────────────────────────────────────────┤ power button ├───
+*/
+#custom-power {
+  font-size: 16px;
+}

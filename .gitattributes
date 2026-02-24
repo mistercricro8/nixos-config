@@ -1,0 +1,1 @@
+lib/private.nix filter=git-crypt diff=git-crypt

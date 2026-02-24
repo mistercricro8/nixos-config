@@ -1,0 +1,64 @@
+[
+  {
+    "command": "-lazygit.openLazygit",
+    "key": "ctrl+g g"
+  },
+  {
+    "command": "-quickInput.nextSeparator",
+    "key": "ctrl+alt+down",
+    "when": "inQuickInput && quickInputType == 'quickPick'"
+  },
+  {
+    "command": "-quickInput.previousSeparator",
+    "key": "ctrl+alt+up",
+    "when": "inQuickInput && quickInputType == 'quickPick'"
+  },
+  {
+    "command": "-workbench.action.focusAboveGroup",
+    "key": "ctrl+k ctrl+up"
+  },
+  {
+    "command": "-workbench.action.focusBelowGroup",
+    "key": "ctrl+k ctrl+down"
+  },
+  {
+    "command": "-workbench.action.focusLeftGroup",
+    "key": "ctrl+k ctrl+left"
+  },
+  {
+    "command": "-workbench.action.focusRightGroup",
+    "key": "ctrl+k ctrl+right"
+  },
+  {
+    "command": "-workbench.action.moveEditorToNextGroup",
+    "key": "ctrl+alt+right"
+  },
+  {
+    "command": "-workbench.action.moveEditorToPreviousGroup",
+    "key": "ctrl+alt+left"
+  },
+  {
+    "command": "lazygit.openLazygit",
+    "key": "ctrl+shift+g space"
+  },
+  {
+    "command": "workbench.action.focusAboveGroup",
+    "key": "ctrl+alt+up"
+  },
+  {
+    "command": "workbench.action.focusBelowGroup",
+    "key": "ctrl+alt+down"
+  },
+  {
+    "command": "workbench.action.focusLeftGroup",
+    "key": "ctrl+alt+left"
+  },
+  {
+    "command": "workbench.action.focusRightGroup",
+    "key": "ctrl+alt+right"
+  },
+  {
+    "command": "workbench.action.terminal.toggleTerminal",
+    "key": "ctrl+[Semicolon]"
+  }
+]

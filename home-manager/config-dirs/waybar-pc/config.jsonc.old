@@ -1,0 +1,84 @@
+{
+  "position": "top",
+  "layer": "top",
+  "modules-left": [
+    "hyprland/window"
+  ],
+  "modules-center": ["hyprland/workspaces", "hyprland/submap"],
+  "modules-right": [
+    "hyprland/language",
+    "network",
+    "pulseaudio",
+    "clock",
+    "custom/vpn",
+    "custom/notifications"
+  ],
+  "hyprland/window": {
+    "format": "<span>󰈙 </span>{initialTitle}",
+    "max-length": 60
+  },
+  "hyprland/submap": {
+    "format": "({})"
+  },
+  "hyprland/language": {
+    "format": "<span>  </span>{}",
+    "format-es": "ES",
+    "format-pt": "PT"
+  },
+  "custom/notifications": {
+    "tooltip": false,
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "󰂚<span foreground='red'><sup></sup></span>",
+      "none": "󰂚",
+      "dnd-notification": "󰂛<span foreground='red'><sup></sup></span>",
+      "dnd-none": "󰂛",
+      "inhibited-notification": "󰂚<span foreground='red'><sup></sup></span>",
+      "inhibited-none": "󰂚",
+      "dnd-inhibited-notification": "󰂛<span foreground='red'><sup></sup></span>",
+      "dnd-inhibited-none": "󰂛"
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
+  },
+  "custom/vpn": {
+    "interval": 10,
+    "tooltip": false,
+    "signal": 1,
+    "format": "{icon}",
+    "format-icons": {
+      "Running": "<span>󱚽 </span>",
+      "Stopped": "<span>󱚼 </span>"
+    },
+    "return-type": "json",
+    "exec-if": "which tailscale",
+    "exec": "tailscale status --json | jq --unbuffered --compact-output '{alt: .BackendState}' && kill -s SIGRTMIN+1 $(pgrep waybar)",
+    "on-click": "pkexec tailscale up",
+    "on-click-right": "pkexec tailscale down",
+    "escape": true
+  },
+  "clock": {
+    "format": "<span> </span>{:%a %d %H:%M}",
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+  },
+  "network": {
+    "interval": 2,
+    "format-ethernet": "<span> </span>{bandwidthUpBits} <span> </span>{bandwidthDownBits}",
+    "format-wifi": "?",
+    "format-linked": "!",
+    "format-disconnected": "<span>   </span>Disconnected",
+    "tooltip-format-ethernet": "{ipaddr}"
+  },
+  "pulseaudio": {
+    "format": "<span>{icon} </span> {volume}%",
+    "format-muted": "",
+    "format-icons": {
+      "default": ["", "", " "]
+    },
+    "on-click": "pavucontrol"
+  }
+}

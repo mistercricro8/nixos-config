@@ -1,0 +1,18 @@
+keys:
+  - &cricro_pc_pgp e7c169225c0f274e219a6a17e507437845c4d992
+  - &cricro_laptop_pgp 5ec2d83d9086e5d43bfac7cb9a756e2dc0583da4
+  - &cricro_vm_pgp 658cd1d723bf589ada2df00f46321ab74547ebf5
+  - &cricro_l2_pgp 7b71075e22c4604f972e952fa4b1a1fd9ca28346
+creation_rules:
+  - path_regex: provisioning/secrets/[^/]+\.(yaml|json|env|ini)$
+    key_groups:
+      - pgp:
+          - *cricro_laptop_pgp
+          - *cricro_pc_pgp
+  - path_regex: secrets/.*
+    key_groups:
+      - pgp:
+          - *cricro_laptop_pgp
+          - *cricro_pc_pgp
+          - *cricro_vm_pgp
+          - *cricro_l2_pgp

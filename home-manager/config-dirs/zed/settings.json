@@ -1,0 +1,124 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "edit_predictions": {
+    "copilot": {
+      "enable_next_edit_suggestions": true,
+    },
+  },
+  "ssh_connections": [
+    {
+      "host": "cricro-vm",
+      "args": [],
+      "projects": [
+        {
+          "paths": ["/home/cricro/nixos-config"],
+        },
+        {
+          "paths": ["/home/cricro/server-data"],
+        },
+      ],
+    },
+    {
+      "host": "cricro-laptop",
+      "args": [],
+      "projects": [
+        {
+          "paths": ["/home/cricro/nixos-config"],
+        },
+      ],
+    },
+  ],
+  "features": {
+    "edit_prediction_provider": "copilot",
+  },
+  "auto_install_extensions": {
+    "html": true,
+    "catppuccin": true,
+    "toml": true,
+    "dockerfile": true,
+    "typst": true,
+    "java": true,
+    "catppuccin-icons": true,
+    "make": true,
+    "latex": true,
+    "prisma": true,
+    "csv": true,
+    "nix": true,
+    "neocmake": true,
+    "just": true,
+    "hyprlang": true,
+    "opentofu": true,
+    "sql": true,
+    "svelte": true,
+  },
+  "project_panel": {
+    "dock": "right",
+  },
+  "tab_size": 2,
+  "languages": {
+    "Nix": {
+      "tab_size": 2,
+      "language_servers": ["nixd", "!nil"],
+    },
+  },
+  "lsp": {
+    "vtsls": {
+      "settings": {
+        "typescript": {
+          "updateImportsOnFileMove": {
+            "enabled": "always",
+          },
+        },
+        "javascript": {
+          "updateImportsOnFileMove": {
+            "enabled": "always",
+          },
+        },
+      },
+      "enable_lsp_tasks": true,
+    },
+    "nixd": {
+      "settings": {
+        "formatting": {
+          "command": ["nixfmt"],
+        },
+        "nixpkgs": {
+          "expr": "import (builtins.getFlake \"/home/cricro/nixos-config\").inputs.nixpkgs { }",
+        },
+        "options": {
+          "nixos": {
+            "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").nixosConfigurations.cricro-nixd.options",
+          },
+          "home-manager": {
+            "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").nixosConfigurations.cricro-nixd.options.home-manager.users.type.getSubOptions []",
+          },
+        },
+      },
+    },
+  },
+  "agent": {
+    "dock": "left",
+    "default_model": {
+      "provider": "copilot_chat",
+      "model": "claude-opus-4.5",
+    },
+    "model_parameters": [],
+  },
+  "icon_theme": "Catppuccin Mocha",
+  "buffer_font_size": 12.0,
+  "buffer_font_family": "CaskaydiaMono Nerd Font Mono",
+  "ui_font_size": 16,
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "Catppuccin Mocha",
+  },
+  "load_direnv": "shell_hook",
+}
