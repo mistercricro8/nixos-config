@@ -44,7 +44,7 @@ in
   # };
 
   # ------------- back to sopsing -------------
-  sops.age.keyFile = "/home/cricro/.config/sops/age/keys.txt";
+  sops.gnupg.home = "/home/cricro/.gnupg";
 
   # ------------- networking -------------
   # apparently not having this enabled works until you enable docker?
