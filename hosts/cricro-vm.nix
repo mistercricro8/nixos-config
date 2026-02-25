@@ -1,14 +1,10 @@
 {
   rootCfgPath,
-  customLib,
   ...
 }:
 
 let
   nixos-modules = rootCfgPath + "/hosts/modules";
-
-  private = customLib.private;
-  nixosUtils = import ./nixos-utils.nix { };
 in
 {
   imports = [
@@ -209,12 +205,13 @@ in
   };
 
   # ------------- wireguard for vpn2 -------------
-  environment.etc."secrets/wg0-eh.conf" = nixosUtils.makeEtcSecretFile (
-    private.cricro-vm.wg-quick-eh
-  );
+  sops.secrets."cricro-vm/wg-quick-eh" = {
+    sopsFile = rootCfgPath + "/secrets/cricro-vm.yaml";
+    format = "yaml";
+  };
 
   networking.wg-quick.interfaces.eh = {
-    configFile = "/etc/secrets/wg0-eh.conf";
+    configFile = "/run/secrets/cricro-vm/wg-quick-eh";
   };
 
   # ------------- system stuff -------------

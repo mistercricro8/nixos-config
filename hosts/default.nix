@@ -1,6 +1,7 @@
 {
   pkgs,
   customLib,
+  rootCfgPath,
   hostName,
   ...
 }:
@@ -44,7 +45,9 @@ in
   # };
 
   # ------------- back to sopsing -------------
-  sops.age.keyFile = "/home/cricro/.config/sops/age/keys.txt";
+  sops.gnupg.sshKeyPaths = [
+    "/home/cricro/.ssh/id_rsa"
+  ];
 
   # ------------- networking -------------
   # apparently not having this enabled works until you enable docker?
