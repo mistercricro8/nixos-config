@@ -15,13 +15,8 @@
     lorien
     rnote
     nwg-displays
-    # audio-recorder
     kitty
     brave
-    bottles
-    # too lazy to reorganize rn
-    jetbrains.idea
-    nodejs
     kdePackages.kdenlive
     gsettings-desktop-schemas
     gtk3
@@ -30,6 +25,7 @@
     sunshine
     moonlight-qt
     rustdesk-flutter
+    heroic
   ];
 
   programs.obs-studio = {

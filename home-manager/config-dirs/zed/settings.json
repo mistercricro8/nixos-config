@@ -8,6 +8,7 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   "edit_predictions": {
+    "provider": "copilot",
     "copilot": {
       "enable_next_edit_suggestions": true,
     },
@@ -35,9 +36,6 @@
       ],
     },
   ],
-  "features": {
-    "edit_prediction_provider": "copilot",
-  },
   "auto_install_extensions": {
     "html": true,
     "catppuccin": true,
