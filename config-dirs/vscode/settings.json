@@ -1,0 +1,125 @@
+{
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[dockercompose]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "basedpyright.analysis.diagnosticSeverityOverrides": {
+    "reportAttributeAccessIssue": "none",
+    "reportIncompatibleMethodOverride": "none"
+  },
+  "basedpyright.analysis.inlayHints.variableTypes": false,
+  "basedpyright.analysis.typeCheckingMode": "standard",
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "catppuccin.accentColor": "mauve",
+  "database-client.autoSync": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.fontFamily": "\"CaskaydiaMono Nerd Font\"",
+  "editor.minimap.enabled": false,
+  "editor.semanticHighlighting.enabled": true,
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.confirmPasteNative": false,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.openRepositoryInParentFolders": "always",
+  "github.copilot.enable": {
+    "*": true
+  },
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "java.jdt.ls.java.home": "/home/cricro/.jdks/current/lib/openjdk",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "nix.enableLanguageServer": true,
+  "nix.serverPath": "nixd",
+  "nix.serverSettings": {
+    "nixd": {
+      "formatting": {
+        "command": ["nixfmt"]
+      },
+      "nixpkgs": {
+        "expr": "import (builtins.getFlake \"/home/cricro/nixos-config\").inputs.nixpkgs { }"
+      },
+      "options": {
+        "nixos": {
+          "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").nixosConfigurations.cricro-nixd.options"
+        },
+        "home-manager": {
+          "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").nixosConfigurations.cricro-nixd.options.home-manager.users.type.getSubOptions []"
+        }
+      }
+    }
+  },
+  "powermode.presets": "exploding-rift",
+  "python.analysis.typeCheckingMode": "standard",
+  "ruff.nativeServer": "on",
+  "svelte.enable-ts-plugin": true,
+  "terminal.integrated.enableMultiLinePasteWarning": "never",
+  "terminal.integrated.fontFamily": "CaskaydiaMono Nerd Font",
+  "terminal.integrated.fontSize": 16,
+  "terminal.integrated.minimumContrastRatio": 1,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "window.titleBarStyle": "custom",
+  "workbench.colorTheme": "Catppuccin Mocha",
+  "workbench.iconTheme": "catppuccin-mocha",
+  "workbench.sideBar.location": "right",
+  "editor.tabSize": 2,
+  "workbench.editorAssociations": {
+    "git-rebase-todo": "default"
+  },
+  "remote.SSH.useLocalServer": false,
+  "remote.SSH.remotePlatform": {
+    "cricro-vm": "linux",
+    "cricro-l2": "linux"
+  },
+  "terminal.integrated.stickyScroll.enabled": false,
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "latexmk",
+      "tools": ["latexmk"]
+    },
+    {
+      "name": "latexmk (latexmkrc)",
+      "tools": ["latexmk_rconly"]
+    },
+    {
+      "name": "latexmk (lualatex)",
+      "tools": ["lualatexmk"]
+    },
+    {
+      "name": "latexmk (xelatex)",
+      "tools": ["xelatexmk"]
+    }
+  ],
+  "latex-workshop.latex.recipe.default": "lastUsed",
+  "latex-workshop.formatting.latex": "latexindent",
+  "chat.agent.maxRequests": 100,
+  "chat.viewSessions.enabled": false,
+  "[java]": {
+    "editor.defaultFormatter": "redhat.java"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "chat.editing.confirmEditRequestRetry": false
+}

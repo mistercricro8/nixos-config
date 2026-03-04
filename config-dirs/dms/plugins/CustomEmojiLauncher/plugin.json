@@ -1,0 +1,14 @@
+{
+  "id": "customEmojiLauncher",
+  "name": "Custom Emoji Launcher",
+  "description": "Search and copy custom emojis/images from a user-defined file. Entries have a name and URL pointing to an image file.",
+  "version": "1.0.0",
+  "author": "MisterCricro8",
+  "icon": "mood",
+  "type": "launcher",
+  "trigger": "e:",
+  "viewMode": "grid",
+  "component": "./CustomEmojiLauncher.qml",
+  "settings": "./CustomEmojiLauncherSettings.qml",
+  "permissions": ["settings_read", "settings_write"]
+}

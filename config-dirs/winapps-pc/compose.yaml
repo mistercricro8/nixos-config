@@ -1,0 +1,31 @@
+name: "winapps"
+
+services:
+  windows:
+    image: ghcr.io/dockur/windows:latest
+    container_name: WinApps
+    environment:
+      VERSION: "10"
+      RAM_SIZE: "6G"
+      CPU_CORES: "2"
+      DISK_SIZE: "100G"
+      USERNAME: "cricro"
+      PASSWORD: "1234"
+      HOME: "${HOME}"
+      ARGUMENTS: "-chardev serial,path=/dev/ttyACM0,id=acm -usb -device usb-serial,chardev=acm"
+    ports:
+      - 8006:8006
+      - 3389:3389/tcp
+      - 3389:3389/udp
+    cap_add:
+      - NET_ADMIN
+    stop_grace_period: 120s
+    restart: no
+    volumes:
+      - /home/cricro/store/winapps-data:/storage
+      - ${HOME}:/shared
+      - ./oem:/oem
+    devices:
+      - /dev/kvm
+      - /dev/net/tun
+      - /dev/ttyACM0
