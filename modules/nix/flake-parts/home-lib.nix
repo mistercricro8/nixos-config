@@ -1,6 +1,7 @@
 # Helper functions for home manager.
 { inputs, ... }:
 {
+  # Dictionary mapping configuration prefixes to their target directories relative to $HOME.
   config.flake.lib.hmConfigDirs = {
     backgrounds = ".config/backgrounds";
     bottom = ".config/bottom";
@@ -23,6 +24,9 @@
     zed = ".config/zed";
   };
 
+  # Create a configuration provider option.
+  # lib        - the nixpkgs lib object
+  # providers  - list of possible configuration providers
   config.flake.lib.mkProviderOption =
     { lib, providers }:
     lib.mkOption {
@@ -31,6 +35,9 @@
       description = "Configuration provider to use.";
     };
 
+  # Create a full configuration option, containing an enable flag and a provider.
+  # lib        - the nixpkgs lib object
+  # providers  - list of possible configuration providers
   config.flake.lib.mkConfigOption =
     { lib, providers }:
     lib.mkOption {
@@ -125,6 +132,11 @@
       }) selection
     );
 
+  # Apply a configuration provider to map host-specific configurations into home.file.
+  # lib        - the nixpkgs lib object
+  # config     - the system or home-manager config object
+  # prefix     - prefix of the configuration to search for (e.g. "hyprland")
+  # provider   - the selected provider strategy (e.g. "dir")
   config.flake.lib.applyConfigProvider =
     {
       lib,

@@ -19,6 +19,7 @@
         ./_hardware-cricro-l2.nix
       ];
 
+      # ============== Options imports config
       systemConstants.configName = "l2";
       sBoot.enable = true;
       sTailscale = {
@@ -26,16 +27,21 @@
         hostName = "cricro-l2";
       };
 
+      # ============== Networking
       networking.hostName = "cricro-l2";
 
+      # ============== Time
       time.timeZone = "America/Lima";
 
+      # ============== Extra
       services.logind.settings.Login = {
         HandleLidSwitch = "ignore";
       };
 
+      # ============== System
       system.stateVersion = "24.05";
 
+      # ============== Home manager
       home-manager.users.cricro = {
         imports = with m; [
           homeManager."users/cricro"

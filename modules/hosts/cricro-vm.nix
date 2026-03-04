@@ -18,6 +18,7 @@
         ./_hardware-cricro-vm.nix
       ];
 
+      # ============== Options imports config
       systemConstants.configName = "vm";
 
       sBoot = {
@@ -31,10 +32,13 @@
         hostType = "both";
       };
 
+      # ============== Networking
       networking.hostName = "cricro-vm";
 
+      # ============== Time
       time.timeZone = "America/Santiago";
 
+      # ============== Extra
       boot.loader.efi.efiSysMountPoint = "/boot/efi";
 
       swapDevices = [
@@ -143,8 +147,10 @@
         configFile = "/run/secrets/cricro-vm/wg-quick-eh";
       };
 
+      # ============== System
       system.stateVersion = "23.05";
 
+      # ============== Home manager
       home-manager.users.cricro = {
         imports = with m; [
           homeManager."users/cricro"

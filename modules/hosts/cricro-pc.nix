@@ -33,6 +33,7 @@
         ./_hardware-cricro-pc.nix
       ];
 
+      # ============== Options imports config
       systemConstants.configName = "pc";
 
       sBoot.enable = true;
@@ -73,11 +74,14 @@
         hostName = "cricro-pc-l";
       };
 
+      # ============== Networking
       networking.hostName = "cricro-pc";
       networking.interfaces.enp5s0.wakeOnLan.enable = true;
 
+      # ============== Time
       time.timeZone = "America/Lima";
 
+      # ============== Extra
       programs.virt-manager.enable = true;
       users.groups.libvirtd.members = [ "cricro" ];
       virtualisation.libvirtd.enable = true;
@@ -97,8 +101,10 @@
 
       virtualisation.docker.enableOnBoot = false;
 
+      # ============== System
       system.stateVersion = "24.05";
 
+      # ============== Home manager
       home-manager.users.cricro =
         {
           pkgs,

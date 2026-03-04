@@ -7,6 +7,9 @@
     description = "Shared helper functions exposed on inputs.self.lib.";
   };
 
+  # Filter a list of packages by whether they are supported on the current host platform.
+  # pkgs       - the nixpkgs instance
+  # packages   - the list of packages to filter
   config.flake.lib.filterPlatformPackages =
     pkgs: packages:
     lib.filter (
@@ -17,6 +20,10 @@
       platforms == null || builtins.elem pkgs.stdenv.hostPlatform.system platforms
     ) packages;
 
+  # Create a NixOS system configuration based on the provided inputs.
+  # system     - system architecture (e.g. "x86_64-linux")
+  # name       - host name of the system
+  # branch     - specific nixpkgs branch to use ("stable" or "unstable" default: "unstable")
   config.flake.lib.mkNixos =
     {
       system,
