@@ -44,9 +44,5 @@ in
       bootstrap-x86 = mkBootstrap "x86_64-linux";
       bootstrap-aarch64 = mkBootstrap "aarch64-linux";
     }
-    (mkNixos {
-      system = "x86_64-linux";
-      name = "cricro-nixd";
-    })
   ];
 }

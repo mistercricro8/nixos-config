@@ -127,6 +127,7 @@
       };
 
       systemd.services.docker.restartIfChanged = false;
+      systemd.services."docker-docker-proxy".restartIfChanged = false;
 
       services.resolved = {
         enable = true;
@@ -155,8 +156,19 @@
         imports = with m; [
           homeManager."users/cricro"
           homeManager.cli-tools
+          homeManager.dotfiles
           homeManager.semester
         ];
+
+        sDotfiles = {
+          enable = true;
+          configs = {
+            bottom.enable = true;
+            rofi.enable = true;
+            yazi.enable = true;
+            starship.enable = true;
+          };
+        };
 
         home.stateVersion = "24.11";
         systemConstants.configName = "vm";

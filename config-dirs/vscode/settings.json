@@ -61,11 +61,11 @@
         "expr": "import (builtins.getFlake \"/home/cricro/nixos-config\").inputs.nixpkgs { }"
       },
       "options": {
-        "nixos": {
-          "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").nixosConfigurations.cricro-nixd.options"
+        "flake-parts": {
+          "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").debug"
         },
-        "home-manager": {
-          "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").nixosConfigurations.cricro-nixd.options.home-manager.users.type.getSubOptions []"
+        "flake-parts-2": {
+          "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").currentSystem.options"
         }
       }
     }

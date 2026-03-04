@@ -46,8 +46,19 @@
         imports = with m; [
           homeManager."users/cricro"
           homeManager.cli-tools
+          homeManager.dotfiles
           homeManager.semester
         ];
+
+        sDotfiles = {
+          enable = true;
+          configs = {
+            bottom.enable = true;
+            rofi.enable = true;
+            yazi.enable = true;
+            starship.enable = true;
+          };
+        };
 
         home.stateVersion = "24.11";
         systemConstants.configName = "laptop";
