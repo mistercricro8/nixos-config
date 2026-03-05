@@ -175,8 +175,9 @@
           matched = lib.filter (name: matchesConfig pfx (lib.removePrefix pfx name)) (
             builtins.attrNames matchingDirs
           );
+          sortedMatched = lib.sort (a: b: builtins.stringLength a > builtins.stringLength b) matched;
         in
-        if builtins.length matched > 0 then baseDir + "/${builtins.head matched}" else null;
+        if builtins.length sortedMatched > 0 then baseDir + "/${builtins.head sortedMatched}" else null;
     in
     if provider == "dir" then
       let
