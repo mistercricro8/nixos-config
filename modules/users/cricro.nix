@@ -68,9 +68,10 @@
         transparent = true;
       };
 
-      programs.yazi.enable = true;
-      programs.yazi.shellWrapperName = "y";
-      catppuccin.yazi.enable = true;
+      programs.yazi = {
+        enable = true;
+        shellWrapperName = "y";
+      };
 
       programs.bat.enable = true;
       catppuccin.bat.enable = true;
@@ -105,6 +106,7 @@
           ls = "eza";
           ll = "eza -l";
           l = "eza -la";
+          kssh = "kitten ssh";
         };
         functions = {
           e = {
