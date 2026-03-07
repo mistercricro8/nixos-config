@@ -67,6 +67,10 @@
             from = 27100; # pterodactyl (eh)
             to = 27150;
           }
+          {
+            from = 28100; # non-specified docker services
+            to = 28150;
+          }
         ];
         allowedTCPPortRanges = [
           {
@@ -76,6 +80,10 @@
           {
             from = 21115; # rustdesk
             to = 21119;
+          }
+          {
+            from = 28000; # non-specified docker services
+            to = 28099;
           }
         ];
       };

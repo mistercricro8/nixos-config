@@ -215,6 +215,26 @@ resource "oci_core_security_list" "self_apps_sec_list" {
   }
 
   ingress_security_rules {
+    description = "Non-specified docker services"
+    source = "0.0.0.0/0"
+    protocol = 6 # TCP
+    tcp_options {
+      min = 28000
+      max = 28099
+    }
+  }
+
+  ingress_security_rules {
+    description = "Non-specified docker services"
+    source = "0.0.0.0/0"
+    protocol = 17 # UDP
+    tcp_options {
+      min = 28100
+      max = 28150
+    }
+  }
+
+  ingress_security_rules {
     description = "Pterodactyl (UDP)"
     source      = "0.0.0.0/0"
     protocol    = 17 # UDP

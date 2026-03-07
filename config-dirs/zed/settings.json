@@ -55,6 +55,7 @@
     "opentofu": true,
     "sql": true,
     "svelte": true,
+    "git-firefly": true,
   },
   "project_panel": {
     "dock": "right",
@@ -102,6 +103,11 @@
     },
   },
   "agent": {
+    "inline_assistant_model": {
+      "provider": "copilot_chat",
+      "model": "gpt-5-mini",
+      "enable_thinking": false,
+    },
     "dock": "left",
     "default_model": {
       "provider": "copilot_chat",
