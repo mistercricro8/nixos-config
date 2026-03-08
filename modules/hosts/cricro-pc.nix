@@ -80,6 +80,7 @@
 
       # ============== Time
       time.timeZone = "America/Lima";
+      time.hardwareClockInLocalTime = true;
 
       # ============== Extra
       programs.virt-manager.enable = true;
@@ -169,6 +170,7 @@
             opencode
             parsec-bin
             android-tools
+            antigravity
           ];
 
           home.sessionVariables = {
