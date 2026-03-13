@@ -20,6 +20,7 @@
         nixos.sSamba
         nixos.sTailscale
         nixos.steam
+        nixos.sunshine
         ./_hardware-cricro-laptop.nix
       ];
 

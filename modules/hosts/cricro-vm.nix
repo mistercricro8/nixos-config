@@ -3,7 +3,7 @@
 { inputs, ... }:
 {
   flake.modules.nixos."cricro-vm" =
-    { ... }:
+    { pkgs, ... }:
     let
       m = inputs.self.modules;
     in
@@ -88,6 +88,7 @@
         ];
       };
 
+      # ============== Docker proxy for preventing docker updates from breaking socket access
       virtualisation.oci-containers.backend = "docker";
       virtualisation.oci-containers.containers."docker-proxy" = {
         image = "tecnativa/docker-socket-proxy";
@@ -137,6 +138,7 @@
       systemd.services.docker.restartIfChanged = false;
       systemd.services."docker-docker-proxy".restartIfChanged = false;
 
+      # ============== Pihole
       services.resolved = {
         enable = true;
         extraConfig = ''
@@ -147,6 +149,7 @@
         '';
       };
 
+      # ============== Wireguard
       sops.secrets."cricro-vm/wg-quick-eh" = {
         sopsFile = inputs.self + "/secrets/cricro-vm.yaml";
         format = "yaml";
@@ -154,6 +157,21 @@
 
       networking.wg-quick.interfaces.eh = {
         configFile = "/run/secrets/cricro-vm/wg-quick-eh";
+      };
+
+      # ============== Gitlab Runner
+      sops.secrets."cricro-vm/gitlab-WZ7uTl" = {
+        sopsFile = inputs.self + "/secrets/cricro-vm.yaml";
+        format = "yaml";
+      };
+
+      services.gitlab-runner = {
+        enable = true;
+        services.WZ7uTl = {
+          executor = "docker";
+          dockerImage = "moby/buildkit:rootless";
+          authenticationTokenConfigFile = "/run/secrets/cricro-vm/gitlab-WZ7uTl";
+        };
       };
 
       # ============== System

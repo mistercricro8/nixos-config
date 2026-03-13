@@ -34,6 +34,7 @@
           net-tools
           lm_sensors
           usbutils
+          iotop
         ]
       );
 
