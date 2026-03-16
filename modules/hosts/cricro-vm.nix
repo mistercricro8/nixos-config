@@ -64,7 +64,7 @@
         ];
         allowedUDPPortRanges = [
           {
-            from = 27100; # pterodactyl (eh)
+            from = 27000; # pterodactyl (eh)
             to = 27150;
           }
           {
@@ -75,7 +75,7 @@
         allowedTCPPortRanges = [
           {
             from = 27000; # pterodactyl (eh)
-            to = 27999;
+            to = 27150;
           }
           {
             from = 21115; # rustdesk

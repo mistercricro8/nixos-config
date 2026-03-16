@@ -210,7 +210,7 @@ resource "oci_core_security_list" "self_apps_sec_list" {
     protocol    = 6 # TCP
     tcp_options {
       min = 27000
-      max = 27099
+      max = 27150
     }
   }
 
@@ -239,7 +239,7 @@ resource "oci_core_security_list" "self_apps_sec_list" {
     source      = "0.0.0.0/0"
     protocol    = 17 # UDP
     tcp_options {
-      min = 27100
+      min = 27000
       max = 27150
     }
   }
