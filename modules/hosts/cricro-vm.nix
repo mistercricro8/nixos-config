@@ -171,6 +171,10 @@
           executor = "docker";
           dockerImage = "moby/buildkit:rootless";
           authenticationTokenConfigFile = "/run/secrets/cricro-vm/gitlab-WZ7uTl";
+          registrationFlags = [
+            "--docker-security-opt seccomp:unconfined"
+            "--docker-security-opt apparmor:unconfined"
+          ];
         };
       };
 
