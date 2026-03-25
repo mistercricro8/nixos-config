@@ -29,6 +29,7 @@
 
       # ============== Networking
       networking.hostName = "cricro-l2";
+      networking.interfaces.enp5s0.wakeOnLan.enable = true;
 
       # ============== Time
       time.timeZone = "America/Lima";

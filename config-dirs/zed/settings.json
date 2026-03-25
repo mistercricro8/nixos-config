@@ -20,22 +20,50 @@
       "args": [],
       "projects": [
         {
-          "paths": ["/home/cricro/nixos-config"],
+          "paths": [
+            "/home/cricro/nixos-config"
+          ]
         },
         {
-          "paths": ["/home/cricro/server-data"],
-        },
-      ],
+          "paths": [
+            "/home/cricro/server-data"
+          ]
+        }
+      ]
     },
     {
       "host": "cricro-laptop",
       "args": [],
       "projects": [
         {
-          "paths": ["/home/cricro/nixos-config"],
-        },
-      ],
+          "paths": [
+            "/home/cricro/nixos-config"
+          ]
+        }
+      ]
     },
+    {
+      "host": "dev.mistercricro8.me",
+      "username": "cricro",
+      "args": [],
+      "projects": [
+        {
+          "paths": [
+            "/home/cricro"
+          ]
+        },
+        {
+          "paths": [
+            "/home/cricro/nixos-config"
+          ]
+        },
+        {
+          "paths": [
+            "/home/cricro/server-data"
+          ]
+        }
+      ]
+    }
   ],
   "auto_install_extensions": {
     "html": true,
