@@ -215,29 +215,37 @@ output_consumer=(cat)
 if command_exists nom; then
     output_consumer=(nom)
 fi
-
+set +e
 nixos-rebuild "${rebuild_command}" "${builders_args[@]}" --show-trace --flake "${derivation}" --sudo 2>&1 |
     tee last-rebuild.log |
     "${output_consumer[@]}"
 
-if [ "${PIPESTATUS[0]}" -ne 0 ]; then
-    grep --color error last-rebuild.log
+rebuild_status=${PIPESTATUS[0]}
+set -e
+
+if [ "$rebuild_status" -ne 0 ]; then
+    echo -e "${RED}Rebuild failed with status ${rebuild_status}${RESET}"
+    grep --color error last-rebuild.log || true
     maybe_notify "NixOS rebuild failed." "Check last-rebuild.log for details." "dialog-error"
-    exit 1
+
+    if [[ "$autorollback" == false ]]; then
+        exit "$rebuild_status"
+    fi
+
+    echo -e "${RED}Autorollback is enabled. Starting safety timer...${RESET}"
 fi
 
 if [[ "$autorollback" == true ]]; then
     touch /tmp/nixos-rebuild-rollback
     echo "==============================="
-    echo "Autorollback is enabled."
-    echo "Manually remove the file /tmp/nixos-rebuild-rollback"
+    echo "AUTOROLLBACK TIMER ACTIVE"
+    echo "Remove /tmp/nixos-rebuild-rollback to keep this state."
     echo "==============================="
 
     remaining_time=$AUTOROLLBACK_WAIT_TIME
-    will_rollback=true
     while [[ $remaining_time -gt 0 ]]; do
         if [[ ! -f /tmp/nixos-rebuild-rollback ]]; then
-            echo "Autorollback cancelled."
+            echo "Configuration confirmed. Autorollback cancelled."
             break
         fi
         maybe_wall "Rollback in $remaining_time seconds. Remove /tmp/nixos-rebuild-rollback to prevent it."
@@ -246,20 +254,20 @@ if [[ "$autorollback" == true ]]; then
     done
 
     if [[ -f /tmp/nixos-rebuild-rollback ]]; then
+        echo "Rolling back to previous working generation..."
         sudo nixos-rebuild switch --rollback --flake "${derivation}"
+        rm -f /tmp/nixos-rebuild-rollback
+        exit 1
     fi
 fi
 
-if [[ "$no_commit" == false ]]; then
+if [[ "$rebuild_status" -eq 0 && "$no_commit" == false ]]; then
     current_gen=$(nixos-rebuild list-generations --json | jq '.[] | select(.current == true)')
-
     gen_num=$(echo "$current_gen" | jq -r '.generation')
     gen_date=$(echo "$current_gen" | jq -r '.date')
-
     current="NixOS generation $gen_num ($gen_date): derivation $derivation"
 
-    echo
-    echo "Enter commit message (description):"
+    echo -e "\nEnter commit message (description):"
     maybe_notify "Awaiting commit message..."
     read -r commit_message
 
@@ -275,5 +283,4 @@ if [[ "$no_commit" == false ]]; then
 fi
 
 popd &>/dev/null
-
-maybe_notify "NixOS rebuild complete" "Rebuild succeeded." "dialog-information"
+maybe_notify "NixOS rebuild complete" "Operation finished successfully." "dialog-information"

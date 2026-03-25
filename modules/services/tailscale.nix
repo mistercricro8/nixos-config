@@ -33,25 +33,30 @@
           cfg = config.sTailscale;
         in
         lib.mkIf cfg.enable {
-          sops.secrets."tailscale/authKeys/${cfg.hostName}" = {
+          sops.secrets."tailscale/globalAuthKey" = {
             sopsFile = inputs.self + "/secrets/tailscale.yaml";
             format = "yaml";
           };
 
+          networking.firewall.trustedInterfaces = lib.mkIf (cfg.hostType == "server" || cfg.hostType == "both") [ "tailscale0" ];
+
           services.tailscale = {
             enable = true;
             useRoutingFeatures = cfg.hostType;
-            authKeyFile = "/run/secrets/tailscale/authKeys/${cfg.hostName}";
+            authKeyFile = "/run/secrets/tailscale/globalAuthKey";
             extraUpFlags = lib.mkMerge [
               [
                 "--operator=cricro"
                 "--hostname=${cfg.hostName}"
                 "--login-server=${inputs.private.secrets.tailscale.loginServer}"
-                "--exit-node-allow-lan-access"
+                "--accept-routes"
+                "--accept-dns=true"
+                "--reset"
               ]
               (lib.mkIf (cfg.hostType == "server" || cfg.hostType == "both") [
                 "--advertise-exit-node"
-                "--advertise-tags=tag:exit"
+                # for some reason broken on headscale latest
+                # "--advertise-tags=tag:exit"
               ])
             ];
           };

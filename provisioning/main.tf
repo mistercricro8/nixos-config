@@ -185,7 +185,7 @@ resource "oci_core_security_list" "https_open_sec_list" {
     protocol = 6 # TCP
     tcp_options {
       min = 443
-      max = 443
+      max = 444
     }
   }
 
@@ -194,7 +194,7 @@ resource "oci_core_security_list" "https_open_sec_list" {
     protocol = 6 # TCP
     tcp_options {
       min = 80
-      max = 80
+      max = 81
     }
   }
 }
@@ -216,8 +216,8 @@ resource "oci_core_security_list" "self_apps_sec_list" {
 
   ingress_security_rules {
     description = "Non-specified docker services"
-    source = "0.0.0.0/0"
-    protocol = 6 # TCP
+    source      = "0.0.0.0/0"
+    protocol    = 6 # TCP
     tcp_options {
       min = 28000
       max = 28099
@@ -226,8 +226,8 @@ resource "oci_core_security_list" "self_apps_sec_list" {
 
   ingress_security_rules {
     description = "Non-specified docker services"
-    source = "0.0.0.0/0"
-    protocol = 17 # UDP
+    source      = "0.0.0.0/0"
+    protocol    = 17 # UDP
     tcp_options {
       min = 28100
       max = 28150
@@ -261,6 +261,16 @@ resource "oci_core_security_list" "self_apps_sec_list" {
     udp_options {
       min = 51820
       max = 51820
+    }
+  }
+
+  ingress_security_rules {
+    description = "Tailscale"
+    source      = "0.0.0.0/0"
+    protocol    = 17 # UDP
+    udp_options {
+      min = 41641
+      max = 41641
     }
   }
 
