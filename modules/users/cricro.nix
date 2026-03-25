@@ -60,6 +60,7 @@
         settings = {
           init.defaultBranch = "main";
         };
+        signing.format = null;
       };
 
       programs.micro.enable = true;
