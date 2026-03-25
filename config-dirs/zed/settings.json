@@ -20,27 +20,21 @@
       "args": [],
       "projects": [
         {
-          "paths": [
-            "/home/cricro/nixos-config"
-          ]
+          "paths": ["/home/cricro/nixos-config"],
         },
         {
-          "paths": [
-            "/home/cricro/server-data"
-          ]
-        }
-      ]
+          "paths": ["/home/cricro/server-data"],
+        },
+      ],
     },
     {
       "host": "cricro-laptop",
       "args": [],
       "projects": [
         {
-          "paths": [
-            "/home/cricro/nixos-config"
-          ]
-        }
-      ]
+          "paths": ["/home/cricro/nixos-config"],
+        },
+      ],
     },
     {
       "host": "dev.mistercricro8.me",
@@ -48,43 +42,39 @@
       "args": [],
       "projects": [
         {
-          "paths": [
-            "/home/cricro"
-          ]
+          "paths": ["/home/cricro"],
         },
         {
-          "paths": [
-            "/home/cricro/nixos-config"
-          ]
+          "paths": ["/home/cricro/nixos-config"],
         },
         {
-          "paths": [
-            "/home/cricro/server-data"
-          ]
-        }
-      ]
-    }
+          "paths": ["/home/cricro/server-data"],
+        },
+      ],
+    },
   ],
   "auto_install_extensions": {
     "html": true,
-    "catppuccin": true,
     "toml": true,
-    "dockerfile": true,
-    "typst": true,
+    "catppuccin": true,
+    "git-firefly": true,
     "java": true,
+    "dockerfile": true,
+    "php": true,
+    "sql": true,
     "catppuccin-icons": true,
     "make": true,
+    "svelte": true,
     "latex": true,
     "prisma": true,
-    "csv": true,
     "nix": true,
+    "biome": true,
+    "csv": true,
     "neocmake": true,
     "just": true,
+    "typst": true,
     "hyprlang": true,
     "opentofu": true,
-    "sql": true,
-    "svelte": true,
-    "git-firefly": true,
   },
   "project_panel": {
     "dock": "right",
