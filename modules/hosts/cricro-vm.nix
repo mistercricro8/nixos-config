@@ -54,6 +54,12 @@
       #   "net.ipv6.conf.all.forwarding" = 1;
       # };
 
+      boot.kernel.sysctl = {
+        "net.bridge.bridge-nf-call-iptables" = 0;
+        "net.bridge.bridge-nf-call-arptables" = 0;
+        "net.bridge.bridge-nf-call-ip6tables" = 0;
+      };
+
       networking.firewall = {
         allowedUDPPorts = [
           51820 # wireguard
@@ -93,23 +99,27 @@
           }
         ];
         extraCommands = ''
-          iptables -D INPUT -i tailscale0 -j ACCEPT || true
-          iptables -D FORWARD -i tailscale0 -j ACCEPT || true
-          iptables -D FORWARD -o tailscale0 -j ACCEPT || true
+          add_rule() {
+            local table=$1; shift
+            local chain=$1; shift
+            local action=$1; shift
+            if ! iptables -t "$table" -C "$chain" "$@" > /dev/null 2>&1; then
+              iptables -t "$table" -"$action" "$chain" "$@"
+            fi
+          }
 
-          iptables -I INPUT 1 -i tailscale0 -j ACCEPT
-          iptables -I FORWARD 1 -i tailscale0 -j ACCEPT
-          iptables -I FORWARD 1 -o tailscale0 -j ACCEPT
+          add_rule filter DOCKER-USER A -i br-+ -j ACCEPT
+          add_rule filter DOCKER-USER A -o br-+ -j ACCEPT
 
-          iptables -D INPUT -s 10.8.0.0/24 -p tcp --dport 9100 -j ACCEPT || true
-          iptables -D INPUT -s 10.8.0.0/24 -p tcp --dport 8080 -j ACCEPT || true
+          add_rule filter FORWARD I 1 -i tailscale0 -j ACCEPT
+          add_rule filter FORWARD I 1 -o tailscale0 -j ACCEPT
 
-          iptables -A INPUT -s 10.8.0.0/24 -p tcp --dport 9100 -j ACCEPT
-          iptables -A INPUT -s 10.8.0.0/24 -p tcp --dport 8080 -j ACCEPT
+          add_rule nat POSTROUTING A -o enp0s6 -j MASQUERADE
 
-          iptables -t nat -D POSTROUTING -o enp0s6 -j MASQUERADE || true
-          iptables -t nat -A POSTROUTING -o enp0s6 -j MASQUERADE
+          add_rule filter INPUT A -s 10.8.0.0/24 -p tcp --dport 9100 -j ACCEPT
+          add_rule filter INPUT A -s 10.8.0.0/24 -p tcp --dport 8080 -j ACCEPT
         '';
+        trustedInterfaces = [ "docker0" "cni0" ];
       };
 
       # ============== Docker proxy for preventing docker updates from breaking socket access
@@ -168,10 +178,14 @@
         extraConfig = ''
           [Resolve]
           DNS=127.0.0.1
-          Domains=~kube.ynoacamino.me
           FallbackDNS=8.8.8.8 1.1.1.1
           DNSStubListener=no
         '';
+      };
+
+      virtualisation.docker.daemon.settings = {
+        dns = [ "8.8.8.8" "1.1.1.1" ];
+        mtu = 1200;
       };
 
       # ============== Wireguard
