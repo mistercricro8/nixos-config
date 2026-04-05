@@ -269,7 +269,7 @@
   "soundPluggedIn": true,
   "acMonitorTimeout": 300,
   "acLockTimeout": 300,
-  "acSuspendTimeout": 1800,
+  "acSuspendTimeout": 0,
   "acSuspendBehavior": 0,
   "acProfileName": "",
   "batteryMonitorTimeout": 0,

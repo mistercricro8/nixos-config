@@ -98,7 +98,6 @@
         v4l-utils
       ];
       services.flatpak.enable = true;
-      programs.noisetorch.enable = true;
 
       virtualisation.docker.enableOnBoot = false;
 
@@ -171,6 +170,7 @@
             parsec-bin
             android-tools
             antigravity
+            easyeffects
           ];
 
           home.sessionVariables = {
