@@ -64,7 +64,6 @@
         allowedUDPPorts = [
           51820 # wireguard
           41641 # tailscale
-          21116 # rustdesk
         ];
         allowedTCPPorts = [
           22 # ssh
@@ -72,7 +71,6 @@
           81 # http-alt
           443 # https
           444 # https-alt
-          2022 # sftp (eh)
         ];
         allowedUDPPortRanges = [
           {
@@ -80,18 +78,14 @@
             to = 27150;
           }
           {
-            from = 28100; # non-specified docker services
-            to = 28150;
+            from = 28000; # non-specified docker services
+            to = 28099;
           }
         ];
         allowedTCPPortRanges = [
           {
             from = 27000; # pterodactyl (eh)
             to = 27150;
-          }
-          {
-            from = 21115; # rustdesk
-            to = 21119;
           }
           {
             from = 28000; # non-specified docker services

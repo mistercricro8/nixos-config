@@ -215,6 +215,16 @@ resource "oci_core_security_list" "self_apps_sec_list" {
   }
 
   ingress_security_rules {
+    description = "Pterodactyl (UDP)"
+    source      = "0.0.0.0/0"
+    protocol    = 17 # UDP
+    tcp_options {
+      min = 27000
+      max = 27150
+    }
+  }
+
+  ingress_security_rules {
     description = "Non-specified docker services"
     source      = "0.0.0.0/0"
     protocol    = 6 # TCP
@@ -225,22 +235,12 @@ resource "oci_core_security_list" "self_apps_sec_list" {
   }
 
   ingress_security_rules {
-    description = "Non-specified docker services"
+    description = "Non-specified docker services (UDP)"
     source      = "0.0.0.0/0"
     protocol    = 17 # UDP
     tcp_options {
-      min = 28100
-      max = 28150
-    }
-  }
-
-  ingress_security_rules {
-    description = "Pterodactyl (UDP)"
-    source      = "0.0.0.0/0"
-    protocol    = 17 # UDP
-    tcp_options {
-      min = 27000
-      max = 27150
+      min = 28000
+      max = 28099
     }
   }
 
@@ -271,26 +271,6 @@ resource "oci_core_security_list" "self_apps_sec_list" {
     udp_options {
       min = 41641
       max = 41641
-    }
-  }
-
-  ingress_security_rules {
-    description = "RustDesk"
-    source      = "0.0.0.0/0"
-    protocol    = 6 # TCP
-    tcp_options {
-      min = 21115
-      max = 21119
-    }
-  }
-
-  ingress_security_rules {
-    description = "RustDesk"
-    source      = "0.0.0.0/0"
-    protocol    = 17 # UDP
-    udp_options {
-      min = 21116
-      max = 21116
     }
   }
 }
