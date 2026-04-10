@@ -170,6 +170,7 @@
             parsec-bin
             android-tools
             antigravity
+            scrcpy
             easyeffects
           ];
 
