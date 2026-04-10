@@ -97,6 +97,7 @@
           zzed = "zeditor . && exit";
           nix-config = "cd ~/nixos-config && zeditor . && exit";
           devflake-init = "bash ~/nixos-config/apps/devflake-init/init.sh";
+          relock-hypr = "hyprctl --instance 0 \"keyword misc:allow_session_lock_restore 1\" && hyprctl --instance 0 'dispatch exec hyprlock'";
           nix-cleanup = "nh clean all --ask";
           cls = "clear";
           nix-rebuild = "bash ~/nixos-config/apps/nix-rebuild/rebuild.sh";
