@@ -53,7 +53,8 @@
       #   "net.ipv4.ip_forward" = 1;
       #   "net.ipv6.conf.all.forwarding" = 1;
       # };
-
+      boot.kernelModules = [ "br_netfilter" ];
+      # TODO: docker might be restarting this one despite the declaration
       boot.kernel.sysctl = {
         "net.bridge.bridge-nf-call-iptables" = 0;
         "net.bridge.bridge-nf-call-arptables" = 0;
@@ -64,7 +65,6 @@
         allowedUDPPorts = [
           51820 # wireguard
           41641 # tailscale
-          21116 # rustdesk
         ];
         allowedTCPPorts = [
           22 # ssh
@@ -72,7 +72,6 @@
           81 # http-alt
           443 # https
           444 # https-alt
-          2022 # sftp (eh)
         ];
         allowedUDPPortRanges = [
           {
@@ -80,8 +79,8 @@
             to = 27150;
           }
           {
-            from = 28100; # non-specified docker services
-            to = 28150;
+            from = 28000; # non-specified docker services
+            to = 28099;
           }
         ];
         allowedTCPPortRanges = [
@@ -90,15 +89,13 @@
             to = 27150;
           }
           {
-            from = 21115; # rustdesk
-            to = 21119;
-          }
-          {
             from = 28000; # non-specified docker services
             to = 28099;
           }
         ];
         extraCommands = ''
+          iptables -t filter -N DOCKER-USER 2>/dev/null || true
+
           add_rule() {
             local table=$1; shift
             local chain=$1; shift
@@ -110,14 +107,13 @@
 
           add_rule filter DOCKER-USER A -i br-+ -j ACCEPT
           add_rule filter DOCKER-USER A -o br-+ -j ACCEPT
-
-          add_rule filter FORWARD I 1 -i tailscale0 -j ACCEPT
-          add_rule filter FORWARD I 1 -o tailscale0 -j ACCEPT
+          add_rule filter FORWARD I -i tailscale0 -j ACCEPT
+          add_rule filter FORWARD I -o tailscale0 -j ACCEPT
 
           add_rule nat POSTROUTING A -o enp0s6 -j MASQUERADE
 
-          add_rule filter INPUT A -s 10.8.0.0/24 -p tcp --dport 9100 -j ACCEPT
-          add_rule filter INPUT A -s 10.8.0.0/24 -p tcp --dport 8080 -j ACCEPT
+          add_rule filter INPUT A -s 10.8.0.0/24 -p tcp -m tcp --dport 9100 -j ACCEPT
+          add_rule filter INPUT A -s 10.8.0.0/24 -p tcp -m tcp --dport 8080 -j ACCEPT
         '';
         trustedInterfaces = [ "docker0" "cni0" ];
       };
