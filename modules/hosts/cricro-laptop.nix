@@ -78,6 +78,7 @@
         }
       ];
 
+      networking.nftables.enable = true;
       networking.firewall = {
         allowedTCPPorts = [
           8786
@@ -98,6 +99,7 @@
       };
 
       virtualisation.docker.enableOnBoot = false;
+      virtualisation.waydroid.enable = true;
 
       # ============== System
       system.stateVersion = "24.05";
@@ -152,6 +154,14 @@
               ];
             };
           };
+
+          home.packages = with pkgs; [
+            opencode
+            antigravity
+            python3
+            mutagen
+            nur.repos.ataraxiasjel.waydroid-script
+          ];
 
           home.file = {
             ".icons".source = "${pkgs.catppuccin-cursors.mochaYellow}";
