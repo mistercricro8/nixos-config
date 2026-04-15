@@ -105,10 +105,11 @@
             fi
           }
 
-          add_rule filter DOCKER-USER A -i br-+ -j ACCEPT
-          add_rule filter DOCKER-USER A -o br-+ -j ACCEPT
           add_rule filter FORWARD I -i tailscale0 -j ACCEPT
           add_rule filter FORWARD I -o tailscale0 -j ACCEPT
+
+          add_rule filter DOCKER-USER I -i br-+ -j RETURN
+          add_rule filter DOCKER-USER I -o br-+ -j RETURN
 
           add_rule nat POSTROUTING A -o enp0s6 -j MASQUERADE
 
