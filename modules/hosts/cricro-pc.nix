@@ -148,6 +148,7 @@
               yazi.enable = true;
               mimeapps.enable = true;
               starship.enable = true;
+              opencode.enable = true;
             };
           };
 

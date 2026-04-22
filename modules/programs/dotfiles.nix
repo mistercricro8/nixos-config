@@ -40,6 +40,7 @@
               yazi = mkConfigOption [ "dir" ];
               mimeapps = mkConfigOption [ "dir" ];
               starship = mkConfigOption [ "dir" ];
+              opencode = mkConfigOption [ "dir" ];
             };
           };
           default = { };

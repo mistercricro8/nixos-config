@@ -22,6 +22,7 @@
     mimeapps = ".config";
     starship = ".config";
     zed = ".config/zed";
+    opencode = ".config/opencode";
   };
 
   # Create a configuration provider option.

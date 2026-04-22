@@ -38,12 +38,14 @@
             format = "yaml";
           };
 
-          networking.firewall.trustedInterfaces = lib.mkIf (cfg.hostType == "server" || cfg.hostType == "both") [ "tailscale0" ];
+          networking.firewall.trustedInterfaces = lib.mkIf (
+            cfg.hostType == "server" || cfg.hostType == "both"
+          ) [ "tailscale0" ];
 
           services.tailscale = {
             enable = true;
             useRoutingFeatures = cfg.hostType;
-            authKeyFile = "/run/secrets/tailscale/globalAuthKey";
+            authKeyFile = config.sops.secrets."tailscale/globalAuthKey".path;
             extraUpFlags = lib.mkMerge [
               [
                 "--operator=cricro"

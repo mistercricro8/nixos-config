@@ -3,7 +3,11 @@
 { inputs, ... }:
 {
   flake.modules.nixos."cricro-vm" =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      config,
+      ...
+    }:
     let
       m = inputs.self.modules;
     in
@@ -116,7 +120,10 @@
           add_rule filter INPUT A -s 10.8.0.0/24 -p tcp -m tcp --dport 9100 -j ACCEPT
           add_rule filter INPUT A -s 10.8.0.0/24 -p tcp -m tcp --dport 8080 -j ACCEPT
         '';
-        trustedInterfaces = [ "docker0" "cni0" ];
+        trustedInterfaces = [
+          "docker0"
+          "cni0"
+        ];
       };
 
       # ============== Docker proxy for preventing docker updates from breaking socket access
@@ -181,7 +188,10 @@
       };
 
       virtualisation.docker.daemon.settings = {
-        dns = [ "8.8.8.8" "1.1.1.1" ];
+        dns = [
+          "8.8.8.8"
+          "1.1.1.1"
+        ];
         mtu = 1200;
       };
 
@@ -192,7 +202,7 @@
       };
 
       networking.wg-quick.interfaces.eh = {
-        configFile = "/run/secrets/cricro-vm/KHHLzm/wgQuickConfig";
+        configFile = config.sops.secrets."cricro-vm/KHHLzm/wgQuickConfig".path;
       };
 
       # ============== Rather cheap kubernetes
@@ -212,7 +222,7 @@
         format = "yaml";
       };
 
-      environment.variables.KUBECONFIG = "/run/secrets/cricro-vm/KHHLzm/kubeAdminConfig";
+      environment.variables.KUBECONFIG = config.sops.secrets."cricro-vm/KHHLzm/kubeAdminConfig".path;
 
       environment.systemPackages = with pkgs; [
         kubectl
@@ -221,8 +231,8 @@
       services.k3s = {
         enable = true;
         role = "agent";
-        tokenFile = "/run/secrets/cricro-vm/KHHLzm/kubeNodeToken";
-        configPath = "/run/secrets/cricro-vm/KHHLzm/kubeNodeConfig";
+        tokenFile = config.sops.secrets."cricro-vm/KHHLzm/kubeNodeToken".path;
+        configPath = config.sops.secrets."cricro-vm/KHHLzm/kubeNodeConfig".path;
         serverAddr = inputs.private.secrets.cricro-vm.KHHLzm.serverAddress;
       };
 
@@ -237,7 +247,7 @@
         services.WZ7uTl = {
           executor = "docker";
           dockerImage = "moby/buildkit:rootless";
-          authenticationTokenConfigFile = "/run/secrets/cricro-vm/WZ7uTl/gitlabTokenConfigFile";
+          authenticationTokenConfigFile = config.sops.secrets."cricro-vm/WZ7uTl/gitlabTokenConfigFile".path;
           registrationFlags = [
             "--docker-security-opt seccomp:unconfined"
             "--docker-security-opt apparmor:unconfined"
