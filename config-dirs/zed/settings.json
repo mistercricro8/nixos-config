@@ -11,8 +11,8 @@
     "mode": "subtle",
     "provider": "copilot",
     "copilot": {
-      "enable_next_edit_suggestions": true
-    }
+      "enable_next_edit_suggestions": true,
+    },
   },
   "ssh_connections": [
     {
@@ -20,19 +20,19 @@
       "args": [],
       "projects": [
         {
-          "paths": ["/home/cricro/nixos-config"]
-        }
-      ]
+          "paths": ["/home/cricro/nixos-config"],
+        },
+      ],
     },
     {
       "host": "cricro-vm",
       "args": [],
       "projects": [
         {
-          "paths": ["/home/cricro/work/"]
-        }
-      ]
-    }
+          "paths": ["/home/cricro/work/"],
+        },
+      ],
+    },
   ],
   "auto_install_extensions": {
     "html": true,
@@ -56,61 +56,61 @@
     "typst": true,
     "hyprlang": true,
     "opentofu": true,
-    "fish": true
+    "fish": true,
   },
   "project_panel": {
-    "dock": "right"
+    "dock": "right",
   },
   "tab_size": 2,
   "languages": {
     "Nix": {
       "tab_size": 2,
-      "language_servers": ["nixd", "!nil"]
-    }
+      "language_servers": ["nixd", "!nil"],
+    },
   },
   "lsp": {
     "vtsls": {
       "settings": {
         "typescript": {
           "updateImportsOnFileMove": {
-            "enabled": "always"
-          }
+            "enabled": "always",
+          },
         },
         "javascript": {
           "updateImportsOnFileMove": {
-            "enabled": "always"
-          }
-        }
+            "enabled": "always",
+          },
+        },
       },
-      "enable_lsp_tasks": true
+      "enable_lsp_tasks": true,
     },
     "nixd": {
       "settings": {
         "formatting": {
-          "command": ["nixfmt"]
+          "command": ["nixfmt"],
         },
         "nixpkgs": {
-          "expr": "import (builtins.getFlake \"/home/cricro/nixos-config\").inputs.nixpkgs { }"
+          "expr": "import (builtins.getFlake \"/home/cricro/nixos-config\").inputs.nixpkgs { }",
         },
         "options": {
           "flake-parts": {
-            "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").debug"
+            "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").debug",
           },
           "flake-parts-2": {
-            "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").currentSystem.options"
-          }
-        }
-      }
-    }
+            "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").currentSystem.options",
+          },
+        },
+      },
+    },
   },
   "agent": {
     "inline_assistant_model": {
       "provider": "copilot_chat",
       "model": "gpt-5-mini",
-      "enable_thinking": false
+      "enable_thinking": false,
     },
     "dock": "left",
-    "model_parameters": []
+    "model_parameters": [],
   },
   "icon_theme": "Catppuccin Mocha",
   "buffer_font_size": 12.0,
@@ -119,7 +119,7 @@
   "theme": {
     "mode": "system",
     "light": "One Light",
-    "dark": "Catppuccin Mocha"
+    "dark": "Catppuccin Mocha",
   },
-  "load_direnv": "shell_hook"
+  "load_direnv": "shell_hook",
 }
