@@ -186,6 +186,7 @@
             antigravity
             python3
             mutagen
+            distrobox
             nur.repos.ataraxiasjel.waydroid-script
           ];
 
