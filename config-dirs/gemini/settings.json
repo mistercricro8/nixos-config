@@ -1,0 +1,17 @@
+{
+  "mcp": {
+    "allowed": [
+      "kindly-web-search"
+    ]
+  },
+  "mcpServers": {
+    "kindly-web-search": {
+      "url": "http://localhost:8000/sse"
+    }
+  },
+  "security": {
+    "auth": {
+      "selectedType": "oauth-personal"
+    }
+  }
+}

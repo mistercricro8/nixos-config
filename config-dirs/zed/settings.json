@@ -7,6 +7,15 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "outline_panel": {
+    "dock": "left"
+  },
+  "collaboration_panel": {
+    "dock": "left"
+  },
+  "git_panel": {
+    "dock": "left"
+  },
   "edit_predictions": {
     "mode": "subtle",
     "provider": "copilot",
@@ -20,18 +29,16 @@
       "args": [],
       "projects": [
         {
-          "paths": ["/home/cricro/nixos-config"]
+          "paths": [
+            "/home/cricro/nixos-config"
+          ]
         }
       ]
     },
     {
-      "host": "sd-lab-c",
+      "host": "cricro-vm",
       "args": [],
-      "projects": [
-        {
-          "paths": ["/home/vscode/sd-2026-lab-c-grupo-3/"]
-        }
-      ]
+      "projects": []
     }
   ],
   "auto_install_extensions": {
