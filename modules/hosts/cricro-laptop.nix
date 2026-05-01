@@ -185,6 +185,7 @@
           home.packages = with pkgs; [
             opencode
             antigravity
+            gemini-cli
             python3
             mutagen
             distrobox

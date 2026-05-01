@@ -1,12 +1,13 @@
 {
   "mcp": {
-    "allowed": [
-      "kindly-web-search"
-    ]
+    "allowed": ["kindly-web-search", "searxng"]
   },
   "mcpServers": {
     "kindly-web-search": {
       "url": "http://localhost:8000/sse"
+    },
+    "searxng": {
+      "url": "http://localhost:8001/sse"
     }
   },
   "security": {

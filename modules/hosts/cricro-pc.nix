@@ -173,6 +173,7 @@
             parsec-bin
             android-tools
             antigravity
+            gemini-cli
             scrcpy
             easyeffects
             mutagen
