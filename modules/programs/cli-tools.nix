@@ -10,6 +10,7 @@
       home.packages = inputs.self.lib.filterPlatformPackages pkgs (
         with pkgs;
         [
+          bubblewrap
           htop
           tree
           btop

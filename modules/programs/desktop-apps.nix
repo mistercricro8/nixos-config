@@ -10,7 +10,7 @@
           pavucontrol
           libreoffice-fresh
           discord
-          nemo
+          nautilus
           nwg-look
           lorien
           rnote

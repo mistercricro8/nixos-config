@@ -77,6 +77,7 @@
       # ============== Networking
       networking.hostName = "cricro-pc";
       networking.interfaces.enp5s0.wakeOnLan.enable = true;
+      networking.nftables.enable = true;
 
       # ============== Time
       time.timeZone = "America/Lima";
@@ -174,6 +175,7 @@
             antigravity
             scrcpy
             easyeffects
+            mutagen
           ];
 
           home.sessionVariables = {

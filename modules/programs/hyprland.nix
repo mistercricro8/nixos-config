@@ -140,6 +140,9 @@
             enable = true;
           };
 
+          xdg.configFile."uwsm/env".source =
+            "${config.home.sessionVariablesPackage}/etc/profile.d/hm-session-vars.sh";
+
           home.file = lib.mkMerge [
             (lib.mkIf (cfg.config.provider == "dir") (applyConfigProvider "hyprland" cfg.config.provider))
 

@@ -3,11 +3,12 @@
 { inputs, ... }:
 {
   flake.modules.nixos."cricro-laptop" =
-    { pkgs, ... }:
+    { pkgs, config, ... }:
     let
       m = inputs.self.modules;
       split-monitor-workspaces-hypr =
         inputs.split-monitor-workspaces.packages.${pkgs.stdenv.hostPlatform.system}.split-monitor-workspaces;
+      uniWifiSsid = inputs.private.secrets.cricro-laptop.uniWiFiSsid;
     in
     {
       imports = with m; [
@@ -74,23 +75,47 @@
       swapDevices = [
         {
           device = "/swapfile";
-          size = 16384;
+          size = 8192;
         }
       ];
 
       networking.nftables.enable = true;
-      networking.firewall = {
-        allowedTCPPorts = [
-          8786
-          8787
-          9004
-          9005
-        ];
-        allowedUDPPorts = [
-          8786
-          8787
-          9004
-          9005
+
+      services.resolved.enable = true;
+      sops.secrets."cricro-laptop/uniWiFiPwd" = {
+        sopsFile = inputs.self + "/secrets/cricro-laptop.yaml";
+        format = "yaml";
+      };
+      networking.networkmanager.dns = "systemd-resolved";
+      networking.networkmanager.ensureProfiles = {
+        profiles = {
+          uniWifiSsid = {
+            connection = {
+              id = uniWifiSsid;
+              type = "wifi";
+            };
+            wifi = {
+              ssid = uniWifiSsid;
+            };
+            wifi-security = {
+              key-mgmt = "wpa-psk";
+              psk-flags = 1;
+            };
+            ipv4 = {
+              method = "auto";
+              ignore-auto-dns = false;
+              dns-priority = -20000;
+              dns-search = "~.";
+            };
+          };
+        };
+        secrets.entries = [
+          {
+            file = config.sops.secrets."cricro-laptop/uniWiFiPwd".path;
+            key = "psk";
+            matchId = uniWifiSsid;
+            matchSetting = "802-11-wireless-security";
+          }
         ];
       };
 
@@ -162,6 +187,7 @@
             antigravity
             python3
             mutagen
+            distrobox
             nur.repos.ataraxiasjel.waydroid-script
           ];
 
