@@ -1,0 +1,13 @@
+sync:
+  defaults:
+    mode: "two-way-resolved"
+
+    permissions:
+      defaultFileMode: 0644
+      defaultDirectoryMode: 0755
+
+    ignore:
+      vcs: true
+      paths:
+        - ".direnv"
+        - "*.log"

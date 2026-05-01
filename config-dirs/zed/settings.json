@@ -31,9 +31,9 @@
         {
           "paths": [
             "/home/cricro/nixos-config"
-          ],
-        },
-      ],
+          ]
+        }
+      ]
     },
     {
       "host": "cricro-vm",
@@ -41,11 +41,16 @@
       "projects": [
         {
           "paths": [
-            "/home/cricro/work/"
-          ],
+            "/home/cricro/server-data"
+          ]
         },
-      ],
-    },
+        {
+          "paths": [
+            "/home/cricro/work"
+          ]
+        }
+      ]
+    }
   ],
   "auto_install_extensions": {
     "html": true,
