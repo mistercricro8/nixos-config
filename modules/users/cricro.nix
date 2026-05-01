@@ -22,7 +22,7 @@
     };
 
   flake.modules.homeManager."users/cricro" =
-    { pkgs, inputs, ... }:
+    { pkgs, inputs, config, ... }:
     {
       imports = [
         inputs.dms.homeModules.dank-material-shell
@@ -47,6 +47,8 @@
       };
 
       programs.starship.enable = true;
+
+      programs.firefox.configPath = "${config.xdg.configHome}/mozilla/firefox";
 
       programs.gh = {
         enable = true;

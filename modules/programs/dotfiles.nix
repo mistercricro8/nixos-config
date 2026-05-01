@@ -41,6 +41,7 @@
               mimeapps = mkConfigOption [ "dir" ];
               starship = mkConfigOption [ "dir" ];
               opencode = mkConfigOption [ "dir" ];
+              gemini = mkConfigOption [ "dir" ];
             };
           };
           default = { };

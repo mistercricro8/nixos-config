@@ -17,6 +17,7 @@
           nixd
           typst
           nixfmt
+          matlab-language-server
         ]
       );
 
