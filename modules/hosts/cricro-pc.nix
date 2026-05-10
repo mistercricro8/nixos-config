@@ -76,7 +76,7 @@
 
       # ============== Networking
       networking.hostName = "cricro-pc";
-      networking.interfaces.enp5s0.wakeOnLan.enable = true;
+      networking.interfaces.enp3s0.wakeOnLan.enable = true;
       networking.nftables.enable = true;
 
       # ============== Time
@@ -88,7 +88,6 @@
       users.groups.libvirtd.members = [ "cricro" ];
       virtualisation.libvirtd.enable = true;
       virtualisation.spiceUSBRedirection.enable = true;
-      programs.dconf.enable = true;
       programs.droidcam.enable = true;
       boot.kernelModules = [
         "v4l2loopback"
@@ -101,6 +100,13 @@
       services.flatpak.enable = true;
 
       virtualisation.docker.enableOnBoot = false;
+
+      swapDevices = [
+        {
+          device = "/swapfile";
+          size = 8 * 1024;
+        }
+      ];
 
       # ============== System
       system.stateVersion = "24.05";
@@ -176,7 +182,9 @@
             gemini-cli
             scrcpy
             easyeffects
+            github-copilot-cli
             mutagen
+            android-studio
           ];
 
           home.sessionVariables = {

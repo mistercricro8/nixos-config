@@ -41,7 +41,7 @@
       url = "github:nix-community/nixos-vscode-server";
     };
     dms = {
-      url = "github:AvengeMedia/DankMaterialShell/stable";
+      url = "github:AvengeMedia/DankMaterialShell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-flatpak = {

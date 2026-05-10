@@ -9,6 +9,7 @@
       split-monitor-workspaces-hypr =
         inputs.split-monitor-workspaces.packages.${pkgs.stdenv.hostPlatform.system}.split-monitor-workspaces;
       uniWifiSsid = inputs.private.secrets.cricro-laptop.uniWiFiSsid;
+      stablePkgs = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
     in
     {
       imports = with m; [
@@ -75,7 +76,7 @@
       swapDevices = [
         {
           device = "/swapfile";
-          size = 8192;
+          size = 8 * 1024;
         }
       ];
 
@@ -186,10 +187,12 @@
             opencode
             antigravity
             gemini-cli
+            github-copilot-cli
             python3
             mutagen
             distrobox
             nur.repos.ataraxiasjel.waydroid-script
+            stablePkgs.bottles
           ];
 
           home.file = {

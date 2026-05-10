@@ -4,6 +4,7 @@
 {
   config,
   lib,
+  pkgs,
   modulesPath,
   ...
 }:
@@ -16,7 +17,9 @@
   boot.initrd.availableKernelModules = [
     "xhci_pci"
     "ahci"
+    "nvme"
     "usbhid"
+    "usb_storage"
     "sd_mod"
   ];
   boot.initrd.kernelModules = [ ];
@@ -24,16 +27,41 @@
   boot.extraModulePackages = [ ];
 
   fileSystems."/" = {
-    device = "/dev/disk/by-uuid/cb07e19c-52dd-483f-8ca4-34946e311c9f";
-    fsType = "ext4";
+    device = "/dev/disk/by-uuid/026e70e6-d7a0-49f2-9766-40ac1eada9c9";
+    fsType = "btrfs";
+    options = [
+      "subvol=root"
+      "compress=zstd"
+      "noatime"
+    ];
+  };
+
+  fileSystems."/home" = {
+    device = "/dev/disk/by-uuid/026e70e6-d7a0-49f2-9766-40ac1eada9c9";
+    fsType = "btrfs";
+    options = [
+      "subvol=home"
+      "compress=zstd"
+      "noatime"
+    ];
+  };
+
+  fileSystems."/nix" = {
+    device = "/dev/disk/by-uuid/026e70e6-d7a0-49f2-9766-40ac1eada9c9";
+    fsType = "btrfs";
+    options = [
+      "subvol=nix"
+      "compress=zstd"
+      "noatime"
+    ];
   };
 
   fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/B864-7113";
+    device = "/dev/disk/by-uuid/FA64-0436";
     fsType = "vfat";
     options = [
-      "fmask=0077"
-      "dmask=0077"
+      "fmask=0022"
+      "dmask=0022"
     ];
   };
 
@@ -44,21 +72,10 @@
 
   fileSystems."/home/LaEsquina/la-esquina-store" = {
     device = "/dev/disk/by-uuid/D624289724287C9D";
-    fsType = "ntfs";
-    options = [
-      "uid=1001"
-      "gid=100"
-      "umask=0022"
-      "nofail"
-      "x-systemd.device-timeout=15s"
-    ];
+    fsType = "ntfs3";
   };
 
-  swapDevices = [
-    {
-      device = "/dev/disk/by-uuid/e69fae2f-5fb7-40f6-8e95-125308a4b0e5";
-    }
-  ];
+  swapDevices = [ ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's

@@ -22,7 +22,12 @@
     };
 
   flake.modules.homeManager."users/cricro" =
-    { pkgs, inputs, config, ... }:
+    {
+      pkgs,
+      inputs,
+      config,
+      ...
+    }:
     {
       imports = [
         inputs.dms.homeModules.dank-material-shell
@@ -101,6 +106,7 @@
           nix-config = "cd ~/nixos-config && zeditor . && exit";
           devflake-init = "bash ~/nixos-config/apps/devflake-init/init.sh";
           relock-hypr = "hyprctl --instance 0 \"keyword misc:allow_session_lock_restore 1\" && hyprctl --instance 0 'dispatch exec hyprlock'";
+          develop-env = "nix develop /home/cricro/nixos-config/apps/develop-env";
           nix-cleanup = "nh clean all --ask";
           cls = "clear";
           nix-rebuild = "bash ~/nixos-config/apps/nix-rebuild/rebuild.sh";
@@ -130,8 +136,6 @@
 
       home.sessionVariables = {
         NIXOS_OZONE_WL = "1";
-        JAVA_HOME = "${pkgs.jdk}";
-        GOROOT = "${pkgs.go}/lib/go";
         PATH = "$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin";
         EDITOR = "zeditor -w";
       };

@@ -8,5 +8,8 @@
       nixos.kde
       nixos.peripherals
     ];
+
+    # thanks gtk
+    programs.dconf.enable = true;
   };
 }

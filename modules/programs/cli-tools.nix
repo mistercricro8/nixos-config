@@ -39,6 +39,7 @@
           lm_sensors
           usbutils
           iotop
+          wineWow64Packages.stable
         ]
       );
 
