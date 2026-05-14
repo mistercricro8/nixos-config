@@ -18,10 +18,10 @@
           esbenp.prettier-vscode
           ms-azuretools.vscode-docker
           catppuccin.catppuccin-vsc-icons
+          github.copilot-chat
         ]
         ++ [
           pkgs.vscode-marketplace-release.catppuccin.catppuccin-vsc
-          pkgs.vscode-marketplace-release.github.copilot-chat
         ];
 
       remote-pkgs =

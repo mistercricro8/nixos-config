@@ -295,6 +295,8 @@
   "monoFontFamily": "CaskaydiaMono Nerd Font Mono",
   "fontWeight": 300,
   "fontScale": 1,
+  "textRenderType": 1,
+  "textRenderQuality": 0,
   "notepadUseMonospace": true,
   "notepadFontFamily": "",
   "notepadFontSize": 14,
@@ -496,7 +498,6 @@
   "displayShowDisconnected": false,
   "displaySnapToEdge": true,
   "connectedFrameBarStyleBackups": {},
-  "connectedFrameModalDarkenBackup": null,
   "barConfigs": [
     {
       "id": "default",

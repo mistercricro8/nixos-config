@@ -12,6 +12,7 @@
         remotePlay.openFirewall = true;
         extraCompatPackages = with pkgs; [
           nur.repos.forkprince.proton-dw-bin
+          steamtinkerlaunch
         ];
       };
     };

@@ -206,12 +206,6 @@
       };
 
       # ============== Rather cheap kubernetes
-      sops.secrets."cricro-vm/KHHLzm/kubeAdminConfig" = {
-        sopsFile = inputs.self + "/secrets/cricro-vm.yaml";
-        format = "yaml";
-        owner = "cricro";
-      };
-
       sops.secrets."cricro-vm/KHHLzm/kubeNodeToken" = {
         sopsFile = inputs.self + "/secrets/cricro-vm.yaml";
         format = "yaml";
@@ -221,12 +215,6 @@
         sopsFile = inputs.self + "/secrets/cricro-vm.yaml";
         format = "yaml";
       };
-
-      environment.variables.KUBECONFIG = config.sops.secrets."cricro-vm/KHHLzm/kubeAdminConfig".path;
-
-      environment.systemPackages = with pkgs; [
-        kubectl
-      ];
 
       services.k3s = {
         enable = true;

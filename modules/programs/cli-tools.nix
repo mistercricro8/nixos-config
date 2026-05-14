@@ -4,7 +4,7 @@
   flake.modules.homeManager.cli-tools =
     { pkgs, ... }:
     let
-      stablePkgs = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+      # stablePkgs = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
     in
     {
       home.packages = inputs.self.lib.filterPlatformPackages pkgs (
@@ -27,7 +27,7 @@
           krita
           smartmontools
           pulseaudio
-          stablePkgs.yt-dlp
+          yt-dlp
           p7zip
           ffmpeg
           tldr
@@ -45,7 +45,7 @@
 
       programs.mpv = {
         enable = true;
-        package = stablePkgs.mpv.override {
+        package = pkgs.mpv.override {
           scripts = with pkgs.mpvScripts; [
             mpris
           ];

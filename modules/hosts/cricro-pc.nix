@@ -28,8 +28,8 @@
         nixos.sBoot
         nixos.sSamba
         nixos.sTailscale
-        nixos.steam
         nixos.sunshine
+        nixos.flatpak
         ./_hardware-cricro-pc.nix
       ];
 
@@ -97,7 +97,6 @@
       environment.systemPackages = with pkgs; [
         v4l-utils
       ];
-      services.flatpak.enable = true;
 
       virtualisation.docker.enableOnBoot = false;
 
@@ -130,15 +129,21 @@
             homeManager.semester
             homeManager.dotfiles
             homeManager.hyprland
-            (inputs.nix-flatpak.homeManagerModules.nix-flatpak)
+            homeManager.sops
+            homeManager.flatpak
           ];
 
           home.stateVersion = "24.11";
           systemConstants.configName = "pc";
 
-          services.flatpak.packages = [
-            "org.vinegarhq.Sober"
-          ];
+          sops.secrets."projects/KHHLzm/kubeAdminConfig" = {
+            sopsFile = inputs.self + "/secrets/projects.yaml";
+            format = "yaml";
+          };
+
+          home.sessionVariables = {
+            KUBECONFIG = config.sops.secrets."projects/KHHLzm/kubeAdminConfig".path;
+          };
 
           sDotfiles = {
             enable = true;
@@ -156,6 +161,9 @@
               starship.enable = true;
               opencode.enable = true;
               gemini.enable = true;
+              copilot.enable = true;
+              mangohud.enable = true;
+              flatpak-overrides.enable = true;
             };
           };
 
@@ -173,6 +181,18 @@
             };
           };
 
+          # These require the specific package name to work
+          # The flatpak cli offers alternatives so check there first
+          services.flatpak.packages = [
+            "org.vinegarhq.Sober"
+            "com.valvesoftware.Steam"
+            "com.valvesoftware.Steam.Utility.steamtinkerlaunch"
+            "com.valvesoftware.Steam.CompatibilityTool.Proton-GE"
+            "org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/25.08"
+            "org.freedesktop.Platform.VulkanLayer.gamescope/x86_64/25.08"
+            "com.github.tchx84.Flatseal"
+          ];
+
           home.packages = with pkgs; [
             blender
             opencode
@@ -184,7 +204,7 @@
             easyeffects
             github-copilot-cli
             mutagen
-            android-studio
+            kubectl
           ];
 
           home.sessionVariables = {

@@ -13,16 +13,17 @@
     in
     {
       imports = with m; [
+        nixos."users/cricro"
         nixos.system-desktop
         nixos.for-laptops
         nixos.catppuccin
         nixos.home-manager
-        nixos."users/cricro"
         nixos.sBoot
         nixos.sSamba
         nixos.sTailscale
         nixos.steam
         nixos.sunshine
+        nixos.flatpak
         ./_hardware-cricro-laptop.nix
       ];
 
@@ -145,10 +146,21 @@
             homeManager.semester
             homeManager.dotfiles
             homeManager.hyprland
+            homeManager.sops
+            homeManager.flatpak
           ];
 
           home.stateVersion = "24.11";
           systemConstants.configName = "laptop";
+
+          sops.secrets."projects/KHHLzm/kubeAdminConfig" = {
+            sopsFile = inputs.self + "/secrets/projects.yaml";
+            format = "yaml";
+          };
+
+          home.sessionVariables = {
+            KUBECONFIG = config.sops.secrets."projects/KHHLzm/kubeAdminConfig".path;
+          };
 
           sDotfiles = {
             enable = true;
@@ -166,6 +178,9 @@
               starship.enable = true;
               opencode.enable = true;
               gemini.enable = true;
+              copilot.enable = true;
+              mangohud.enable = true;
+              flatpak-overrides.enable = true;
             };
           };
 
@@ -183,6 +198,13 @@
             };
           };
 
+          # These require the specific package name to work
+          # The flatpak cli offers alternatives so check there first
+          services.flatpak.packages = [
+            "com.unity.UnityHub"
+            "com.github.tchx84.Flatseal"
+          ];
+
           home.packages = with pkgs; [
             opencode
             antigravity
@@ -193,6 +215,7 @@
             distrobox
             nur.repos.ataraxiasjel.waydroid-script
             stablePkgs.bottles
+            kubectl
           ];
 
           home.file = {

@@ -42,6 +42,9 @@
               starship = mkConfigOption [ "dir" ];
               opencode = mkConfigOption [ "dir" ];
               gemini = mkConfigOption [ "dir" ];
+              copilot = mkConfigOption [ "dir" ];
+              mangohud = mkConfigOption [ "dir" ];
+              flatpak-overrides = mkConfigOption [ "dir" ];
             };
           };
           default = { };

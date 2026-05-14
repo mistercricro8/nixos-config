@@ -38,6 +38,7 @@
             nodejs
             pnpm
             go
+            jdk21
           ];
 
           buildInputs = [ pkgs.bashInteractive ];
@@ -45,6 +46,7 @@
           env = {
             GOPROXY = "https://proxy.golang.org,direct";
             GOSUMDB = "sum.golang.org";
+            JAVA_HOME = "${pkgs.jdk21}";
           };
 
           shellHook = ''
