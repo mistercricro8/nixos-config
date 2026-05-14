@@ -3,30 +3,79 @@
 {
   # Dictionary mapping configuration prefixes to their target directories relative to $HOME.
   config.flake.lib.hmConfigDirs = {
-    backgrounds = ".config/backgrounds";
-    bottom = ".config/bottom";
-    dms = ".config/DankMaterialShell";
-    dms-gtk-3 = ".config/gtk-3.0";
-    dms-gtk-4 = ".config/gtk-4.0";
-    dms-qt5ct = ".config/qt5ct";
-    dms-qt6ct = ".config/qt6ct";
-    hyprland = ".config/hypr";
-    kitty = ".config/kitty";
-    rofi = ".config/rofi";
-    swaync = ".config/swaync";
-    vscode = ".config/Code/User";
-    waybar = ".config/waybar";
-    winapps = ".config/winapps";
-    xsettingsd = ".config/xsettingsd";
-    yazi = ".config/yazi";
-    mimeapps = ".config";
-    starship = ".config";
-    zed = ".config/zed";
-    opencode = ".config/opencode";
-    gemini = ".gemini";
-    copilot = ".copilot";
-    mangohud = ".config/MangoHud";
-    flatpak-overrides = ".local/share/flatpak/overrides";
+    backgrounds = {
+      path = ".config/backgrounds";
+    };
+    bottom = {
+      path = ".config/bottom";
+    };
+    dms = {
+      path = ".config/DankMaterialShell";
+    };
+    dms-gtk-3 = {
+      path = ".config/gtk-3.0";
+    };
+    dms-gtk-4 = {
+      path = ".config/gtk-4.0";
+    };
+    dms-qt5ct = {
+      path = ".config/qt5ct";
+    };
+    dms-qt6ct = {
+      path = ".config/qt6ct";
+    };
+    hyprland = {
+      path = ".config/hypr";
+    };
+    kitty = {
+      path = ".config/kitty";
+    };
+    rofi = {
+      path = ".config/rofi";
+    };
+    swaync = {
+      path = ".config/swaync";
+    };
+    vscode = {
+      path = ".config/Code/User";
+    };
+    waybar = {
+      path = ".config/waybar";
+    };
+    winapps = {
+      path = ".config/winapps";
+    };
+    xsettingsd = {
+      path = ".config/xsettingsd";
+    };
+    yazi = {
+      path = ".config/yazi";
+    };
+    mimeapps = {
+      path = ".config";
+    };
+    starship = {
+      path = ".config";
+    };
+    zed = {
+      path = ".config/zed";
+    };
+    opencode = {
+      path = ".config/opencode";
+    };
+    gemini = {
+      path = ".gemini";
+    };
+    copilot = {
+      path = ".copilot";
+    };
+    mangohud = {
+      path = ".config/MangoHud";
+    };
+    flatpak-overrides = {
+      path = ".local/share/flatpak/overrides";
+      symlinkDir = true;
+    };
   };
 
   # Create a configuration provider option.
@@ -189,7 +238,9 @@
         baseDir = rootCfgPath + "/config-dirs";
         baseDirAbs = rootCfgPathAbs + "/config-dirs";
         configDirName = findConfigDir prefix baseDir;
-        targetDir = inputs.self.lib.hmConfigDirs.${prefix};
+        targetDirConfig = inputs.self.lib.hmConfigDirs.${prefix};
+        targetDir = targetDirConfig.path;
+        symlinkDir = targetDirConfig.symlinkDir or false;
       in
       if configDirName != null then
         let
@@ -197,13 +248,20 @@
           relPath = baseDir + "/${dirName}";
           absPath = baseDirAbs + "/${dirName}";
         in
-        inputs.self.lib.mkRecursiveFiles {
-          inherit lib config;
-          relOriginDir = relPath;
-          absOriginDir = absPath;
-          prefix = "";
-          outDir = targetDir;
-        }
+        if symlinkDir then
+          {
+            "${targetDir}" = {
+              source = config.lib.file.mkOutOfStoreSymlink absPath;
+            };
+          }
+        else
+          inputs.self.lib.mkRecursiveFiles {
+            inherit lib config;
+            relOriginDir = relPath;
+            absOriginDir = absPath;
+            prefix = "";
+            outDir = targetDir;
+          }
       else
         { }
     else

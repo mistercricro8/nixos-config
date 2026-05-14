@@ -48,7 +48,7 @@
       url = "github:gmodena/nix-flatpak/?ref=v0.7.0";
     };
     vscode-extensions = {
-      url = "github:nix-community/nix-vscode-extensions/5d9f84ecc813690afdd4b35c896904fc02ab6cac";
+      url = "github:nix-community/nix-vscode-extensions/bd79f28576c5d9e9af7328843eadc0d7d54f596d";
     };
     nur = {
       url = "github:nix-community/NUR";

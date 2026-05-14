@@ -9,7 +9,7 @@
       split-monitor-workspaces-hypr =
         inputs.split-monitor-workspaces.packages.${pkgs.stdenv.hostPlatform.system}.split-monitor-workspaces;
       uniWifiSsid = inputs.private.secrets.cricro-laptop.uniWiFiSsid;
-      # stablePkgs = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+      stablePkgs = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
     in
     {
       imports = with m; [
@@ -23,6 +23,7 @@
         nixos.sTailscale
         nixos.steam
         nixos.sunshine
+        nixos.flatpak
         ./_hardware-cricro-laptop.nix
       ];
 
@@ -146,6 +147,7 @@
             homeManager.dotfiles
             homeManager.hyprland
             homeManager.sops
+            homeManager.flatpak
           ];
 
           home.stateVersion = "24.11";
@@ -196,6 +198,13 @@
             };
           };
 
+          # These require the specific package name to work
+          # The flatpak cli offers alternatives so check there first
+          services.flatpak.packages = [
+            "com.unity.UnityHub"
+            "com.github.tchx84.Flatseal"
+          ];
+
           home.packages = with pkgs; [
             opencode
             antigravity
@@ -205,7 +214,7 @@
             mutagen
             distrobox
             nur.repos.ataraxiasjel.waydroid-script
-            bottles
+            stablePkgs.bottles
             kubectl
           ];
 

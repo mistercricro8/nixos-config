@@ -29,6 +29,7 @@
         nixos.sSamba
         nixos.sTailscale
         nixos.sunshine
+        nixos.flatpak
         ./_hardware-cricro-pc.nix
       ];
 
@@ -96,7 +97,6 @@
       environment.systemPackages = with pkgs; [
         v4l-utils
       ];
-      services.flatpak.enable = true;
 
       virtualisation.docker.enableOnBoot = false;
 
@@ -130,7 +130,7 @@
             homeManager.dotfiles
             homeManager.hyprland
             homeManager.sops
-            (inputs.nix-flatpak.homeManagerModules.nix-flatpak)
+            homeManager.flatpak
           ];
 
           home.stateVersion = "24.11";
@@ -144,17 +144,6 @@
           home.sessionVariables = {
             KUBECONFIG = config.sops.secrets."projects/KHHLzm/kubeAdminConfig".path;
           };
-
-          # These require the specific package name to work
-          # The flatpak cli offers alternatives so check there first
-          services.flatpak.packages = [
-            "org.vinegarhq.Sober"
-            "com.valvesoftware.Steam"
-            "com.valvesoftware.Steam.Utility.steamtinkerlaunch"
-            "org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/25.08"
-            "org.freedesktop.Platform.VulkanLayer.gamescope/x86_64/25.08"
-            "com.github.tchx84.Flatseal"
-          ];
 
           sDotfiles = {
             enable = true;
@@ -191,6 +180,18 @@
               ];
             };
           };
+
+          # These require the specific package name to work
+          # The flatpak cli offers alternatives so check there first
+          services.flatpak.packages = [
+            "org.vinegarhq.Sober"
+            "com.valvesoftware.Steam"
+            "com.valvesoftware.Steam.Utility.steamtinkerlaunch"
+            "com.valvesoftware.Steam.CompatibilityTool.Proton-GE"
+            "org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/25.08"
+            "org.freedesktop.Platform.VulkanLayer.gamescope/x86_64/25.08"
+            "com.github.tchx84.Flatseal"
+          ];
 
           home.packages = with pkgs; [
             blender
