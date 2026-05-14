@@ -28,7 +28,6 @@
         nixos.sBoot
         nixos.sSamba
         nixos.sTailscale
-        nixos.steam
         nixos.sunshine
         ./_hardware-cricro-pc.nix
       ];
@@ -130,14 +129,31 @@
             homeManager.semester
             homeManager.dotfiles
             homeManager.hyprland
+            homeManager.sops
             (inputs.nix-flatpak.homeManagerModules.nix-flatpak)
           ];
 
           home.stateVersion = "24.11";
           systemConstants.configName = "pc";
 
+          sops.secrets."projects/KHHLzm/kubeAdminConfig" = {
+            sopsFile = inputs.self + "/secrets/projects.yaml";
+            format = "yaml";
+          };
+
+          home.sessionVariables = {
+            KUBECONFIG = config.sops.secrets."projects/KHHLzm/kubeAdminConfig".path;
+          };
+
+          # These require the specific package name to work
+          # The flatpak cli offers alternatives so check there first
           services.flatpak.packages = [
             "org.vinegarhq.Sober"
+            "com.valvesoftware.Steam"
+            "com.valvesoftware.Steam.Utility.steamtinkerlaunch"
+            "org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/25.08"
+            "org.freedesktop.Platform.VulkanLayer.gamescope/x86_64/25.08"
+            "com.github.tchx84.Flatseal"
           ];
 
           sDotfiles = {
@@ -156,6 +172,9 @@
               starship.enable = true;
               opencode.enable = true;
               gemini.enable = true;
+              copilot.enable = true;
+              mangohud.enable = true;
+              flatpak-overrides.enable = true;
             };
           };
 
@@ -184,7 +203,7 @@
             easyeffects
             github-copilot-cli
             mutagen
-            android-studio
+            kubectl
           ];
 
           home.sessionVariables = {

@@ -10,7 +10,7 @@ fi
 VSCODE_VERSION="$1"
 
 exprs=(
-  "extensions.vscode-marketplace-release.github.copilot-chat"
+  "extensions.vscode-marketplace.github.copilot-chat"
   "extensions.vscode-marketplace-release.bbenoist.doxygen"
 )
 

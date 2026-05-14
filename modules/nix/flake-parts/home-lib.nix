@@ -24,6 +24,9 @@
     zed = ".config/zed";
     opencode = ".config/opencode";
     gemini = ".gemini";
+    copilot = ".copilot";
+    mangohud = ".config/MangoHud";
+    flatpak-overrides = ".local/share/flatpak/overrides";
   };
 
   # Create a configuration provider option.

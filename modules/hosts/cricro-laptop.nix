@@ -9,15 +9,15 @@
       split-monitor-workspaces-hypr =
         inputs.split-monitor-workspaces.packages.${pkgs.stdenv.hostPlatform.system}.split-monitor-workspaces;
       uniWifiSsid = inputs.private.secrets.cricro-laptop.uniWiFiSsid;
-      stablePkgs = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+      # stablePkgs = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
     in
     {
       imports = with m; [
+        nixos."users/cricro"
         nixos.system-desktop
         nixos.for-laptops
         nixos.catppuccin
         nixos.home-manager
-        nixos."users/cricro"
         nixos.sBoot
         nixos.sSamba
         nixos.sTailscale
@@ -145,10 +145,20 @@
             homeManager.semester
             homeManager.dotfiles
             homeManager.hyprland
+            homeManager.sops
           ];
 
           home.stateVersion = "24.11";
           systemConstants.configName = "laptop";
+
+          sops.secrets."projects/KHHLzm/kubeAdminConfig" = {
+            sopsFile = inputs.self + "/secrets/projects.yaml";
+            format = "yaml";
+          };
+
+          home.sessionVariables = {
+            KUBECONFIG = config.sops.secrets."projects/KHHLzm/kubeAdminConfig".path;
+          };
 
           sDotfiles = {
             enable = true;
@@ -166,6 +176,9 @@
               starship.enable = true;
               opencode.enable = true;
               gemini.enable = true;
+              copilot.enable = true;
+              mangohud.enable = true;
+              flatpak-overrides.enable = true;
             };
           };
 
@@ -192,7 +205,8 @@
             mutagen
             distrobox
             nur.repos.ataraxiasjel.waydroid-script
-            stablePkgs.bottles
+            bottles
+            kubectl
           ];
 
           home.file = {

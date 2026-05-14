@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "kindly-web-search": {
+      "type": "http",
+      "url": "http://localhost:8000/sse",
+      "tools": ["*"]
+    },
+    "searxng": {
+      "type": "http",
+      "url": "http://localhost:8001/sse",
+      "tools": ["*"]
+    },
+    "paper-search-mcp": {
+      "type": "local",
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "research-paper-search-mcp-1",
+        "python",
+        "-m",
+        "paper_search_mcp.server"
+      ],
+      "env": {},
+      "tools": ["*"]
+    }
+  }
+}

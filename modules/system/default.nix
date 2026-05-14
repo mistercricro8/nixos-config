@@ -18,8 +18,6 @@
         inputs.vscode-extensions.overlays.default
       ];
 
-      sops.gnupg.sshKeyPaths = [ "/home/cricro/.ssh/id_rsa" ];
-
       networking.networkmanager.enable = true;
 
       nix.settings = {
