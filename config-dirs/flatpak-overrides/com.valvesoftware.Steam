@@ -1,4 +1,4 @@
 [Context]
-devices=!all;shm;dri
+devices=!all;dri
 features=!bluetooth
 filesystems=!/media;!xdg-music;!/run/media;!xdg-run/speech-dispatcher;!xdg-pictures;!/mnt

@@ -181,6 +181,7 @@
               copilot.enable = true;
               mangohud.enable = true;
               flatpak-overrides.enable = true;
+              sioyek.enable = true;
             };
           };
 
@@ -202,6 +203,11 @@
           # The flatpak cli offers alternatives so check there first
           services.flatpak.packages = [
             "com.unity.UnityHub"
+            "com.valvesoftware.Steam"
+            "com.valvesoftware.Steam.Utility.steamtinkerlaunch"
+            "net.davidotek.pupgui2"
+            "org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/25.08"
+            "org.freedesktop.Platform.VulkanLayer.gamescope/x86_64/25.08"
             "com.github.tchx84.Flatseal"
           ];
 
@@ -216,6 +222,7 @@
             nur.repos.ataraxiasjel.waydroid-script
             stablePkgs.bottles
             kubectl
+            android-studio
           ];
 
           home.file = {

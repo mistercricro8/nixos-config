@@ -164,6 +164,7 @@
               copilot.enable = true;
               mangohud.enable = true;
               flatpak-overrides.enable = true;
+              sioyek.enable = true;
             };
           };
 
@@ -187,7 +188,7 @@
             "org.vinegarhq.Sober"
             "com.valvesoftware.Steam"
             "com.valvesoftware.Steam.Utility.steamtinkerlaunch"
-            "com.valvesoftware.Steam.CompatibilityTool.Proton-GE"
+            "net.davidotek.pupgui2"
             "org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/25.08"
             "org.freedesktop.Platform.VulkanLayer.gamescope/x86_64/25.08"
             "com.github.tchx84.Flatseal"

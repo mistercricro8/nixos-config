@@ -25,6 +25,7 @@
           moonlight-qt
           rustdesk-flutter
           heroic
+          sioyek
         ]
       );
 
@@ -41,9 +42,6 @@
         enable = true;
         force = true;
       };
-
-      programs.sioyek.enable = true;
-      catppuccin.sioyek.enable = true;
 
       programs.imv.enable = true;
       catppuccin.imv.enable = true;

@@ -45,6 +45,7 @@
               copilot = mkConfigOption [ "dir" ];
               mangohud = mkConfigOption [ "dir" ];
               flatpak-overrides = mkConfigOption [ "dir" ];
+              sioyek = mkConfigOption [ "dir" ];
             };
           };
           default = { };

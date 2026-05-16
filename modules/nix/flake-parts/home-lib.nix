@@ -76,6 +76,9 @@
       path = ".local/share/flatpak/overrides";
       symlinkDir = true;
     };
+    sioyek = {
+      path = ".config/sioyek";
+    };
   };
 
   # Create a configuration provider option.
