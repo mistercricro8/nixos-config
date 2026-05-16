@@ -52,6 +52,9 @@
         }
       ];
 
+      # weird issue with letsencrypt?
+      networking.enableIPv6 = false;
+
       # notably, docker enables these, this might be useful info for a host that doesn't run docker
       # boot.kernel.sysctl = {
       #   "net.ipv4.ip_forward" = 1;
