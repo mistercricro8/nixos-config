@@ -26,6 +26,7 @@
             zlib
             glib
             libxcb
+            openssl
             libglvnd
           ];
       in
@@ -35,11 +36,21 @@
 
           packages = with pkgs; [
             uv
+
             nodejs
             pnpm
+
             go
+
             jdk21
+
+            cargo
+            rustc
+            rustup
+            openssl
           ];
+
+          nativeBuildInputs = [ pkgs.pkg-config ];
 
           buildInputs = [ pkgs.bashInteractive ];
 
@@ -47,6 +58,7 @@
             GOPROXY = "https://proxy.golang.org,direct";
             GOSUMDB = "sum.golang.org";
             JAVA_HOME = "${pkgs.jdk21}";
+            RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
           };
 
           shellHook = ''
@@ -54,7 +66,7 @@
             export GOBIN="$GOPATH/bin"
 
             mkdir -p "$GOBIN"
-            export PATH="$GOBIN:$PATH"
+            export PATH="$GOBIN:$PATH:$HOME/.cargo/bin:$HOME/.rustup/toolchains"
           '';
         };
       }
