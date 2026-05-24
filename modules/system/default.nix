@@ -7,7 +7,6 @@
       imports = with inputs.self.modules; [
         nixos.nur
         nixos.sops
-        nixos.vscode-server
 
         generic.constants
         generic.system-constants

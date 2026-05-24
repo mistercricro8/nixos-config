@@ -1,7 +1,7 @@
 # VSCode.
 { inputs, ... }:
 {
-  flake.modules.homeManager.vscode =
+  flake.modules.homeManager.vscode-declarative =
     { pkgs, ... }:
     let
       vm = pkgs.vscode-marketplace;
@@ -9,7 +9,6 @@
       common-pkgs =
         with pkgs.vscode-marketplace;
         [
-          github.copilot
           chaitanyashahare.lazygit
           tomoki1207.pdf
           jnoortheen.nix-ide
@@ -18,10 +17,10 @@
           esbenp.prettier-vscode
           ms-azuretools.vscode-docker
           catppuccin.catppuccin-vsc-icons
-          github.copilot-chat
+          catppuccin.catppuccin-vsc
         ]
         ++ [
-          pkgs.vscode-marketplace-release.catppuccin.catppuccin-vsc
+          # pkgs.vscode-marketplace-release.catppuccin.catppuccin-vsc
         ];
 
       remote-pkgs =
@@ -83,21 +82,8 @@
         ]);
     in
     {
-      home.packages = inputs.self.lib.filterPlatformPackages pkgs (
-        with pkgs;
-        [
-          ruff
-          clang-tools
-          nixd
-          nixfmt
-          typst
-          jdk
-          lazygit
-          go
-          shellcheck
-          shfmt
-        ]
-      );
+      # TODO: for deps check zed.nix, althout I'm somewhat unsure on
+      # how willing is vscode to use direnv sourced deps
 
       programs.vscode = {
         enable = true;

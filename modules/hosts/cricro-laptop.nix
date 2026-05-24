@@ -139,7 +139,7 @@
             homeManager."users/cricro"
             homeManager.cli-tools
             homeManager.desktop-apps
-            homeManager.vscode
+            homeManager.vscode-mutable
             homeManager.zed
             homeManager.fonts
             homeManager.for-laptops
@@ -171,7 +171,6 @@
               rofi.enable = true;
               vscode.enable = true;
               zed.enable = true;
-              winapps.enable = true;
               xsettingsd.enable = true;
               yazi.enable = true;
               mimeapps.enable = true;
