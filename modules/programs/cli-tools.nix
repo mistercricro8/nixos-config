@@ -31,6 +31,7 @@
           p7zip
           ffmpeg
           tldr
+          lazygit
           hyperfine
           nh
           playerctl

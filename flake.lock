@@ -829,11 +829,11 @@
     },
     "private": {
       "locked": {
-        "lastModified": 1778004388,
-        "narHash": "sha256-vhhEwGjy3d1vC4okPgQqyidKDtIaTYyzz4I95A2Ms6s=",
+        "lastModified": 1779666081,
+        "narHash": "sha256-XasEoQz+XqBQolUpNZXtoh9o4OU+liZfCqBdcLEBdbg=",
         "owner": "mistercricro8",
         "repo": "nixos-config-private",
-        "rev": "d4a930e63a0c2e5242916053c1559a55648e3ead",
+        "rev": "60dbd81cfbbe6a39cd9db18bece590439e2f81ae",
         "type": "github"
       },
       "original": {
