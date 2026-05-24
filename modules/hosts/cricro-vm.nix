@@ -256,7 +256,7 @@
           v8Kr3f-runner = {
             enable = true;
             url = inputs.private.secrets.cricro-vm.v8Kr3f.orgUrl;
-            tokenFile = config.sops.secrets."cricro-vm/githubTokenFile".path;
+            tokenFile = config.sops.secrets."cricro-vm/v8Kr3f/githubTokenFile".path;
             extraPackages = with pkgs; [
               docker
               git
