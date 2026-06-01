@@ -246,24 +246,6 @@
         };
       };
 
-      # ============== Github Runner
-      sops.secrets."cricro-vm/v8Kr3f/githubTokenFile" = {
-        sopsFile = inputs.self + "/secrets/cricro-vm.yaml";
-        format = "yaml";
-      };
-
-      services.github-runners = {
-          v8Kr3f-runner = {
-            enable = true;
-            url = inputs.private.secrets.cricro-vm.v8Kr3f.orgUrl;
-            tokenFile = config.sops.secrets."cricro-vm/v8Kr3f/githubTokenFile".path;
-            extraPackages = with pkgs; [
-              docker
-              git
-            ];
-          };
-        };
-
       # ============== System
       system.stateVersion = "23.05";
 
