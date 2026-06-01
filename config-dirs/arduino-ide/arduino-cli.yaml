@@ -1,0 +1,2 @@
+network:
+  connection_timeout: 600s

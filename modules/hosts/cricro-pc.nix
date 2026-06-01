@@ -200,6 +200,8 @@
             antigravity
             gemini-cli
             scrcpy
+            blender
+            freecad
             easyeffects
             github-copilot-cli
             mutagen

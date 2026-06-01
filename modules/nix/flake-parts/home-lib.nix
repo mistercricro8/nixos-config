@@ -79,6 +79,9 @@
     sioyek = {
       path = ".config/sioyek";
     };
+    arduino-ide = {
+      path = ".arduinoIDE";
+    };
   };
 
   # Create a configuration provider option.

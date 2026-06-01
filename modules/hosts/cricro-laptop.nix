@@ -21,7 +21,6 @@
         nixos.sBoot
         nixos.sSamba
         nixos.sTailscale
-        nixos.steam
         nixos.sunshine
         nixos.flatpak
         ./_hardware-cricro-laptop.nix
@@ -181,6 +180,7 @@
               mangohud.enable = true;
               flatpak-overrides.enable = true;
               sioyek.enable = true;
+              arduino-ide.enable = true;
             };
           };
 
@@ -222,6 +222,9 @@
             stablePkgs.bottles
             kubectl
             android-studio
+            blender
+            freecad
+            arduino-ide
           ];
 
           home.file = {

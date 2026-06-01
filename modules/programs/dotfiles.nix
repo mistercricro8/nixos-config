@@ -46,6 +46,7 @@
               mangohud = mkConfigOption [ "dir" ];
               flatpak-overrides = mkConfigOption [ "dir" ];
               sioyek = mkConfigOption [ "dir" ];
+              arduino-ide = mkConfigOption [ "dir" ];
             };
           };
           default = { };

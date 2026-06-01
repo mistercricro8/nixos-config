@@ -40,6 +40,7 @@
             ssh-to-pgp
             sops
             nix-output-monitor
+            nixd
           ];
           buildInputs = with pkgs; [ bashInteractive ];
           shellHook = ''

@@ -52,7 +52,7 @@
                 "--hostname=${cfg.hostName}"
                 "--login-server=${inputs.private.secrets.tailscale.loginServer}"
                 "--accept-routes"
-                "--accept-dns=true"
+                # "--accept-dns=true"
                 "--reset"
               ]
               (lib.mkIf (cfg.hostType == "server" || cfg.hostType == "both") [
