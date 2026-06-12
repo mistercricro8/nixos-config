@@ -78,6 +78,11 @@
       networking.hostName = "cricro-pc";
       networking.interfaces.enp3s0.wakeOnLan.enable = true;
       networking.nftables.enable = true;
+      networking.firewall = {
+        allowedUDPPorts = [
+          7790
+        ];
+      };
 
       # ============== Time
       time.timeZone = "America/Lima";
@@ -197,7 +202,6 @@
             opencode
             parsec-bin
             android-tools
-            antigravity
             gemini-cli
             scrcpy
             blender
@@ -206,6 +210,7 @@
             github-copilot-cli
             mutagen
             kubectl
+            antigravity-cli
           ];
 
           home.sessionVariables = {

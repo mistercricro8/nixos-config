@@ -83,42 +83,42 @@
       networking.nftables.enable = true;
 
       services.resolved.enable = true;
-      sops.secrets."cricro-laptop/uniWiFiPwd" = {
-        sopsFile = inputs.self + "/secrets/cricro-laptop.yaml";
-        format = "yaml";
-      };
+      # sops.secrets."cricro-laptop/uniWiFiPwd" = {
+      #   sopsFile = inputs.self + "/secrets/cricro-laptop.yaml";
+      #   format = "yaml";
+      # };
       networking.networkmanager.dns = "systemd-resolved";
-      networking.networkmanager.ensureProfiles = {
-        profiles = {
-          uniWifiSsid = {
-            connection = {
-              id = uniWifiSsid;
-              type = "wifi";
-            };
-            wifi = {
-              ssid = uniWifiSsid;
-            };
-            wifi-security = {
-              key-mgmt = "wpa-psk";
-              psk-flags = 1;
-            };
-            ipv4 = {
-              method = "auto";
-              ignore-auto-dns = false;
-              dns-priority = -20000;
-              dns-search = "~.";
-            };
-          };
-        };
-        secrets.entries = [
-          {
-            file = config.sops.secrets."cricro-laptop/uniWiFiPwd".path;
-            key = "psk";
-            matchId = uniWifiSsid;
-            matchSetting = "802-11-wireless-security";
-          }
-        ];
-      };
+      # networking.networkmanager.ensureProfiles = {
+      #   profiles = {
+      #     uniWifiSsid = {
+      #       connection = {
+      #         id = uniWifiSsid;
+      #         type = "wifi";
+      #       };
+      #       wifi = {
+      #         ssid = uniWifiSsid;
+      #       };
+      #       wifi-security = {
+      #         key-mgmt = "wpa-psk";
+      #         psk-flags = 1;
+      #       };
+      #       ipv4 = {
+      #         method = "auto";
+      #         ignore-auto-dns = false;
+      #         dns-priority = -20000;
+      #         dns-search = "~.";
+      #       };
+      #     };
+      #   };
+      #   secrets.entries = [
+      #     {
+      #       file = config.sops.secrets."cricro-laptop/uniWiFiPwd".path;
+      #       key = "psk";
+      #       matchId = uniWifiSsid;
+      #       matchSetting = "802-11-wireless-security";
+      #     }
+      #   ];
+      # };
 
       services.logind.settings.Login = {
         HandlePowerKey = "ignore";
@@ -212,7 +212,6 @@
 
           home.packages = with pkgs; [
             opencode
-            antigravity
             gemini-cli
             github-copilot-cli
             python3
@@ -225,6 +224,8 @@
             blender
             freecad
             arduino-ide
+            antigravity-cli
+            open-webui
           ];
 
           home.file = {

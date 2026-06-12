@@ -11,5 +11,10 @@
 
     # thanks gtk
     programs.dconf.enable = true;
+
+    # thunar
+    programs.xfconf.enable = true;
+    services.gvfs.enable = true;
+    services.tumbler.enable = true;
   };
 }

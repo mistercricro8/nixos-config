@@ -8,8 +8,8 @@
   flake.modules.homeManager.catppuccin = {
     imports = [ inputs.catppuccin.homeModules.catppuccin ];
     catppuccin = {
-      flavor = "mocha";
-      accent = "yellow";
+      enable = true;
+      autoEnable = false;
     };
   };
 }

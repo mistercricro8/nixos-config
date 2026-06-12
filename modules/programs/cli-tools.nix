@@ -31,6 +31,8 @@
           p7zip
           ffmpeg
           tldr
+          lsof
+          dig
           lazygit
           hyperfine
           nh

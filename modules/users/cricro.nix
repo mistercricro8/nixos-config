@@ -117,6 +117,8 @@
           ll = "eza -l";
           l = "eza -la";
           kssh = "kitten ssh";
+          k = "kubectl";
+          kbuild = "kustomize build --enable-alpha-plugins --enable-exec";
         };
         functions = {
           e = {
