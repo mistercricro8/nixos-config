@@ -30,7 +30,9 @@
       "args": [],
       "projects": [
         {
-          "paths": ["/home/cricro/nixos-config"]
+          "paths": [
+            "/home/cricro/nixos-config"
+          ]
         }
       ]
     },
@@ -39,13 +41,30 @@
       "args": [],
       "projects": [
         {
-          "paths": ["/home/cricro/nixos-config"]
+          "paths": [
+            "/home/cricro/nixos-config"
+          ]
         },
         {
-          "paths": ["/home/cricro/server-data"]
+          "paths": [
+            "/home/cricro/server-data"
+          ]
         },
         {
-          "paths": ["/home/cricro/work"]
+          "paths": [
+            "/home/cricro/work"
+          ]
+        }
+      ]
+    },
+    {
+      "host": "cricro-pc-l",
+      "args": [],
+      "projects": [
+        {
+          "paths": [
+            "/home/cricro/projects/los-podadores/automation/./"
+          ]
         }
       ]
     }

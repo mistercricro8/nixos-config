@@ -198,19 +198,18 @@
           ];
 
           home.packages = with pkgs; [
-            blender
             opencode
-            parsec-bin
-            android-tools
             gemini-cli
-            scrcpy
-            blender
-            freecad
-            easyeffects
             github-copilot-cli
-            mutagen
-            kubectl
             antigravity-cli
+            open-webui
+
+            blender
+            android-tools
+            easyeffects
+            kubectl
+            scrcpy
+            mutagen
           ];
 
           home.sessionVariables = {

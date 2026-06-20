@@ -10,7 +10,7 @@
           pavucontrol
           libreoffice-fresh
           discord
-          thunar
+          kdePackages.dolphin
           nwg-look
           lorien
           rnote

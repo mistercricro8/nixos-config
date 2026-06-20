@@ -1,28 +1,13 @@
 {
   "mcp": {
-    "allowed": [
-      "kindly-web-search",
-      "searxng",
-      "paper-search-mcp"
-    ]
+    "allowed": ["kindly-web-search", "searxng", "paper-search-mcp"]
   },
   "mcpServers": {
     "kindly-web-search": {
-      "url": "http://localhost:8000/sse"
+      "url": "http://localhost:12000/sse"
     },
     "searxng": {
-      "url": "http://localhost:8001/sse"
-    },
-    "paper-search-mcp": {
-      "command": "docker",
-      "args": [
-        "exec",
-        "-i",
-        "research-paper-search-mcp-1",
-        "python",
-        "-m",
-        "paper_search_mcp.server"
-      ]
+      "url": "http://localhost:12001/sse"
     }
   },
   "security": {
@@ -32,13 +17,7 @@
   },
   "ui": {
     "footer": {
-      "items": [
-        "workspace",
-        "git-branch",
-        "sandbox",
-        "model-name",
-        "quota"
-      ]
+      "items": ["workspace", "git-branch", "sandbox", "model-name", "quota"]
     }
   },
   "model": {

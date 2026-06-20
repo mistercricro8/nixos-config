@@ -3,7 +3,12 @@
   "mcp": {
     "kindly-web-search": {
       "type": "remote",
-      "url": "http://localhost:8000/sse",
+      "url": "http://localhost:12000/sse",
+      "enabled": true
+    },
+    "searxng": {
+      "type": "remote",
+      "url": "http://localhost:12001/sse",
       "enabled": true
     }
   }

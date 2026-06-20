@@ -26,6 +26,11 @@
           default = "client";
           description = "Type of host for tailscale routing features.";
         };
+        secretKeyPath = mkOption {
+          type = types.str;
+          default = "tailscale/globalAuthKey";
+          description = "The internal sops key path where the tailscale secret is located inside tailscale.yaml.";
+        };
       };
 
       config =
@@ -33,7 +38,7 @@
           cfg = config.sTailscale;
         in
         lib.mkIf cfg.enable {
-          sops.secrets."tailscale/globalAuthKey" = {
+          sops.secrets."${cfg.secretKeyPath}" = {
             sopsFile = inputs.self + "/secrets/tailscale.yaml";
             format = "yaml";
           };
@@ -45,14 +50,13 @@
           services.tailscale = {
             enable = true;
             useRoutingFeatures = cfg.hostType;
-            authKeyFile = config.sops.secrets."tailscale/globalAuthKey".path;
+            authKeyFile = config.sops.secrets."${cfg.secretKeyPath}".path;
             extraUpFlags = lib.mkMerge [
               [
                 "--operator=cricro"
                 "--hostname=${cfg.hostName}"
                 "--login-server=${inputs.private.secrets.tailscale.loginServer}"
                 "--accept-routes"
-                # "--accept-dns=true"
                 "--reset"
               ]
               (lib.mkIf (cfg.hostType == "server" || cfg.hostType == "both") [

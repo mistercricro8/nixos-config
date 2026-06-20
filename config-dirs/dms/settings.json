@@ -281,7 +281,7 @@
   "spotlightBarShowModeChips": false,
   "useAutoLocation": false,
   "weatherEnabled": false,
-  "networkPreference": "ethernet",
+  "networkPreference": "wifi",
   "iconTheme": "System Default",
   "cursorSettings": {
     "theme": "catppuccin-mocha-yellow-cursors",

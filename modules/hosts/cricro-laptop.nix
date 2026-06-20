@@ -8,7 +8,6 @@
       m = inputs.self.modules;
       split-monitor-workspaces-hypr =
         inputs.split-monitor-workspaces.packages.${pkgs.stdenv.hostPlatform.system}.split-monitor-workspaces;
-      uniWifiSsid = inputs.private.secrets.cricro-laptop.uniWiFiSsid;
       stablePkgs = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
     in
     {
@@ -51,6 +50,7 @@
       sTailscale = {
         enable = true;
         hostName = "cricro-laptop";
+        # secretKeyPath = "tailscale/cricroLaptop";
       };
 
       # ============== Networking
@@ -214,18 +214,13 @@
             opencode
             gemini-cli
             github-copilot-cli
-            python3
-            mutagen
-            distrobox
-            nur.repos.ataraxiasjel.waydroid-script
-            stablePkgs.bottles
-            kubectl
-            android-studio
-            blender
-            freecad
-            arduino-ide
             antigravity-cli
             open-webui
+
+            blender
+            mutagen
+            nur.repos.ataraxiasjel.waydroid-script
+            kubectl
           ];
 
           home.file = {
