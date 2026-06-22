@@ -60,7 +60,6 @@
       time.timeZone = "America/Lima";
 
       # ============== Extra
-      virtualisation.virtualbox.host.enable = true;
       users.extraGroups.vboxusers.members = [ "cricro" ];
       programs.wireshark = {
         enable = true;
@@ -79,6 +78,8 @@
           size = 8 * 1024;
         }
       ];
+
+      boot.kernelPackages = pkgs.linuxPackages_latest;
 
       networking.nftables.enable = true;
 

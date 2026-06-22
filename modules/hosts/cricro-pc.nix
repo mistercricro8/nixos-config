@@ -66,6 +66,17 @@
             accessMode = "read-write";
             user = "LaEsquina";
           };
+          "Datafest" = {
+            path = "/home/datafest/datafest";
+            guestOk = "no";
+            writable = "yes";
+            accessMode = "read-write";
+            user = "datafest";
+            userData = {
+              homeMode = "0777";
+              hashedPassword = "$6$BbbkeDRQQ5ifgrM9$6PlvUgs8g743yzXYTiQy36P/eg.1aTpXQGbB/PO0aF7cwpllqLI3M08KQXcNM9Eibb7jhZU/FrnFKiu0dFNJG/";
+            };
+          };
         };
       };
 
@@ -111,6 +122,8 @@
           size = 8 * 1024;
         }
       ];
+
+      boot.kernelPackages = pkgs.linuxPackages_zen;
 
       # ============== System
       system.stateVersion = "24.05";

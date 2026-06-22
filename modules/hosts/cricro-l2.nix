@@ -3,7 +3,7 @@
 { inputs, ... }:
 {
   flake.modules.nixos."cricro-l2" =
-    { ... }:
+    { pkgs, ... }:
     let
       m = inputs.self.modules;
     in
@@ -60,6 +60,10 @@
             starship.enable = true;
           };
         };
+
+        home.packages = with pkgs; [
+          wakeonlan
+        ];
 
         home.stateVersion = "24.11";
         systemConstants.configName = "laptop";

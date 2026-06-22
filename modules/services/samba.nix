@@ -140,6 +140,7 @@
                   "bind interfaces only" = lib.mkIf cfg.tailscaleOnly "yes";
                   "interfaces" = lib.mkIf cfg.tailscaleOnly "lo";
                   "smb ports" = lib.mkIf cfg.tailscaleOnly "445";
+                  "access based share enum" = "yes";
                 };
               }
               (lib.mapAttrs (
@@ -155,6 +156,7 @@
                   "writable" = dirCfg.writable;
                   "directory mask" = chosenMasks.directoryMask;
                   "force user" = lib.mkIf (dirCfg.user != null) dirCfg.user;
+                  "valid users" = lib.mkIf (dirCfg.user != null) dirCfg.user;
                 }
               ) cfg.dirs)
             ];

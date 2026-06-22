@@ -1,28 +1,20 @@
-// Zed settings
-//
-// For information on how to configure Zed, see the Zed
-// documentation: https://zed.dev/docs/configuring-zed
-//
-// To see all of Zed's default settings without changing your
-// custom settings, run `zed: open default settings` from the
-// command palette (cmd-shift-p / ctrl-shift-p)
 {
   "cli_default_open_behavior": "new_window",
   "outline_panel": {
-    "dock": "left"
+    "dock": "left",
   },
   "collaboration_panel": {
-    "dock": "left"
+    "dock": "left",
   },
   "git_panel": {
-    "dock": "left"
+    "dock": "left",
   },
   "edit_predictions": {
     "mode": "subtle",
     "provider": "copilot",
     "copilot": {
-      "enable_next_edit_suggestions": true
-    }
+      "enable_next_edit_suggestions": true,
+    },
   },
   "ssh_connections": [
     {
@@ -30,44 +22,34 @@
       "args": [],
       "projects": [
         {
-          "paths": [
-            "/home/cricro/nixos-config"
-          ]
-        }
-      ]
+          "paths": ["/home/cricro/nixos-config"],
+        },
+      ],
     },
     {
       "host": "cricro-vm",
       "args": [],
       "projects": [
         {
-          "paths": [
-            "/home/cricro/nixos-config"
-          ]
+          "paths": ["/home/cricro/nixos-config"],
         },
         {
-          "paths": [
-            "/home/cricro/server-data"
-          ]
+          "paths": ["/home/cricro/server-data"],
         },
         {
-          "paths": [
-            "/home/cricro/work"
-          ]
-        }
-      ]
+          "paths": ["/home/cricro/work"],
+        },
+      ],
     },
     {
       "host": "cricro-pc-l",
       "args": [],
       "projects": [
         {
-          "paths": [
-            "/home/cricro/projects/los-podadores/automation/./"
-          ]
-        }
-      ]
-    }
+          "paths": ["/home/cricro/projects/los-podadores/automation"],
+        },
+      ],
+    },
   ],
   "auto_install_extensions": {
     "html": true,
@@ -92,66 +74,72 @@
     "hyprlang": true,
     "opentofu": true,
     "fish": true,
-    "matlab": true
+    "matlab": true,
   },
   "project_panel": {
-    "dock": "right"
+    "dock": "right",
   },
   "tab_size": 2,
   "languages": {
     "Nix": {
       "tab_size": 2,
-      "language_servers": ["nixd", "!nil"]
-    }
+      "language_servers": ["nixd", "!nil"],
+    },
   },
   "lsp": {
     "vtsls": {
       "settings": {
         "typescript": {
           "updateImportsOnFileMove": {
-            "enabled": "always"
-          }
+            "enabled": "always",
+          },
         },
         "javascript": {
           "updateImportsOnFileMove": {
-            "enabled": "always"
-          }
-        }
+            "enabled": "always",
+          },
+        },
       },
-      "enable_lsp_tasks": true
+      "enable_lsp_tasks": true,
     },
     "nixd": {
       "settings": {
         "formatting": {
-          "command": ["nixfmt"]
+          "command": ["nixfmt"],
         },
         "nixpkgs": {
-          "expr": "import (builtins.getFlake \"/home/cricro/nixos-config\").inputs.nixpkgs { }"
+          "expr": "import (builtins.getFlake \"/home/cricro/nixos-config\").inputs.nixpkgs { }",
         },
         "options": {
           "flake-parts": {
-            "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").debug"
+            "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").debug",
           },
           "flake-parts-2": {
-            "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").currentSystem.options"
-          }
-        }
-      }
-    }
+            "expr": "(builtins.getFlake \"/home/cricro/nixos-config\").currentSystem.options",
+          },
+        },
+      },
+    },
   },
   "agent": {
     "inline_assistant_model": {
       "provider": "copilot_chat",
       "model": "gpt-5-mini",
-      "enable_thinking": false
+      "enable_thinking": false,
     },
+    "commit_message_model": {
+      "provider": "copilot_chat",
+      "model": "gpt-5-mini",
+      "enable_thinking": false,
+    },
+    "commit_message_instructions": "Use the Conventional Commits format: <type>(<scope>): <description>. Keep the title under 50 characters. Do not end with a period. Use the imperative mood (e.g., 'add' not 'added'). Never provide a body.",
     "dock": "left",
-    "model_parameters": []
+    "model_parameters": [],
   },
   "icon_theme": {
     "mode": "dark",
     "light": "Catppuccin Mocha",
-    "dark": "Catppuccin Mocha"
+    "dark": "Catppuccin Mocha",
   },
   "buffer_font_size": 12.0,
   "buffer_font_family": "CaskaydiaMono Nerd Font Mono",
@@ -159,7 +147,7 @@
   "theme": {
     "mode": "dark",
     "light": "Catppuccin Latte",
-    "dark": "Catppuccin Mocha"
+    "dark": "Catppuccin Mocha",
   },
-  "load_direnv": "shell_hook"
+  "load_direnv": "shell_hook",
 }
