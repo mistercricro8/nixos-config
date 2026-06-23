@@ -45,6 +45,7 @@ hl.config({
       },
       inactive_border = subtext0,
     },
+    resize_on_border = true,
     layout = "dwindle",
   },
   decoration = {

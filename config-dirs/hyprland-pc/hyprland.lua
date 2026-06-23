@@ -35,6 +35,7 @@ hl.config({
     kb_variant = "",
     numlock_by_default = true,
     follow_mouse = 1,
+    sensitivity = 0,
     touchpad = {
       tap_to_click = true,
       natural_scroll = true,
@@ -89,11 +90,11 @@ hl.config({
 -- Device overrides
 hl.device({
   name = "usb-optical-mouse-",
-  sensitivity = 0.5,
+  sensitivity = 0,
   accel_profile = "adaptative",
 })
 
--- Animations (Overriding to match your fast/snappy previous preference)
+-- Animations
 hl.animation({ leaf = "workspaces", enabled = true, speed = 0.25, bezier = "linear" })
 hl.animation({ leaf = "windows", enabled = false })
 hl.animation({ leaf = "fade", enabled = false })
