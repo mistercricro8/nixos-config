@@ -81,16 +81,16 @@
                 types.submodule {
                   options.name = mkOption {
                     type = types.str;
-                    description = "Name of the plugin.";
+                    description = "Name of the plugin/extension.";
                   };
                   options.sourcePath = mkOption {
                     type = types.str;
-                    description = "Path to the plugin .so file.";
+                    description = "Path to the plugin/extension source.";
                   };
                 }
               );
               default = [ ];
-              description = "List of plugins to load.";
+              description = "List of plugins/extensions to load.";
             };
           };
           default = { };
@@ -176,7 +176,7 @@
             (lib.mkIf (cfg.plugins.enable) (
               lib.listToAttrs (
                 map (plugin: {
-                  name = ".hypr/plugins/${plugin.name}";
+                  name = ".config/hypr/plugins/${plugin.name}";
                   value = {
                     source = config.lib.file.mkOutOfStoreSymlink plugin.sourcePath;
                   };

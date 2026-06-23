@@ -7,8 +7,6 @@
     let
       self = inputs.self;
       m = self.modules;
-      split-monitor-workspaces-hypr =
-        inputs.split-monitor-workspaces.packages.${pkgs.stdenv.hostPlatform.system}.split-monitor-workspaces;
       storeDir = "/home/cricro/store";
       storeDirs = [
         "uni"
@@ -191,8 +189,8 @@
               enable = true;
               plugins = [
                 {
-                  name = "libsplit-monitor-workspaces.so";
-                  sourcePath = "${split-monitor-workspaces-hypr}/lib/libsplit-monitor-workspaces.so";
+                  name = "split-monitor-workspaces";
+                  sourcePath = "${inputs.split-monitor-workspaces}";
                 }
               ];
             };

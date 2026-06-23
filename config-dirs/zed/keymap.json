@@ -9,7 +9,56 @@
   {
     "context": "Workspace || Editor",
     "bindings": {
-      "ctrl-;": "terminal_panel::Toggle"
+      "ctrl-;": "terminal_panel::Toggle",
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-shift-i": [
+        "workspace::IncreaseActiveDockSize",
+        {
+          "px": 15
+        }
+      ],
+    },
+  },
+  {
+    "context": "Workspace",
+    "unbind": {
+      "ctrl-alt-=": [
+        "workspace::IncreaseActiveDockSize",
+        {
+          "px": 0
+        }
+      ]
+    }
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-shift-o": [
+        "workspace::DecreaseActiveDockSize",
+        {
+          "px": 15
+        }
+      ]
+    }
+  },
+  {
+    "context": "Workspace",
+    "unbind": {
+      "ctrl-alt--": [
+        "workspace::DecreaseActiveDockSize",
+        {
+          "px": 0
+        }
+      ]
+    }
+  },
+  {
+    "bindings": {
+      "ctrl-shift-k": "editor::ToggleFocus"
     }
   }
 ]

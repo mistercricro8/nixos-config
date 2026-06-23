@@ -6,8 +6,6 @@
     { pkgs, config, ... }:
     let
       m = inputs.self.modules;
-      split-monitor-workspaces-hypr =
-        inputs.split-monitor-workspaces.packages.${pkgs.stdenv.hostPlatform.system}.split-monitor-workspaces;
       stablePkgs = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
     in
     {
@@ -192,8 +190,8 @@
               enable = true;
               plugins = [
                 {
-                  name = "libsplit-monitor-workspaces.so";
-                  sourcePath = "${split-monitor-workspaces-hypr}/lib/libsplit-monitor-workspaces.so";
+                  name = "split-monitor-workspaces";
+                  sourcePath = "${inputs.split-monitor-workspaces}";
                 }
               ];
             };
