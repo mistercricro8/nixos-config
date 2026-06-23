@@ -18,8 +18,8 @@
       "ctrl-shift-i": [
         "workspace::IncreaseActiveDockSize",
         {
-          "px": 15
-        }
+          "px": 15,
+        },
       ],
     },
   },
@@ -29,10 +29,10 @@
       "ctrl-alt-=": [
         "workspace::IncreaseActiveDockSize",
         {
-          "px": 0
-        }
-      ]
-    }
+          "px": 0,
+        },
+      ],
+    },
   },
   {
     "context": "Workspace",
@@ -40,10 +40,10 @@
       "ctrl-shift-o": [
         "workspace::DecreaseActiveDockSize",
         {
-          "px": 15
-        }
-      ]
-    }
+          "px": 15,
+        },
+      ],
+    },
   },
   {
     "context": "Workspace",
@@ -51,14 +51,26 @@
       "ctrl-alt--": [
         "workspace::DecreaseActiveDockSize",
         {
-          "px": 0
-        }
-      ]
-    }
+          "px": 0,
+        },
+      ],
+    },
   },
   {
     "bindings": {
-      "ctrl-shift-k": "editor::ToggleFocus"
-    }
-  }
+      "ctrl-shift-k": "editor::ToggleFocus",
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-:": "workspace::NewTerminal",
+    },
+  },
+  {
+    "context": "Workspace",
+    "unbind": {
+      "ctrl-~": "workspace::NewTerminal",
+    },
+  },
 ]
