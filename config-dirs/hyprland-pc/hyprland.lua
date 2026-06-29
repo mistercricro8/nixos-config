@@ -26,12 +26,12 @@ hl.env("EMOTES_PATH", home .. "/nixos-config/apps/emotes")
 
 hl.env("QT_QPA_PLATFORM", "wayland")
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
-hl.env("QT_QPA_PLATFORMTHEME", "gtk3")
-hl.env("QT_QPA_PLATFORMTHEME_QT6", "gtk3")
+hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
+hl.env("QT_QPA_PLATFORMTHEME_QT6", "qt6ct")
 
 hl.config({
   input = {
-    kb_layout = "latam,br",
+    kb_layout = "us,latam,br",
     kb_variant = "",
     numlock_by_default = true,
     follow_mouse = 1,

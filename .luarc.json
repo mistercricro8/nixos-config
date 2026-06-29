@@ -1,0 +1,5 @@
+{
+  "workspace": {
+    "library": ["~/.config/hypr/share/stubs"]
+  }
+}

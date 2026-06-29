@@ -41,6 +41,7 @@
             sops
             nix-output-monitor
             nixd
+            nixfmt
           ];
           buildInputs = with pkgs; [ bashInteractive ];
           shellHook = ''

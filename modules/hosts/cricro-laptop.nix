@@ -80,13 +80,10 @@
       boot.kernelPackages = pkgs.linuxPackages_latest;
 
       networking.nftables.enable = true;
-
-      services.resolved.enable = true;
       # sops.secrets."cricro-laptop/uniWiFiPwd" = {
       #   sopsFile = inputs.self + "/secrets/cricro-laptop.yaml";
       #   format = "yaml";
       # };
-      networking.networkmanager.dns = "systemd-resolved";
       # networking.networkmanager.ensureProfiles = {
       #   profiles = {
       #     uniWifiSsid = {
@@ -223,8 +220,14 @@
           ];
 
           home.file = {
-            ".icons".source = "${pkgs.catppuccin-cursors.mochaYellow}";
-            ".jdks/current".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.jdk}";
+            ".icons" = {
+              source = "${pkgs.catppuccin-cursors.mochaYellow}";
+              force = true;
+            };
+            ".jdks/current" = {
+              source = config.lib.file.mkOutOfStoreSymlink "${pkgs.jdk}";
+              force = true;
+            };
           };
         };
 

@@ -1,4 +1,4 @@
-# Fonts
+# Fonts and icons (not renaming the file)
 { inputs, ... }:
 {
   flake.modules.homeManager.fonts =
@@ -9,6 +9,7 @@
         [
           nerd-fonts.caskaydia-mono
           nerd-fonts.jetbrains-mono
+          papirus-icon-theme
         ]
       );
     };

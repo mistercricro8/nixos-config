@@ -25,7 +25,7 @@ hl.env("QT_QPA_PLATFORMTHEME_QT6", "gtk3")
 
 hl.config({
   input = {
-    kb_layout = "latam,br",
+    kb_layout = "us,latam,br",
     kb_variant = "",
     numlock_by_default = true,
     follow_mouse = 1,

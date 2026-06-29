@@ -7,6 +7,10 @@
       hyprpkgs = inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system};
     in
     {
+      imports = [
+        inputs.dms.nixosModules.greeter
+      ];
+
       hardware.graphics.package = hyprpkgs.mesa;
 
       programs.hyprland = {
@@ -16,6 +20,12 @@
         portalPackage =
           inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
         xwayland.enable = true;
+      };
+
+      programs.dank-material-shell.greeter = {
+        enable = true;
+        compositor.name = "hyprland";
+        configHome = "/home/cricro";
       };
 
       xdg.portal = {
@@ -52,6 +62,8 @@
             provider
             ;
         };
+
+      hyprlandPkg = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
     in
     {
       options.sHyprland = with lib; {
@@ -142,8 +154,8 @@
                 with pkgs;
                 [
                   adw-gtk3
-                  libsForQt5.qt5ct
-                  kdePackages.qt6ct
+                  nur.repos.ilya-fedin.qt6ct
+                  pywalfox-native
                 ]
               )
             ))
@@ -157,19 +169,36 @@
             "${config.home.sessionVariablesPackage}/etc/profile.d/hm-session-vars.sh";
 
           home.file = lib.mkMerge [
+            {
+              ".config/hypr/share" = {
+                source = config.lib.file.mkOutOfStoreSymlink "${hyprlandPkg}/share/hypr";
+                force = true;
+              };
+            }
+
             (lib.mkIf (cfg.config.provider == "dir") (applyConfigProvider "hyprland" cfg.config.provider))
 
             (lib.mkIf (ext.waybar.enable && ext.waybar.provider == "dir") (
               applyConfigProvider "waybar" ext.waybar.provider
             ))
 
-            (lib.mkIf (ext.dms.enable && ext.dms.provider == "dir") (
+            (lib.mkIf ext.dms.enable (
               lib.mkMerge [
-                (applyConfigProvider "dms" ext.dms.provider)
-                (applyConfigProvider "dms-gtk-3" ext.dms.provider)
-                (applyConfigProvider "dms-gtk-4" ext.dms.provider)
-                (applyConfigProvider "dms-qt5ct" ext.dms.provider)
-                (applyConfigProvider "dms-qt6ct" ext.dms.provider)
+                # {
+                #   ".mozilla/native-messaging-hosts/pywalfox.json" = {
+                #     source = "${pkgs.pywalfox-native}/lib/mozilla/native-messaging-hosts/pywalfox.json";
+                #     force = true;
+                #   };
+                # }
+                (lib.mkIf (ext.dms.provider == "dir") (
+                  lib.mkMerge [
+                    (applyConfigProvider "dms" ext.dms.provider)
+                    (applyConfigProvider "dms-gtk-3" ext.dms.provider)
+                    (applyConfigProvider "dms-gtk-4" ext.dms.provider)
+                    (applyConfigProvider "dms-qt6ct" ext.dms.provider)
+                    (applyConfigProvider "dms-kde" ext.dms.provider)
+                  ]
+                ))
               ]
             ))
 
@@ -179,6 +208,7 @@
                   name = ".config/hypr/plugins/${plugin.name}";
                   value = {
                     source = config.lib.file.mkOutOfStoreSymlink plugin.sourcePath;
+                    force = true;
                   };
                 }) cfg.plugins.plugins
               )

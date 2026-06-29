@@ -3,7 +3,12 @@
 { inputs, ... }:
 {
   flake.modules.nixos."cricro-pc" =
-    { pkgs, config, ... }:
+    {
+      pkgs,
+      config,
+      lib,
+      ...
+    }:
     let
       self = inputs.self;
       m = self.modules;
@@ -227,17 +232,24 @@
             XDG_DATA_DIRS = "$XDG_DATA_DIRS:${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}:${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}";
           };
 
-          home.file =
+          home.file = lib.mkMerge [
             (inputs.self.lib.mkSelectedFiles {
               inherit config;
               originDir = storeDir;
               selection = storeDirs;
               outDir = ".";
             })
-            // {
-              ".icons".source = "${pkgs.catppuccin-cursors.mochaYellow}";
-              ".jdks/current".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.jdk}";
-            };
+            {
+              ".icons" = {
+                source = "${pkgs.catppuccin-cursors.mochaYellow}";
+                force = true;
+              };
+              ".jdks/current" = {
+                source = config.lib.file.mkOutOfStoreSymlink "${pkgs.jdk}";
+                force = true;
+              };
+            }
+          ];
         };
 
       home-manager.extraSpecialArgs = {

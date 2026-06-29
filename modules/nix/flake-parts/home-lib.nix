@@ -18,8 +18,8 @@
     dms-gtk-4 = {
       path = ".config/gtk-4.0";
     };
-    dms-qt5ct = {
-      path = ".config/qt5ct";
+    dms-kde = {
+      path = ".config";
     };
     dms-qt6ct = {
       path = ".config/qt6ct";
@@ -165,6 +165,7 @@
                 name = "${outDir}/${relPath}";
                 value = {
                   source = config.lib.file.mkOutOfStoreSymlink "${absOriginDir}/${relPath}";
+                  force = true;
                 };
               }
             ]
@@ -188,6 +189,7 @@
         name = "${outDir}/${fileName}";
         value = {
           source = config.lib.file.mkOutOfStoreSymlink "${originDir}/${fileName}";
+          force = true;
         };
       }) selection
     );
@@ -258,6 +260,7 @@
           {
             "${targetDir}" = {
               source = config.lib.file.mkOutOfStoreSymlink absPath;
+              force = true;
             };
           }
         else
