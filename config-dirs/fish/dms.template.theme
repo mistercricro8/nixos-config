@@ -1,0 +1,27 @@
+# name: 'DMS'
+# preferred_background: %background%
+
+fish_color_normal %on_surface%
+fish_color_command %primary%
+fish_color_keyword %tertiary%
+fish_color_quote %secondary%
+fish_color_redirection %tertiary%
+fish_color_end %tertiary%
+fish_color_error %error%
+fish_color_param %on_surface%
+fish_color_comment %outline%
+fish_color_selection --background=%surface_variant%
+fish_color_search_match --background=%surface_variant%
+fish_color_operator %secondary%
+fish_color_escape %tertiary%
+fish_color_autosuggestion %on_surface_variant%
+fish_color_cancel %error%
+fish_color_cwd %primary%
+fish_color_user %primary%
+fish_color_host %primary%
+fish_color_host_remote %tertiary%
+fish_color_status %error%
+fish_pager_color_progress %on_surface_variant%
+fish_pager_color_prefix %primary%
+fish_pager_color_completion %on_surface%
+fish_pager_color_description %outline%

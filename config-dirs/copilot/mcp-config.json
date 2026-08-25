@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "kindly-web-search": {
+      "type": "http",
+      "url": "http://localhost:8000/sse",
+      "tools": ["*"]
+    },
+    "searxng": {
+      "type": "http",
+      "url": "http://localhost:8001/sse",
+      "tools": ["*"]
+    }
+  }
+}

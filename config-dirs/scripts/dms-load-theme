@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_NAME=""
+JSON_FILE="${JSON_FILE:-${XDG_CACHE_HOME:-$HOME/.cache}/DankMaterialShell/dms-colors.json}"
+TEMPLATE=""
+OUTPUT=""
+MODE="${MODE:-dark}"
+STRIP_HASH=false
+TYPE="template"
+POST_COMMAND=""
+
+usage() {
+    echo "Usage: dms-load-theme --app <name> --template <template_path> --output <output_path> [OPTIONS]" >&2
+    echo "Options:" >&2
+    echo "  --app <name>             Name of application for log prefix" >&2
+    echo "  --json <file>            Path to colors JSON file" >&2
+    echo "  --template <file>        Path to input template file" >&2
+    echo "  --output <file>          Path to target output file" >&2
+    echo "  --mode <mode>            Color mode (default: dark)" >&2
+    echo "  --strip-hash             Strip '#' from hex color values" >&2
+    echo "  --type <type>            Replacement strategy: 'template' (default) or 'starship'" >&2
+    echo "  --post-command <cmd>     Command to run after theme generation" >&2
+    exit 1
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --app)
+            APP_NAME="$2"; shift 2 ;;
+        --json)
+            JSON_FILE="$2"; shift 2 ;;
+        --template)
+            TEMPLATE="$2"; shift 2 ;;
+        --output)
+            OUTPUT="$2"; shift 2 ;;
+        --mode)
+            MODE="$2"; shift 2 ;;
+        --strip-hash)
+            STRIP_HASH=true; shift ;;
+        --type)
+            TYPE="$2"; shift 2 ;;
+        --post-command)
+            POST_COMMAND="$2"; shift 2 ;;
+        -h|--help)
+            usage ;;
+        *)
+            echo "Unknown option: $1" >&2; usage ;;
+    esac
+done
+
+if [ -z "$APP_NAME" ] || [ -z "$TEMPLATE" ] || [ -z "$OUTPUT" ]; then
+    echo "[dms-load-theme] ERROR: Missing required arguments (--app, --template, --output)" >&2
+    exit 1
+fi
+
+LOG_PREFIX="[$APP_NAME load_theme]"
+
+if [ ! -f "$JSON_FILE" ]; then
+    echo "$LOG_PREFIX ERROR: Theme JSON file missing at '$JSON_FILE'" >&2
+    exit 1
+fi
+
+if [ ! -f "$TEMPLATE" ]; then
+    echo "$LOG_PREFIX ERROR: Template file missing at '$TEMPLATE'" >&2
+    exit 1
+fi
+
+echo "$LOG_PREFIX Generating '$MODE' theme from '$JSON_FILE' using template '$TEMPLATE'..."
+
+mkdir -p "$(dirname "$OUTPUT")"
+
+TMP_FILE=$(mktemp "${OUTPUT}.tmp.XXXXXX")
+cleanup() {
+    rm -f "$TMP_FILE"
+}
+trap cleanup EXIT
+
+if [ "$TYPE" = "starship" ]; then
+    if ! PALETTE=$(jq -e -r ".colors.$MODE | to_entries[] | \"\(.key) = \\\"\(.value)\\\"\"" "$JSON_FILE" 2>/dev/null); then
+        echo "$LOG_PREFIX ERROR: Failed to extract colors for mode '$MODE' from '$JSON_FILE'" >&2
+        exit 1
+    fi
+
+    if [ -z "$PALETTE" ]; then
+        echo "$LOG_PREFIX ERROR: No color key-value pairs parsed from '$JSON_FILE'" >&2
+        exit 1
+    fi
+
+    export PALETTE
+    if ! awk '{if (/# INSERT_DMS_COLORS_HERE/) print ENVIRON["PALETTE"]; else print}' "$TEMPLATE" > "$TMP_FILE"; then
+        echo "$LOG_PREFIX ERROR: Failed to render starship configuration from '$TEMPLATE'" >&2
+        exit 1
+    fi
+else
+    if ! color_entries=$(jq -e -r ".colors.$MODE | to_entries[] | \"\(.key) \(.value)\"" "$JSON_FILE" 2>/dev/null); then
+        echo "$LOG_PREFIX ERROR: Failed to extract colors for mode '$MODE' from '$JSON_FILE'" >&2
+        exit 1
+    fi
+
+    sed_args=()
+    while read -r key val; do
+        [[ -z "$key" ]] && continue
+        if [ "$STRIP_HASH" = true ]; then
+            val="${val#\#}"
+        fi
+        sed_args+=("-e" "s|%$key%|$val|g")
+    done <<< "$color_entries"
+
+    if [ ${#sed_args[@]} -eq 0 ]; then
+        echo "$LOG_PREFIX ERROR: No color key-value pairs parsed from '$JSON_FILE'" >&2
+        exit 1
+    fi
+
+    if ! sed "${sed_args[@]}" "$TEMPLATE" > "$TMP_FILE"; then
+        echo "$LOG_PREFIX ERROR: Failed to render theme template '$TEMPLATE'" >&2
+        exit 1
+    fi
+fi
+
+mv "$TMP_FILE" "$OUTPUT"
+trap - EXIT
+
+echo "$LOG_PREFIX Successfully loaded theme to '$OUTPUT'"
+
+if [ -n "$POST_COMMAND" ]; then
+    echo "$LOG_PREFIX Executing post-command: $POST_COMMAND"
+    if ! post_out=$(eval "$POST_COMMAND" 2>&1); then
+        echo "$LOG_PREFIX ERROR: Post-command failed:" >&2
+        echo "$post_out" >&2
+        exit 1
+    else
+        echo "$LOG_PREFIX Post-command executed successfully."
+    fi
+fi

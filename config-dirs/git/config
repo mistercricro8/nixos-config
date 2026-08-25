@@ -1,0 +1,21 @@
+[credential "https://gist.github.com"]
+    helper = libsecret
+
+[credential "https://github.com"]
+    helper = libsecret
+
+[core]
+    pager = delta
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true
+    dark = true
+
+[merge]
+    conflictStyle = zdiff3
+
+[init]
+    defaultBranch = main

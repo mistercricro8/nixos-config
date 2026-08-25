@@ -1,0 +1,76 @@
+// Zed keymap
+//
+// For information on binding keys, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// To see the default key bindings run `zed: open default keymap`
+// from the command palette.
+[
+  {
+    "context": "Workspace || Editor",
+    "bindings": {
+      "ctrl-;": "terminal_panel::Toggle",
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-shift-i": [
+        "workspace::IncreaseActiveDockSize",
+        {
+          "px": 15,
+        },
+      ],
+    },
+  },
+  {
+    "context": "Workspace",
+    "unbind": {
+      "ctrl-alt-=": [
+        "workspace::IncreaseActiveDockSize",
+        {
+          "px": 0,
+        },
+      ],
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-shift-o": [
+        "workspace::DecreaseActiveDockSize",
+        {
+          "px": 15,
+        },
+      ],
+    },
+  },
+  {
+    "context": "Workspace",
+    "unbind": {
+      "ctrl-alt--": [
+        "workspace::DecreaseActiveDockSize",
+        {
+          "px": 0,
+        },
+      ],
+    },
+  },
+  {
+    "bindings": {
+      "ctrl-shift-k": "editor::ToggleFocus",
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-:": "workspace::NewTerminal",
+    },
+  },
+  {
+    "context": "Workspace",
+    "unbind": {
+      "ctrl-~": "workspace::NewTerminal",
+    },
+  },
+]

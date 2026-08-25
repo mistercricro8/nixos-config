@@ -1,0 +1,45 @@
+color-link default "%on_surface%"
+color-link comment "%on_surface_variant%"
+color-link selection "%on_surface%,%surface_container_high%"
+color-link hlsearch "%secondary_container%"
+
+color-link identifier "%primary%"
+color-link identifier.class "%primary%"
+color-link identifier.var "%primary%"
+
+color-link constant "%secondary%"
+color-link constant.number "%secondary%"
+color-link constant.string "%tertiary%"
+
+color-link symbol "%secondary_fixed%"
+color-link symbol.brackets "%secondary_fixed_dim%"
+color-link symbol.tag "%primary%"
+
+color-link type "%primary%"
+color-link type.keyword "%tertiary%"
+
+color-link special "%secondary_fixed%"
+color-link statement "%primary%"
+color-link preproc "%secondary_fixed%"
+
+color-link underlined "%tertiary_container%"
+color-link error "bold %secondary_fixed%"
+color-link todo "bold %tertiary%"
+
+color-link diff-added "%tertiary%"
+color-link diff-modified "%tertiary%"
+color-link diff-deleted "%secondary_fixed%"
+
+color-link gutter-error "%secondary_fixed%"
+color-link gutter-warning "%tertiary%"
+
+color-link scrollbar "%on_surface_variant%"
+color-link statusline "%on_surface%,%surface_dim%"
+color-link tabbar "%on_surface%,%surface_dim%"
+color-link indent-char "%surface_container_high%"
+color-link line-number "%surface_container_high%"
+color-link current-line-number "%primary_container%"
+
+color-link cursor-line "%surface_container%,%on_surface%"
+color-link color-column "%surface_container%"
+color-link type.extended "default"

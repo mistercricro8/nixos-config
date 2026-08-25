@@ -1,0 +1,12 @@
+[theme]
+name = "dms"
+
+[colors]
+AlertInfo = "%tertiary%"
+AlertWarn = "%secondary%"
+AlertError = "%secondary_fixed%"
+Annotation = "%tertiary%"
+Base = "%on_surface%"
+Guidance = "%on_surface_variant%"
+Important = "%secondary_fixed%"
+Title = "%tertiary%"
