@@ -11,21 +11,24 @@ in
       ...
     }:
     {
-      imports = (with inputs.self.factories; [
-        (nixos."programs/browsers" { inherit user; })
-        (nixos."programs/generic/cli-utils" { inherit user; })
-        (nixos."programs/generic/dev-tools" { inherit user; })
-        (nixos."programs/generic/gui-utils" { inherit user; })
-        (nixos."programs/generic/media-utils" { inherit user; })
-        (nixos."programs/mpv" { inherit user; })
-        (nixos."programs/obs" { inherit user; })
-        (nixos."development/vscode" { inherit user; })
-        (nixos."development/zed" { inherit user; })
-        (nixos."virtualisation/winapps" { inherit user; })
-        (nixos."development/semester" { inherit user; })
-        (nixos."desktop/hyprland" { inherit user; })
-        (nixos."dotfiles/providers" { inherit user; })
-      ]);
+      imports = (
+        with inputs.self.factories;
+        [
+          (nixos."programs/browsers" { inherit user; })
+          (nixos."programs/generic/cli-utils" { inherit user; })
+          (nixos."programs/generic/dev-tools" { inherit user; })
+          (nixos."programs/generic/gui-utils" { inherit user; })
+          (nixos."programs/generic/media-utils" { inherit user; })
+          (nixos."programs/mpv" { inherit user; })
+          (nixos."programs/obs" { inherit user; })
+          (nixos."development/vscode" { inherit user; })
+          (nixos."development/zed" { inherit user; })
+          (nixos."virtualisation/winapps" { inherit user; })
+          (nixos."development/semester" { inherit user; })
+          (nixos."desktop/hyprland" { inherit user; })
+          (nixos."dotfiles/providers" { inherit user; })
+        ]
+      );
 
       users.users.cricro = {
         isNormalUser = true;

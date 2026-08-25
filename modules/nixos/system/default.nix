@@ -6,16 +6,19 @@
       ...
     }:
     {
-      imports = (with inputs.self.modules; [
-        nixos."system/nur"
-        nixos."secrets/sops"
-        nixos."system/vm-variant"
-        nixos."users/nixremote"
-        generic.constants
-        generic.system-constants
-        generic.dotfiles-options
-        generic.user-options
-      ]);
+      imports = (
+        with inputs.self.modules;
+        [
+          nixos."system/nur"
+          nixos."secrets/sops"
+          nixos."system/vm-variant"
+          nixos."users/nixremote"
+          generic.constants
+          generic.system-constants
+          generic.dotfiles-options
+          generic.user-options
+        ]
+      );
 
       nixpkgs.config.allowUnfree = true;
       nixpkgs.overlays = [

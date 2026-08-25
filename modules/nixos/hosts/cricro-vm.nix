@@ -12,18 +12,21 @@
     {
       systemConstants.configName = "vm";
 
-      imports = (with inputs.self.modules; [
-        nixos."system/server"
-        nixos."users/cricro"
-        nixos."boot/minimal"
-      ]) ++ (with inputs.self.factories; [
-        (nixos."services/tailscale" {
-          hostname = "cricro-vm";
-          hostType = "both";
-        })
-      ]) ++ [
-        (import _hardware/cricro-vm.nix { inherit inputs; })
-      ];
+      imports =
+        (with inputs.self.modules; [
+          nixos."system/server"
+          nixos."users/cricro"
+          nixos."boot/minimal"
+        ])
+        ++ (with inputs.self.factories; [
+          (nixos."services/tailscale" {
+            hostname = "cricro-vm";
+            hostType = "both";
+          })
+        ])
+        ++ [
+          (import _hardware/cricro-vm.nix { inherit inputs; })
+        ];
 
       # ============== Networking
       networking.hostName = "cricro-vm";

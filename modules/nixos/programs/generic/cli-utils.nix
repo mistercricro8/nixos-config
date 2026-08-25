@@ -77,9 +77,12 @@
         zoxide = ''
           ${pkgs.zoxide}/bin/zoxide init fish | source
         '';
-        fzf = ''
-          ${pkgs.fzf}/bin/fzf --fish | source
-        '';
+        fzf = {
+          order = 40;
+          text = ''
+            ${pkgs.fzf}/bin/fzf --fish | source
+          '';
+        };
         atuin = ''
           ${pkgs.atuin}/bin/atuin init fish | source
         '';

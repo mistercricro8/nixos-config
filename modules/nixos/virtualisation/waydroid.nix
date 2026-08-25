@@ -8,7 +8,8 @@
     {
       virtualisation.waydroid = {
         enable = true;
-        package = if (config.networking.nftables.enable or false) then pkgs.waydroid-nftables else pkgs.waydroid;
+        package =
+          if (config.networking.nftables.enable or false) then pkgs.waydroid-nftables else pkgs.waydroid;
       };
 
       networking.firewall.trustedInterfaces = [ "waydroid0" ];

@@ -9,12 +9,15 @@
       playwright-mcp-pkg = inputs.playwright-mcp.packages.${pkgs.stdenv.hostPlatform.system}.default;
     in
     {
-      imports = (with inputs.self.modules; [
-        nixos."system/default"
-        nixos."desktop/hyprland"
-        nixos."desktop/kde"
-        nixos."system/settings/peripherals"
-      ]);
+      imports = (
+        with inputs.self.modules;
+        [
+          nixos."system/default"
+          nixos."desktop/hyprland"
+          nixos."desktop/kde"
+          nixos."system/settings/peripherals"
+        ]
+      );
 
       programs.dconf.enable = true;
 

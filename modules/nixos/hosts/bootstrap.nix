@@ -9,10 +9,13 @@
     {
       systemConstants.configName = "bootstrap";
 
-      imports = (with inputs.self.modules; [
-        nixos."system/default"
-        nixos."boot/minimal"
-      ]);
+      imports = (
+        with inputs.self.modules;
+        [
+          nixos."system/default"
+          nixos."boot/minimal"
+        ]
+      );
 
       programs.gnupg.agent.enable = true;
 

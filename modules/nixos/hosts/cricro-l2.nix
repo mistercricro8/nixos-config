@@ -8,24 +8,27 @@
     {
       systemConstants.configName = "l2";
 
-      imports = (with inputs.self.modules; [
-        nixos."system/server"
-        nixos."system/settings/for-laptops"
-        nixos."users/cricro"
-        nixos."boot/minimal"
-      ]) ++ (with inputs.self.factories; [
-        (nixos."system/settings/networking" {
-          netInterfaces = [ "enp5s0" ];
-          wakeonlan = true;
-          nftables = true;
-        })
-        (nixos."services/tailscale" {
-          hostname = "cricro-l2";
-          hostType = "client";
-        })
-      ]) ++ [
-        (import _hardware/cricro-l2.nix { inherit inputs; })
-      ];
+      imports =
+        (with inputs.self.modules; [
+          nixos."system/server"
+          nixos."system/settings/for-laptops"
+          nixos."users/cricro"
+          nixos."boot/minimal"
+        ])
+        ++ (with inputs.self.factories; [
+          (nixos."system/settings/networking" {
+            netInterfaces = [ "enp5s0" ];
+            wakeonlan = true;
+            nftables = true;
+          })
+          (nixos."services/tailscale" {
+            hostname = "cricro-l2";
+            hostType = "client";
+          })
+        ])
+        ++ [
+          (import _hardware/cricro-l2.nix { inherit inputs; })
+        ];
 
       # ============== Networking
       networking.hostName = "cricro-l2";

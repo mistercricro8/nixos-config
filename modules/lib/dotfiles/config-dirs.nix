@@ -3,10 +3,12 @@
   # Dynamically present all entries in definitions with type = "flake" to flake-file for flake generation
   flake-file.inputs = lib.pipe config.flake.lib.dotfiles.definitions [
     (lib.filterAttrs (_: cfg: (cfg.type or "path") == "flake"))
-    (lib.mapAttrs' (name: cfg: {
-      name = cfg.inputName or name;
-      value = cfg.input;
-    }))
+    (lib.mapAttrs' (
+      name: cfg: {
+        name = cfg.inputName or name;
+        value = cfg.input;
+      }
+    ))
   ];
 
   # Profile definitions mapping declaration.

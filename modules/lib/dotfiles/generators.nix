@@ -127,7 +127,11 @@
           else
             let
               walkFlakeDir =
-                { storeDir, relPrefix, outPrefix }:
+                {
+                  storeDir,
+                  relPrefix,
+                  outPrefix,
+                }:
                 let
                   dirItems = builtins.readDir storeDir;
                 in

@@ -39,25 +39,23 @@
         description = "Per-user configuration options.";
       };
 
-      config.hjem.users = lib.mapAttrs (
-        username: userCfg: {
-          files = lib.concatMapAttrs (
-            name: integration:
-            if integration.enable then
-              let
-                orderPrefix =
-                  if integration.order < 10 then "0${toString integration.order}" else toString integration.order;
-                fileName = "${orderPrefix}-${name}.fish";
-              in
-              {
-                ".config/fish/integrations/${fileName}" = {
-                  text = integration.text;
-                };
-              }
-            else
-              { }
-          ) userCfg.fish.integrations;
-        }
-      ) config.userConfig;
+      config.hjem.users = lib.mapAttrs (username: userCfg: {
+        files = lib.concatMapAttrs (
+          name: integration:
+          if integration.enable then
+            let
+              orderPrefix =
+                if integration.order < 10 then "0${toString integration.order}" else toString integration.order;
+              fileName = "${orderPrefix}-${name}.fish";
+            in
+            {
+              ".config/fish/integrations/${fileName}" = {
+                text = integration.text;
+              };
+            }
+          else
+            { }
+        ) userCfg.fish.integrations;
+      }) config.userConfig;
     };
 }

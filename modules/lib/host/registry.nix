@@ -61,7 +61,9 @@
       else
         [
           (
-            { sshUser = "nixremote"; }
+            {
+              sshUser = "nixremote";
+            }
             // entry
             // {
               configName = entry.name;
