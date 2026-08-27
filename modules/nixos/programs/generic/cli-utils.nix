@@ -41,6 +41,7 @@
           micro
           gh
           git
+          delta
           wineWow64Packages.stable
           zellij
         ]
@@ -51,9 +52,6 @@
         "fish"
         "starship"
         "yazi"
-        "opencode"
-        "gemini"
-        "copilot"
         "micro"
         "bat"
         "atuin"

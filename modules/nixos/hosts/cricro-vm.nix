@@ -96,8 +96,8 @@
 
       virtualisation.docker.daemon.settings = {
         dns = [
-          "8.8.8.8"
           "1.1.1.1"
+          "8.8.8.8"
         ];
         mtu = 1200;
       };

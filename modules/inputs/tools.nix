@@ -15,6 +15,7 @@
       url = "github:winapps-org/winapps";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    omp.url = "github:can1357/oh-my-pi";
     private.url = "github:mistercricro8/nixos-config-private";
     playwright-mcp = {
       url = "github:mistercricro8/mcps?dir=playwright-nix";
