@@ -1,6 +1,6 @@
 { inputs, ... }:
 {
-  flake.factories.nixos."programs/generic/dev-tools" =
+  flake.factories.nixos."development/tools" =
     {
       user ? "cricro",
     }:

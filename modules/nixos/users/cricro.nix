@@ -16,12 +16,12 @@ in
         [
           (nixos."programs/browsers" { inherit user; })
           (nixos."programs/generic/cli-utils" { inherit user; })
-          (nixos."programs/generic/dev-tools" { inherit user; })
           (nixos."programs/generic/gui-utils" { inherit user; })
           (nixos."programs/generic/media-utils" { inherit user; })
           (nixos."programs/mpv" { inherit user; })
           (nixos."programs/obs" { inherit user; })
           (nixos."development/vscode" { inherit user; })
+          (nixos."development/tools" { inherit user; })
           (nixos."development/zed" { inherit user; })
           (nixos."virtualisation/winapps" { inherit user; })
           (nixos."development/semester" { inherit user; })
