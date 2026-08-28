@@ -17,10 +17,13 @@
             antigravity-cli
             android-tools
             kubectl
+            android-studio
           ])
           [ omp ]
         ]
       );
+
+      nixpkgs.config.android_sdk.accept_license = true;
 
       dotfiles.profiles = [
         "opencode"

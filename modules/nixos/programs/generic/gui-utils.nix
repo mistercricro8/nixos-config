@@ -10,7 +10,7 @@
         with pkgs;
         [
           pavucontrol
-          libreoffice-fresh
+          libreoffice-stable
           discord
           kdePackages.dolphin
           nwg-look

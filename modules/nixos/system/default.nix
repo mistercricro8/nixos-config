@@ -21,11 +21,6 @@
       );
 
       nixpkgs.config.allowUnfree = true;
-      nixpkgs.overlays = [
-        (final: prev: {
-          moonlight-qt = prev.moonlight-qt.override { ffmpeg = prev.ffmpeg_7; };
-        })
-      ];
 
       networking.networkmanager.enable = true;
       networking.nameservers = [
