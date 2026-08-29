@@ -12,7 +12,6 @@
         remotePlay.openFirewall = true;
         extraCompatPackages = with pkgs; [
           dwproton-bin
-          steamtinkerlaunch
         ];
       };
     };

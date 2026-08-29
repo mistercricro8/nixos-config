@@ -93,6 +93,18 @@
       services.samba-wsdd = {
         enable = true;
         inherit openFirewall;
+        inherit workgroup;
+      };
+
+      services.avahi = {
+        enable = true;
+        nssmdns4 = true;
+        inherit openFirewall;
+        publish = {
+          enable = true;
+          addresses = true;
+          userServices = true;
+        };
       };
     };
 }

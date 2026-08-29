@@ -125,7 +125,6 @@
       services.flatpak.packages = [
         "org.vinegarhq.Sober"
         "com.valvesoftware.Steam"
-        "com.valvesoftware.Steam.Utility.steamtinkerlaunch"
         "net.davidotek.pupgui2"
         "org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/25.08"
         "org.freedesktop.Platform.VulkanLayer.gamescope/x86_64/25.08"
