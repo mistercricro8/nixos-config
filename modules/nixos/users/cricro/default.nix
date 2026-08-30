@@ -14,7 +14,6 @@ in
         with inputs.self.factories;
         [
           (nixos."programs/generic/cli-utils" { inherit user; })
-          (nixos."development/tools" { inherit user; })
           (nixos."dotfiles/providers" { inherit user; })
         ]
       );
