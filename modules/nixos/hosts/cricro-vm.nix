@@ -15,7 +15,7 @@
       imports =
         (with inputs.self.modules; [
           nixos."system/server"
-          nixos."users/cricro"
+          nixos."users/cricro/default"
           nixos."boot/minimal"
         ])
         ++ (with inputs.self.factories; [

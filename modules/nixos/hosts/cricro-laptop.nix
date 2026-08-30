@@ -20,7 +20,8 @@
         (with inputs.self.modules; [
           nixos."system/desktop"
           nixos."system/settings/for-laptops"
-          nixos."users/cricro"
+          nixos."users/cricro/default"
+          nixos."users/cricro/desktop"
           nixos."boot/full"
           nixos."gaming/sunshine"
           nixos."programs/flatpak"

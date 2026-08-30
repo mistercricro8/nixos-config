@@ -20,7 +20,8 @@
       imports =
         (with inputs.self.modules; [
           nixos."system/desktop"
-          nixos."users/cricro"
+          nixos."users/cricro/default"
+          nixos."users/cricro/desktop"
           nixos."boot/full"
           nixos."gaming/sunshine"
           nixos."system/settings/builder"
