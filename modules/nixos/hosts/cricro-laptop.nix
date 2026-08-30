@@ -13,6 +13,7 @@
         sopsFile = inputs.self + "/secrets/projects.yaml";
         format = "yaml";
         path = "/home/cricro/.kube/config";
+        owner = "cricro";
       };
 
       imports =

@@ -13,6 +13,7 @@
         lib.flatten [
           (with pkgs; [
             opencode
+            code-cursor
             github-copilot-cli
             antigravity-cli
             android-tools
