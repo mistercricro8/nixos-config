@@ -90,6 +90,13 @@ hl.animation({ leaf = "workspaces", enabled = true, speed = 0.25, bezier = "line
 hl.animation({ leaf = "windows", enabled = false })
 hl.animation({ leaf = "fade", enabled = false })
 
+-- Window Rules
+hl.window_rule({
+  name = "suppress-maximize-events",
+  match = { class = ".*" },
+  suppress_event = "maximize",
+})
+
 -- Modules
 pcall(require, "dms.colors")
 pcall(require, "dms.outputs")

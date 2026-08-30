@@ -39,7 +39,15 @@
       boot.loader.efi.efiSysMountPoint = "/boot/efi";
 
       virtualisation.docker.package = pkgsStable.docker;
-      # TODO: fix kernel version or something
+      # TODO: remove this once the kernel is updated to provide these attrs
+      boot.kernelPackages = pkgsStable.linuxPackages.extend (self: super: {
+        kernel = super.kernel.overrideAttrs (old: {
+          passthru = (old.passthru or { }) // {
+            target = old.passthru.target or pkgsStable.stdenv.hostPlatform.linux-kernel.target;
+            buildDTBs = old.passthru.buildDTBs or pkgsStable.stdenv.hostPlatform.linux-kernel.DTB;
+          };
+        });
+      });
 
       swapDevices = [
         {
