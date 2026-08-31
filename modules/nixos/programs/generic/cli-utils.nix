@@ -42,7 +42,9 @@
           gh
           git
           delta
+          winePackages.stable
           wineWow64Packages.stable
+          winetricks
           zellij
         ]
       );

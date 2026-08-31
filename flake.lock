@@ -1000,11 +1000,11 @@
     },
     "private": {
       "locked": {
-        "lastModified": 1788111301,
+        "lastModified": 1788179290,
         "narHash": "sha256-8HQNKZ5/eAr1EkzfjoeYBSny9ET1WpIxBb/8EW3XEko=",
         "owner": "mistercricro8",
         "repo": "nixos-config-private",
-        "rev": "7af6ccebeac12bb91e3d28e4ac3964908c31c1b7",
+        "rev": "1c5afa6121c0fa8fa0c96fb82e68dcb88c696783",
         "type": "github"
       },
       "original": {
