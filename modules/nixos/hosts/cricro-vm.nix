@@ -59,13 +59,18 @@
       boot.kernelModules = [ "br_netfilter" ];
 
       networking.firewall = {
-        allowedUDPPorts = [ ];
+        allowedUDPPorts = [
+          8472 # k3s flannel vxlan
+          51820 # k3s flannel wireguard
+          41641 # tailscale
+        ];
         allowedTCPPorts = [
           22 # ssh
           80 # http
           81 # http-alt
           443 # https
           444 # https-alt
+          10250 # kubelet metrics/exec
         ];
         allowedUDPPortRanges = [
           {
