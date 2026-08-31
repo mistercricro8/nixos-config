@@ -27,6 +27,7 @@
         "opencode"
         "gemini"
         "copilot"
+        "omp"
       ];
 
       userConfig.${user}.fish.integrations = {

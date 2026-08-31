@@ -1,0 +1,9 @@
+modelRoles:
+  default: opencode-go/muse-spark-1.2-contributor
+symbolPreset: nerd
+composer:
+  shape: rule
+theme:
+  dark: titanium
+  light: light
+setupVersion: 2

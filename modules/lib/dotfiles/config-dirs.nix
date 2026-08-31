@@ -76,6 +76,9 @@
     copilot = {
       path = ".copilot";
     };
+    omp = {
+      path = ".omp/agent";
+    };
     mangohud = {
       path = ".config/MangoHud";
     };
