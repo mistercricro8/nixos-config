@@ -60,8 +60,7 @@
 
       networking.firewall = {
         allowedUDPPorts = [
-          8472 # k3s flannel vxlan
-          51820 # k3s flannel wireguard
+          6081 # Cilium Geneve overlay
           41641 # tailscale
         ];
         allowedTCPPorts = [
@@ -70,6 +69,7 @@
           81 # http-alt
           443 # https
           444 # https-alt
+          4240 # Cilium health check
           10250 # kubelet metrics/exec
         ];
         allowedUDPPortRanges = [
@@ -103,7 +103,8 @@
         trustedInterfaces = [
           "docker0"
           "cni0"
-          "flannel.1"
+          "cilium_host"
+          "cilium_vxlan"
         ];
       };
 
