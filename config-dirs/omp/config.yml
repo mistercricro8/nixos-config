@@ -1,6 +1,5 @@
 modelRoles:
-  default: google-antigravity/gemini-3.6-flash:high
-  advisor: google-antigravity/gemini-3.6-flash:high
+  default: opencode-go/muse-spark-1.2-contributor
 symbolPreset: nerd
 composer:
   shape: rule
@@ -8,3 +7,7 @@ theme:
   dark: titanium
   light: light
 setupVersion: 2
+advisor:
+  enabled: true
+  syncBacklog: "1"
+  immuneTurns: 0
