@@ -177,12 +177,18 @@
         format = "yaml";
       };
 
+      environment.etc."k3s-resolv.conf".text = ''
+        nameserver 1.1.1.1
+        nameserver 1.0.0.1
+      '';
+
       services.k3s = {
         enable = true;
         role = "agent";
         tokenFile = config.sops.secrets."cricro-vm/KHHLzm/kubeNodeToken".path;
         configPath = config.sops.secrets."cricro-vm/KHHLzm/kubeNodeConfig".path;
         serverAddr = inputs.private.secrets.cricro-vm.KHHLzm.serverAddress;
+        extraFlags = "--resolv-conf=/etc/k3s-resolv.conf";
       };
 
       # ============== Gitlab Runner
