@@ -7,6 +7,4 @@ composer:
 theme:
   dark: titanium
   light: light
-advisor:
-  enabled: true
 setupVersion: 2
