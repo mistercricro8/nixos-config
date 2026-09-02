@@ -58,6 +58,7 @@
         "bat"
         "atuin"
         "git"
+        "ssh"
       ];
 
       userConfig.${user}.fish.integrations = {

@@ -30,14 +30,15 @@
           nativeBuildInputs = [
             sops-nix.packages.${system}.sops-import-keys-hook
           ];
-          sopsPGPKeyDirs = [
+          sopsAgeKeyDirs = [
             (repoRoot + "/keys")
           ];
           packages = with pkgs; [
             opentofu
             oci-cli
             jq
-            ssh-to-pgp
+            ssh-to-age
+            age
             sops
             nix-output-monitor
             nixd

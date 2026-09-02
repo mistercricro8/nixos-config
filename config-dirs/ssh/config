@@ -1,0 +1,25 @@
+Host cricro-vm
+  HostName dev.mistercricro8.top
+  User cricro
+
+Host cricro-laptop
+  HostName cricro-laptop
+  User cricro
+
+Host cricro-l2
+  HostName cricro-l2
+  User cricro
+
+Host cricro-pc-l
+  HostName cricro-pc-l
+  User cricro
+
+Host gh-mistercricro8
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/gh_mistercricro8
+  IdentitiesOnly yes
+
+Host *.instance.oc*
+    HostKeyAlgorithms +ssh-rsa
+    PubkeyAcceptedAlgorithms +ssh-rsa

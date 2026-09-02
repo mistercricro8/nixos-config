@@ -5,6 +5,8 @@
     {
       imports = [ inputs.sops-nix.nixosModules.sops ];
 
-      sops.gnupg.sshKeyPaths = [ "/home/cricro/.ssh/id_rsa" ];
+      sops.useSystemdActivation = true;
+      # TODO: autodeployments should consider pushing this key up
+      sops.age.keyFile = "/var/lib/sops-nix/key.txt";
     };
 }

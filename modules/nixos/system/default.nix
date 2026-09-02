@@ -11,6 +11,8 @@
         [
           nixos."system/nur"
           nixos."secrets/sops"
+          nixos."secrets/ssh-keys"
+          nixos."services/derived-keys"
           nixos."system/vm-variant"
           nixos."users/nixremote"
           generic.constants

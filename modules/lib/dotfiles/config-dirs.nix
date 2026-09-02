@@ -58,6 +58,9 @@
     starship = {
       path = ".config/starship";
     };
+    ssh = {
+      path = ".ssh";
+    };
     octave = {
       path = "";
     };
