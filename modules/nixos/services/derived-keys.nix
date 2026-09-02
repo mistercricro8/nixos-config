@@ -9,7 +9,6 @@
         SSH_DIR="$HOME/.ssh"
         AGE_KEY_FILE="$HOME/.config/sops/age/keys.txt"
         ED25519_KEY="$SSH_DIR/id_ed25519"
-        RSA_KEY="$SSH_DIR/id_rsa"
 
         if [ -f "$ED25519_KEY" ]; then
           DERIVED_AGE=$(${pkgs.ssh-to-age}/bin/ssh-to-age -private-key -i "$ED25519_KEY")
