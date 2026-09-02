@@ -16,6 +16,9 @@
           nixos."boot/minimal"
         ])
         ++ (with inputs.self.factories; [
+          (nixos."secrets/ssh-keys" {
+            keys = [ "id_ed25519" ];
+          })
           (nixos."system/settings/networking" {
             netInterfaces = [ "enp5s0" ];
             wakeonlan = true;

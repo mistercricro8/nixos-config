@@ -19,6 +19,9 @@
           nixos."boot/minimal"
         ])
         ++ (with inputs.self.factories; [
+          (nixos."secrets/ssh-keys" {
+            keys = [ "id_ed25519" ];
+          })
           (nixos."services/tailscale" {
             hostname = "cricro-vm";
             hostType = "both";

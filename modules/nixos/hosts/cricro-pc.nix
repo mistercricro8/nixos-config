@@ -32,6 +32,15 @@
           nixos."virtualisation/virt-manager"
         ])
         ++ (with inputs.self.factories; [
+          (nixos."secrets/ssh-keys" {
+            keys = [
+              "id_ed25519"
+              {
+                name = "gh_mistercricro8";
+                shared = true;
+              }
+            ];
+          })
           (nixos."system/settings/networking" {
             netInterfaces = [ "enp3s0" ];
             wakeonlan = true;

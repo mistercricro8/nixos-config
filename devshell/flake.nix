@@ -4,17 +4,12 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
     {
       nixpkgs,
       flake-utils,
-      sops-nix,
       ...
     }:
     let
@@ -27,12 +22,6 @@
       in
       {
         devShells.default = pkgs.mkShell {
-          nativeBuildInputs = [
-            sops-nix.packages.${system}.sops-import-keys-hook
-          ];
-          sopsAgeKeyDirs = [
-            (repoRoot + "/keys")
-          ];
           packages = with pkgs; [
             opentofu
             oci-cli

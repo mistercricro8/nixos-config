@@ -32,6 +32,15 @@
           nixos."system/settings/builder"
         ])
         ++ (with inputs.self.factories; [
+          (nixos."secrets/ssh-keys" {
+            keys = [
+              "id_ed25519"
+              {
+                name = "gh_mistercricro8";
+                shared = true;
+              }
+            ];
+          })
           (nixos."virtualisation/waydroid" { user = "cricro"; })
           (nixos."system/settings/networking" {
             netInterfaces = [

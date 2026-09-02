@@ -1,52 +1,64 @@
 { inputs, ... }:
 {
-  flake.modules.nixos."secrets/ssh-keys" =
+  flake.factories.nixos."secrets/ssh-keys" =
+    {
+      user ? "cricro",
+      keys ? [ "id_ed25519" ],
+      host ? null,
+    }:
     { config, lib, ... }:
     let
-      hostName = config.networking.hostName;
-      supportedHosts = [
-        "cricro-pc"
-        "cricro-laptop"
-        "cricro-vm"
-        "cricro-l2"
-      ];
+      hostName = if host != null then host else config.networking.hostName;
+      userHome = config.users.users.${user}.home;
+      userGroup = config.users.users.${user}.group;
       sshSecretFile = inputs.self + "/secrets/ssh.yaml";
+
+      normalizeKey =
+        k:
+        if builtins.isString k then
+          {
+            name = k;
+            shared = false;
+          }
+        else
+          {
+            name = k.name;
+            shared = k.shared or false;
+          };
+
+      normalizedKeys = map normalizeKey keys;
     in
-    lib.mkIf (builtins.elem hostName supportedHosts) {
-      sops.secrets."ssh-id_ed25519" = {
-        sopsFile = sshSecretFile;
-        key = "hosts/${hostName}/id_ed25519";
-        path = "/home/cricro/.ssh/id_ed25519";
-        owner = "cricro";
-        group = "users";
-        mode = "0600";
-      };
+    {
+      sops.secrets = lib.listToAttrs (
+        map (k: {
+          name = "ssh-${k.name}";
+          value = {
+            sopsFile = sshSecretFile;
+            key =
+              if k.shared then
+                "users/${user}/${k.name}"
+              else
+                "users/${user}/hosts/${hostName}/${k.name}";
+            path = "${userHome}/.ssh/${k.name}";
+            owner = user;
+            group = userGroup;
+            mode = "0600";
+          };
+        }) normalizedKeys
+      );
 
-      sops.secrets."ssh-id_ed25519_pub" = {
-        sopsFile = sshSecretFile;
-        key = "hosts/${hostName}/id_ed25519_pub";
-        path = "/home/cricro/.ssh/id_ed25519.pub";
-        owner = "cricro";
-        group = "users";
-        mode = "0644";
-      };
-
-      sops.secrets."ssh-gh_mistercricro8" = lib.mkIf (hostName == "cricro-pc") {
-        sopsFile = sshSecretFile;
-        key = "hosts/${hostName}/gh_mistercricro8";
-        path = "/home/cricro/.ssh/gh_mistercricro8";
-        owner = "cricro";
-        group = "users";
-        mode = "0600";
-      };
-
-      sops.secrets."ssh-gh_mistercricro8_pub" = lib.mkIf (hostName == "cricro-pc") {
-        sopsFile = sshSecretFile;
-        key = "hosts/${hostName}/gh_mistercricro8_pub";
-        path = "/home/cricro/.ssh/gh_mistercricro8.pub";
-        owner = "cricro";
-        group = "users";
-        mode = "0644";
-      };
+      hjem.users.${user}.files = lib.listToAttrs (
+        map (k: {
+          name = ".ssh/${k.name}.pub";
+          value = {
+            source =
+              if k.shared then
+                inputs.self + "/keys/${k.name}.pub"
+              else
+                inputs.self + "/keys/${hostName}/${k.name}.pub";
+            clobber = true;
+          };
+        }) normalizedKeys
+      );
     };
 }
