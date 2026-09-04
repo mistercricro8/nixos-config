@@ -82,33 +82,40 @@ for _, dir in ipairs(directions) do
   end)
 end
 
-local ok, smw = pcall(require, "plugins.split-monitor-workspaces")
-if ok then
-  smw.setup({
-    monitor_priority = { "HDMI-A-1", "DP-1" },
-    enable_persistent_workspaces = false
+local ok_wg, wg = pcall(require, "dms.workspace_groups")
+if ok_wg then
+  wg.setup({
+    mainMod = mainMod,
   })
-  for i = 1, 10 do
-    local n = (i == 10) and "0" or tostring(i)
-    hl.bind(mainMod .. " + " .. n, smw.workspace(tostring(i)))
-    hl.bind(mainMod .. " + SHIFT + " .. n, smw.move_to_workspace(tostring(i)))
-  end
-
-  hl.bind(mainMod .. " + mouse_down", smw.cycle_workspaces("next"))
-  hl.bind(mainMod .. " + mouse_up", smw.cycle_workspaces("prev"))
-  hl.bind(mainMod .. " + CTRL + mouse_down", smw.move_to_workspace("+1"))
-  hl.bind(mainMod .. " + CTRL + mouse_up", smw.move_to_workspace("-1"))
 else
-  for i = 1, 10 do
-    local n = (i == 10) and "0" or tostring(i)
-    hl.bind(mainMod .. " + " .. n, function() hl.dispatch(hl.dsp.focus({ workspace = n })) end)
-    hl.bind(mainMod .. " + SHIFT + " .. n, function() hl.dispatch(hl.dsp.window.move({ workspace = n })) end)
-  end
+  local ok, smw = pcall(require, "plugins.split-monitor-workspaces")
+  if ok then
+    smw.setup({
+      monitor_priority = { "HDMI-A-1", "DP-1" },
+      enable_persistent_workspaces = false
+    })
+    for i = 1, 10 do
+      local n = (i == 10) and "0" or tostring(i)
+      hl.bind(mainMod .. " + " .. n, smw.workspace(tostring(i)))
+      hl.bind(mainMod .. " + SHIFT + " .. n, smw.move_to_workspace(tostring(i)))
+    end
 
-  hl.bind(mainMod .. " + mouse_down", function() hl.dispatch(hl.dsp.focus({ workspace = "e+1" })) end)
-  hl.bind(mainMod .. " + mouse_up", function() hl.dispatch(hl.dsp.focus({ workspace = "e-1" })) end)
-  hl.bind(mainMod .. " + CTRL + mouse_down", function() hl.dispatch(hl.dsp.window.move({ workspace = "e+1" })) end)
-  hl.bind(mainMod .. " + CTRL + mouse_up", function() hl.dispatch(hl.dsp.window.move({ workspace = "e-1" })) end)
+    hl.bind(mainMod .. " + mouse_down", smw.cycle_workspaces("next"))
+    hl.bind(mainMod .. " + mouse_up", smw.cycle_workspaces("prev"))
+    hl.bind(mainMod .. " + CTRL + mouse_down", smw.move_to_workspace("+1"))
+    hl.bind(mainMod .. " + CTRL + mouse_up", smw.move_to_workspace("-1"))
+  else
+    for i = 1, 10 do
+      local n = (i == 10) and "0" or tostring(i)
+      hl.bind(mainMod .. " + " .. n, function() hl.dispatch(hl.dsp.focus({ workspace = n })) end)
+      hl.bind(mainMod .. " + SHIFT + " .. n, function() hl.dispatch(hl.dsp.window.move({ workspace = n })) end)
+    end
+
+    hl.bind(mainMod .. " + mouse_down", function() hl.dispatch(hl.dsp.focus({ workspace = "e+1" })) end)
+    hl.bind(mainMod .. " + mouse_up", function() hl.dispatch(hl.dsp.focus({ workspace = "e-1" })) end)
+    hl.bind(mainMod .. " + CTRL + mouse_down", function() hl.dispatch(hl.dsp.window.move({ workspace = "e+1" })) end)
+    hl.bind(mainMod .. " + CTRL + mouse_up", function() hl.dispatch(hl.dsp.window.move({ workspace = "e-1" })) end)
+  end
 end
 
 hl.bind(mainMod .. " + mouse:272", function() hl.dispatch(hl.dsp.window.drag()) end, { mouse = true })

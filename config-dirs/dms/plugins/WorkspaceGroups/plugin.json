@@ -1,0 +1,25 @@
+{
+  "id": "workspaceGroups",
+  "name": "Workspace Groups",
+  "description": "Group workspaces into top-level namespaces with per-monitor allocation, overview modal, and Hyprland Lua bindings.",
+  "version": "1.0.0",
+  "author": "MisterCricro8",
+  "icon": "view_compact",
+  "type": "composite",
+  "capabilities": [
+    "workspace-management",
+    "overview",
+    "dankbar-widget"
+  ],
+  "components": {
+    "daemon": "./WorkspaceGroupsDaemon.qml",
+    "widget": "./WorkspaceGroupsBarWidget.qml"
+  },
+  "settings": "./WorkspaceGroupsSettings.qml",
+  "permissions": [
+    "settings_read",
+    "settings_write",
+    "process"
+  ],
+  "requires_dms": ">=1.5.0"
+}

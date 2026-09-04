@@ -25,6 +25,10 @@
           (nixos."services/tailscale" {
             hostname = "cricro-vm";
             hostType = "both";
+            extraFlags = [
+              "--advertise-exit-node"
+              "--advertise-tags=tag:exit"
+            ];
           })
         ])
         ++ [

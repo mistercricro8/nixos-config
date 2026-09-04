@@ -625,8 +625,12 @@
           "enabled": true
         },
         {
-          "id": "workspaceSwitcher",
+          "id": "workspaceGroups",
           "enabled": true
+        },
+        {
+          "id": "workspaceSwitcher",
+          "enabled": false
         },
         {
           "id": "focusedWindow",
