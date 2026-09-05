@@ -6,13 +6,13 @@ services:
     container_name: WinApps
     environment:
       VERSION: "10"
-      RAM_SIZE: "6G"
-      CPU_CORES: "2"
+      RAM_SIZE: "16G"
+      CPU_CORES: "8"
       DISK_SIZE: "100G"
       USERNAME: "cricro"
       PASSWORD: "1234"
       HOME: "${HOME}"
-      ARGUMENTS: "-chardev serial,path=/dev/ttyACM0,id=acm -usb -device usb-serial,chardev=acm"
+      # ARGUMENTS: "-chardev serial,path=/dev/ttyACM0,id=acm -usb -device usb-serial,chardev=acm"
     ports:
       - 8006:8006
       - 3389:3389/tcp
@@ -28,4 +28,4 @@ services:
     devices:
       - /dev/kvm
       - /dev/net/tun
-      - /dev/ttyACM0
+      # - /dev/ttyACM0
