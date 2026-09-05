@@ -29,9 +29,12 @@ PluginSettings {
     function loadCurrentSettings() {
         if (!pluginService)
             return;
-        const savedGroups = root.loadValue("groups", defaultGroups);
+        const savedOnLaunch = root.loadValue("onLaunchGroups", null);
+        const savedGroups = root.loadValue("groups", null);
         let list = defaultGroups;
-        if (savedGroups && Array.isArray(savedGroups) && savedGroups.length > 0) {
+        if (savedOnLaunch && Array.isArray(savedOnLaunch) && savedOnLaunch.length > 0) {
+            list = savedOnLaunch;
+        } else if (savedGroups && Array.isArray(savedGroups) && savedGroups.length > 0) {
             list = savedGroups;
         }
         groupsModel.clear();
@@ -88,12 +91,19 @@ PluginSettings {
         if (!isReady)
             return;
         const normalized = getGroupsArray();
+        root.saveValue("onLaunchGroups", normalized);
         root.saveValue("groups", normalized);
         root.saveValue("workspacesPerMonitor", currentWsPerMonitor);
         root.saveValue("hideEmptyWorkspaces", currentHideEmptyWorkspaces);
-        statusMessage = "Settings saved & synced to Hyprland!";
+        statusMessage = "On-launch configuration saved!";
         statusTimer.restart();
-        Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "getGroups"]);
+    }
+
+    function applyToCurrentSession() {
+        saveAll();
+        Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "resetToOnLaunchGroups"]);
+        statusMessage = "Applied to current session!";
+        statusTimer.restart();
     }
 
     function addGroup() {
@@ -136,14 +146,14 @@ PluginSettings {
         spacing: Theme.spacingXS
 
         StyledText {
-            text: "Workspace Groups Configuration"
+            text: "Workspace Groups (On-Launch Configuration)"
             font.pixelSize: Theme.fontSizeLarge
             font.weight: Font.Bold
             color: Theme.surfaceText
         }
 
         StyledText {
-            text: "Group Hyprland workspaces into top-level namespaces. Workspaces are automatically allocated across monitors and keybindings are synced to ~/.config/hypr/dms/workspace_groups.lua."
+            text: "Configure the default workspace groups initialized when DMS starts. Groups dynamically created or deleted during your session will not overwrite this on-launch configuration."
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceVariantText
             wrapMode: Text.WordWrap
@@ -573,11 +583,17 @@ PluginSettings {
         spacing: Theme.spacingM
 
         DankButton {
-            text: "Save & Apply Changes"
+            text: "Save On-Launch Config"
             iconName: "save"
             backgroundColor: Theme.primary
             textColor: Theme.onPrimary
             onClicked: root.saveAll()
+        }
+
+        DankButton {
+            text: "Apply to Current Session"
+            iconName: "sync"
+            onClicked: root.applyToCurrentSession()
         }
 
         DankButton {

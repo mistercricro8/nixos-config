@@ -510,6 +510,31 @@ PluginComponent {
                                 font.weight: Font.Bold
                                 color: Theme.primary
                             }
+
+                            Rectangle {
+                                visible: root.groupsList.length > 1
+                                width: 24
+                                height: 24
+                                radius: 12
+                                color: delPopMouse.containsMouse ? Theme.withAlpha(Theme.error, 0.2) : "transparent"
+
+                                DankIcon {
+                                    anchors.centerIn: parent
+                                    name: "delete"
+                                    size: 14
+                                    color: delPopMouse.containsMouse ? Theme.error : Theme.outlineMedium
+                                }
+
+                                MouseArea {
+                                    id: delPopMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "deleteGroup", modelData.id.toString()]);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -518,6 +543,44 @@ PluginComponent {
                     width: parent.width
                     height: 1
                     color: Theme.outlineVariant
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: 36
+                    radius: Theme.cornerRadiusSmall
+                    color: addBtnMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainer
+
+                    MouseArea {
+                        id: addBtnMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            popoutComp.closePopout?.();
+                            Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "openCreateGroup"]);
+                        }
+                    }
+
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: Theme.spacingS
+
+                        DankIcon {
+                            anchors.verticalCenter: parent.verticalCenter
+                            name: "add"
+                            size: 16
+                            color: Theme.primary
+                        }
+
+                        StyledText {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "New Workspace Group (Super + Alt + Tab)"
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.weight: Font.Medium
+                            color: Theme.primary
+                        }
+                    }
                 }
 
                 Rectangle {
