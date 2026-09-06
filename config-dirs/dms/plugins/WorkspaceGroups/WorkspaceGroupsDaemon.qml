@@ -303,18 +303,73 @@ PluginComponent {
         const g = parseInt(groupId);
         if (isNaN(g) || g < 1 || g > root.groups.length)
             return "INVALID_GROUP";
+        if (g === root.activeGroupIndex)
+            return "ALREADY_ACTIVE";
 
+        if (root.overviewOpen || root.createModalOpen || root.contentVisible) {
+            root.closeOverview();
+        }
+
+        const mons = getSortedMonitors();
         const focusedMon = Hyprland.focusedMonitor;
-        const monIdx = focusedMon ? getMonitorIndex(focusedMon.name) : 0;
-        let targetWs = root.lastActiveWorkspaces[g]?.[focusedMon?.name];
-        if (!targetWs) {
-            targetWs = calcWorkspace(g, monIdx, 1);
+        const focusedMonName = focusedMon?.name || (mons[0] ? mons[0].name : "");
+        const focusedMonIdx = focusedMon ? getMonitorIndex(focusedMon.name) : 0;
+
+        for (let i = 0; i < mons.length; i++) {
+            const m = mons[i];
+            const curWs = m.activeWorkspace ? m.activeWorkspace.id : null;
+            if (curWs) {
+                if (!root.lastActiveWorkspaces[root.activeGroupIndex])
+                    root.lastActiveWorkspaces[root.activeGroupIndex] = {};
+                root.lastActiveWorkspaces[root.activeGroupIndex][m.name] = curWs;
+            }
         }
+
+        if (!root.lastActiveWorkspaces[g])
+            root.lastActiveWorkspaces[g] = {};
+
+        for (let i = 0; i < mons.length; i++) {
+            const m = mons[i];
+            let targetWs = root.lastActiveWorkspaces[g][m.name];
+            if (!targetWs) {
+                targetWs = calcWorkspace(g, i, 1);
+                root.lastActiveWorkspaces[g][m.name] = targetWs;
+            }
+        }
+
+        const targetWsForFocusedMon = root.lastActiveWorkspaces[g][focusedMonName] || calcWorkspace(g, focusedMonIdx, 1);
+
+        const batchCommands = [];
         if (root.isLua) {
-            Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.window.move({ workspace = '${targetWs}' })`]);
+            batchCommands.push(`dispatch hl.dsp.window.move({ workspace = '${targetWsForFocusedMon}', silent = true })`);
         } else {
-            Quickshell.execDetached(["hyprctl", "dispatch", "movetoworkspace", targetWs.toString()]);
+            batchCommands.push("dispatch movetoworkspacesilent " + targetWsForFocusedMon);
         }
+
+        for (let i = 0; i < mons.length; i++) {
+            const m = mons[i];
+            const targetWs = root.lastActiveWorkspaces[g][m.name];
+            if (root.isLua) {
+                batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${m.name}' })`);
+                batchCommands.push(`dispatch hl.dsp.focus({ workspace = '${targetWs}' })`);
+            } else {
+                batchCommands.push("dispatch focusmonitor " + m.name);
+                batchCommands.push("dispatch workspace " + targetWs);
+            }
+        }
+        if (focusedMonName) {
+            if (root.isLua) {
+                batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${focusedMonName}' })`);
+            } else {
+                batchCommands.push("dispatch focusmonitor " + focusedMonName);
+            }
+        }
+
+        const fullBatch = batchCommands.join("; ");
+        Quickshell.execDetached(["hyprctl", "--batch", fullBatch]);
+
+        root.activeGroupIndex = g;
+        root.notifyState();
         return "SUCCESS";
     }
 
