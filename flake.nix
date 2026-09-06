@@ -42,7 +42,7 @@
       url = "github:nix-community/NUR";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    omp.url = "github:can1357/oh-my-pi";
+    omp.url = "github:numtide/llm-agents.nix";
     playwright-mcp = {
       url = "github:mistercricro8/mcps?dir=playwright-nix";
       inputs.nixpkgs.follows = "nixpkgs";
