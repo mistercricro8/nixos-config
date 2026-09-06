@@ -71,6 +71,13 @@ PluginComponent {
     property string formGroupIcon: "󰅩"
     property string formGroupColor: "#89b4fa"
     property bool formSwitchImmediate: true
+    property int editingGroupId: 0
+
+    property int dragFromIndex: -1
+    property int dragTargetIndex: -1
+    property real dragMouseX: 0
+    property real dragMouseY: 0
+    property bool isDraggingCard: false
 
     property int groupToDeleteId: 0
     property string groupToDeleteName: ""
@@ -102,10 +109,97 @@ PluginComponent {
     readonly property string hyprDmsDir: configDir + "/hypr/dms"
     readonly property string luaConfigPath: hyprDmsDir + "/workspace_groups.lua"
 
+    readonly property string stateDir: {
+        const loc = StandardPaths.writableLocation(StandardPaths.GenericStateLocation);
+        const p = loc ? Paths.strip(loc) : "";
+        if (p && p.length > 0)
+            return p + "/DankMaterialShell";
+        return (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/DankMaterialShell";
+    }
+    readonly property string stateFilePath: stateDir + "/workspace_groups.json"
+
+    Timer {
+        id: saveStateDebounceTimer
+        interval: 1000
+        repeat: false
+        onTriggered: root.saveStateFile()
+    }
+
+    function loadStateFile() {
+        try {
+            const escapedPath = root.stateFilePath.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+            const qml = 'import QtQuick; import Quickshell.Io; FileView { path: "' + escapedPath + '"; blockLoading: true; blockWrites: true }';
+            const fv = Qt.createQmlObject(qml, root, "workspace_groups_reader");
+            const raw = fv.text();
+            fv.destroy();
+            if (raw && raw.trim()) {
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === "object") {
+                    return parsed;
+                }
+            }
+        } catch (e) {
+            console.log("[WorkspaceGroups] No existing state file or failed to read:", e.message);
+        }
+        return null;
+    }
+
+    function saveStateFile(callback) {
+        saveStateDebounceTimer.stop();
+        const data = {
+            "groups": root.groups,
+            "activeGroupIndex": root.activeGroupIndex,
+            "lastActiveWorkspaces": root.lastActiveWorkspaces,
+            "timestamp": new Date().toISOString()
+        };
+        const jsonString = JSON.stringify(data, null, 2);
+        const tmpFile = root.stateFilePath + ".tmp." + Date.now();
+
+        Proc.runCommand(
+            "save-workspace-groups-state",
+            [
+                "sh", "-c",
+                'mkdir -p "$1" && printf "%s\\n" "$2" > "$3" && mv -f "$3" "$4"',
+                "_",
+                root.stateDir,
+                jsonString,
+                tmpFile,
+                root.stateFilePath
+            ],
+            (output, exitCode) => {
+                if (exitCode !== 0) {
+                    console.warn("[WorkspaceGroups] Failed to save state file:", output);
+                } else if (typeof callback === "function") {
+                    callback();
+                }
+            }
+        );
+    }
+
     Component.onCompleted: {
-        root.groups = JSON.parse(JSON.stringify(root.onLaunchGroups));
+        const savedState = loadStateFile();
+        if (savedState && Array.isArray(savedState.groups) && savedState.groups.length > 0) {
+            root.groups = savedState.groups.map((g, idx) => ({
+                id: idx + 1,
+                name: g.name || ("Group " + (idx + 1)),
+                icon: g.icon || getRandomNerdfontIcon(),
+                color: g.color || colorPalette[idx % colorPalette.length]
+            }));
+            if (savedState.lastActiveWorkspaces && typeof savedState.lastActiveWorkspaces === "object") {
+                root.lastActiveWorkspaces = savedState.lastActiveWorkspaces;
+            }
+            if (typeof savedState.activeGroupIndex === "number" && savedState.activeGroupIndex >= 1 && savedState.activeGroupIndex <= root.groups.length) {
+                root.activeGroupIndex = savedState.activeGroupIndex;
+            }
+        } else {
+            root.groups = JSON.parse(JSON.stringify(root.onLaunchGroups));
+        }
+
+        sanitizeLastActiveWorkspaces();
+        ensureGroupsCoverAllWorkspaces();
         syncFromCurrentWorkspace();
         notifyState();
+        saveStateFile();
         Qt.callLater(writeLuaConfig);
     }
 
@@ -140,20 +234,31 @@ PluginComponent {
         if (g !== root.activeGroupIndex) {
             root.activeGroupIndex = g;
             root.notifyState();
+            saveStateDebounceTimer.restart();
         }
 
         const activeMon = Hyprland.focusedMonitor?.name;
         if (activeMon) {
-            if (!root.lastActiveWorkspaces[g])
-                root.lastActiveWorkspaces[g] = {};
-            root.lastActiveWorkspaces[g][activeMon] = activeWs;
+            const monIdx = getMonitorIndex(activeMon);
+            if (root.isWorkspaceValidForGroupAndMonitor(activeWs, g, monIdx)) {
+                if (!root.lastActiveWorkspaces[g])
+                    root.lastActiveWorkspaces[g] = {};
+                if (root.lastActiveWorkspaces[g][activeMon] !== activeWs) {
+                    root.lastActiveWorkspaces[g][activeMon] = activeWs;
+                    saveStateDebounceTimer.restart();
+                }
+            }
         }
     }
 
     function getSortedMonitors() {
         const mons = Hyprland.monitors?.values || [];
-        if (mons.length === 0)
+        if (mons.length === 0) {
+            if (root.monitorPriority && root.monitorPriority.length > 0) {
+                return root.monitorPriority.map((p, idx) => ({ "name": p, "id": idx }));
+            }
             return [{ "name": "default", "id": 0 }];
+        }
 
         const sorted = [];
         const seen = {};
@@ -183,20 +288,56 @@ PluginComponent {
         return Math.max(1, getSortedMonitors().length);
     }
 
-    function calcWorkspace(groupId, monIdx, subWs) {
-        const monCount = getMonitorCount();
-        return (groupId - 1) * (workspacesPerMonitor * monCount) + (monIdx * workspacesPerMonitor) + subWs;
-    }
-
-    function calcGroupFromWorkspace(wsId) {
+    function rawGroupFromWorkspace(wsId) {
         if (!wsId || wsId < 1)
             return 1;
         const monCount = getMonitorCount();
         const totalPerGroup = workspacesPerMonitor * monCount;
         if (totalPerGroup <= 0)
             return 1;
-        const g = Math.floor((wsId - 1) / totalPerGroup) + 1;
-        return Math.max(1, Math.min(groups.length, g));
+        return Math.floor((wsId - 1) / totalPerGroup) + 1;
+    }
+
+    function calcWorkspace(groupId, monIdx, subWs) {
+        const monCount = getMonitorCount();
+        return (groupId - 1) * (workspacesPerMonitor * monCount) + (monIdx * workspacesPerMonitor) + subWs;
+    }
+
+    function isWorkspaceValidForGroupAndMonitor(wsId, groupId, monIdx) {
+        if (!wsId || wsId < 1 || !groupId || groupId < 1 || monIdx === undefined || monIdx < 0)
+            return false;
+        const monCount = getMonitorCount();
+        const totalPerGroup = workspacesPerMonitor * monCount;
+        const startWs = (groupId - 1) * totalPerGroup + (monIdx * workspacesPerMonitor) + 1;
+        const endWs = startWs + workspacesPerMonitor - 1;
+        return wsId >= startWs && wsId <= endWs;
+    }
+
+    function getValidWorkspaceForMonitor(groupId, monIdx, preferredWs) {
+        if (isWorkspaceValidForGroupAndMonitor(preferredWs, groupId, monIdx)) {
+            return preferredWs;
+        }
+        return calcWorkspace(groupId, monIdx, 1);
+    }
+
+    function sanitizeLastActiveWorkspaces() {
+        const sanitized = {};
+        const sortedMons = getSortedMonitors();
+        const numGroups = (root.groups && root.groups.length > 0) ? root.groups.length : 1;
+        for (let gNum = 1; gNum <= numGroups; gNum++) {
+            sanitized[gNum] = {};
+            const gMap = (root.lastActiveWorkspaces && root.lastActiveWorkspaces[gNum]) ? root.lastActiveWorkspaces[gNum] : {};
+            for (let mIdx = 0; mIdx < sortedMons.length; mIdx++) {
+                const mName = sortedMons[mIdx].name;
+                sanitized[gNum][mName] = getValidWorkspaceForMonitor(gNum, mIdx, gMap[mName]);
+            }
+        }
+        root.lastActiveWorkspaces = sanitized;
+    }
+
+    function calcGroupFromWorkspace(wsId) {
+        const raw = rawGroupFromWorkspace(wsId);
+        return Math.max(1, Math.min(root.groups ? root.groups.length : 1, raw));
     }
 
     function calcSubWorkspaceFromWorkspace(wsId) {
@@ -208,6 +349,82 @@ PluginComponent {
             return 1;
         const withinGroup = (wsId - 1) % totalPerGroup;
         return (withinGroup % workspacesPerMonitor) + 1;
+    }
+
+    function formatWindowAddress(rawAddr) {
+        if (!rawAddr)
+            return "";
+        const s = String(rawAddr).trim();
+        if (!s)
+            return "";
+        return s.startsWith("0x") ? s : ("0x" + s);
+    }
+
+    function ensureGroupsCoverAllWorkspaces() {
+        let maxG = root.groups ? root.groups.length : 0;
+
+        const wses = Hyprland.workspaces?.values || [];
+        for (let i = 0; i < wses.length; i++) {
+            const ws = wses[i];
+            if (!ws) continue;
+            const wid = ws.id;
+            if (wid && wid > 0) {
+                const winCount = (ws.windows !== undefined) ? ws.windows : (ws.lastIpcObject?.windows || 0);
+                const isPersistent = (ws.ispersistent === true) || (ws.lastIpcObject?.ispersistent === true);
+
+                if (winCount > 0 || isPersistent) {
+                    const g = rawGroupFromWorkspace(wid);
+                    if (g > maxG)
+                        maxG = g;
+
+                    const monName = ws.monitor?.name || ws.monitor || ws.lastIpcObject?.monitor;
+                    if (monName) {
+                        const mIdx = getMonitorIndex(monName);
+                        if (isWorkspaceValidForGroupAndMonitor(wid, g, mIdx)) {
+                            if (!root.lastActiveWorkspaces[g])
+                                root.lastActiveWorkspaces[g] = {};
+                            if (!root.lastActiveWorkspaces[g][monName])
+                                root.lastActiveWorkspaces[g][monName] = wid;
+                        }
+                    }
+                }
+            }
+        }
+
+        const tops = Hyprland.toplevels?.values || [];
+        for (let i = 0; i < tops.length; i++) {
+            const top = tops[i];
+            if (!top) continue;
+            const wid = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+            if (wid !== undefined && wid > 0) {
+                const g = rawGroupFromWorkspace(wid);
+                if (g > maxG)
+                    maxG = g;
+            }
+        }
+
+        const maxAllowed = 20;
+        const targetMax = Math.min(maxG, maxAllowed);
+        if (targetMax <= (root.groups ? root.groups.length : 0)) {
+            return false;
+        }
+
+        const updatedGroups = [...root.groups];
+        for (let k = updatedGroups.length + 1; k <= targetMax; k++) {
+            updatedGroups.push({
+                "id": k,
+                "name": "Group " + k,
+                "icon": getRandomNerdfontIcon(),
+                "color": colorPalette[(k - 1) % colorPalette.length]
+            });
+        }
+        root.groups = updatedGroups;
+        root.sanitizeLastActiveWorkspaces();
+
+        root.notifyState();
+        root.writeLuaConfig();
+        root.saveStateFile();
+        return true;
     }
 
     function notifyState() {
@@ -243,7 +460,7 @@ PluginComponent {
         for (let i = 0; i < mons.length; i++) {
             const m = mons[i];
             const curWs = m.activeWorkspace ? m.activeWorkspace.id : null;
-            if (curWs) {
+            if (curWs && root.isWorkspaceValidForGroupAndMonitor(curWs, root.activeGroupIndex, i)) {
                 if (!root.lastActiveWorkspaces[root.activeGroupIndex])
                     root.lastActiveWorkspaces[root.activeGroupIndex] = {};
                 root.lastActiveWorkspaces[root.activeGroupIndex][m.name] = curWs;
@@ -256,8 +473,8 @@ PluginComponent {
         const batchCommands = [];
         for (let i = 0; i < mons.length; i++) {
             const m = mons[i];
-            let targetWs = root.lastActiveWorkspaces[g][m.name];
-            if (!targetWs) {
+            let targetWs = root.lastActiveWorkspaces[g]?.[m.name];
+            if (!root.isWorkspaceValidForGroupAndMonitor(targetWs, g, i)) {
                 targetWs = calcWorkspace(g, i, 1);
                 root.lastActiveWorkspaces[g][m.name] = targetWs;
             }
@@ -282,6 +499,7 @@ PluginComponent {
 
         root.activeGroupIndex = g;
         root.notifyState();
+        root.saveStateFile();
         return "SUCCESS";
     }
 
@@ -318,7 +536,7 @@ PluginComponent {
         for (let i = 0; i < mons.length; i++) {
             const m = mons[i];
             const curWs = m.activeWorkspace ? m.activeWorkspace.id : null;
-            if (curWs) {
+            if (curWs && root.isWorkspaceValidForGroupAndMonitor(curWs, root.activeGroupIndex, i)) {
                 if (!root.lastActiveWorkspaces[root.activeGroupIndex])
                     root.lastActiveWorkspaces[root.activeGroupIndex] = {};
                 root.lastActiveWorkspaces[root.activeGroupIndex][m.name] = curWs;
@@ -330,14 +548,14 @@ PluginComponent {
 
         for (let i = 0; i < mons.length; i++) {
             const m = mons[i];
-            let targetWs = root.lastActiveWorkspaces[g][m.name];
-            if (!targetWs) {
+            let targetWs = root.lastActiveWorkspaces[g]?.[m.name];
+            if (!root.isWorkspaceValidForGroupAndMonitor(targetWs, g, i)) {
                 targetWs = calcWorkspace(g, i, 1);
                 root.lastActiveWorkspaces[g][m.name] = targetWs;
             }
         }
 
-        const targetWsForFocusedMon = root.lastActiveWorkspaces[g][focusedMonName] || calcWorkspace(g, focusedMonIdx, 1);
+        const targetWsForFocusedMon = root.lastActiveWorkspaces[g]?.[focusedMonName] || calcWorkspace(g, focusedMonIdx, 1);
 
         const batchCommands = [];
         if (root.isLua) {
@@ -370,6 +588,7 @@ PluginComponent {
 
         root.activeGroupIndex = g;
         root.notifyState();
+        root.saveStateFile();
         return "SUCCESS";
     }
 
@@ -480,6 +699,7 @@ PluginComponent {
     function openCreateGroup() {
         overviewCloseTimer.stop();
         root.isClosing = false;
+        root.editingGroupId = 0;
         root.formGroupName = "";
         root.formGroupIcon = getRandomNerdfontIcon();
         root.formGroupColor = getNextGroupColor();
@@ -491,10 +711,35 @@ PluginComponent {
         return "CREATE_MODAL_OPEN";
     }
 
+    function openEditGroup(groupId) {
+        const g = parseInt(groupId);
+        if (isNaN(g) || g < 1 || g > root.groups.length)
+            return "INVALID_GROUP";
+
+        overviewCloseTimer.stop();
+        root.isClosing = false;
+        root.editingGroupId = g;
+        const target = root.groups[g - 1];
+        root.formGroupName = target?.name || ("Group " + g);
+        root.formGroupIcon = target?.icon || "󰅩";
+        root.formGroupColor = target?.color || "#89b4fa";
+        root.formSwitchImmediate = false;
+        root.createModalOpen = true;
+        Qt.callLater(() => {
+            root.contentVisible = true;
+        });
+        return "EDIT_MODAL_OPEN";
+    }
+
+    function openEditCurrentGroup() {
+        return openEditGroup(root.activeGroupIndex);
+    }
+
     function closeCreateGroup() {
         if (!root.createModalOpen)
             return "MODAL_CLOSED";
         root.createModalOpen = false;
+        root.editingGroupId = 0;
         if (!root.overviewOpen) {
             root.contentVisible = false;
             root.isClosing = true;
@@ -507,6 +752,197 @@ PluginComponent {
         if (root.createModalOpen)
             return closeCreateGroup();
         return openCreateGroup();
+    }
+
+    function updateGroup(groupId, name, icon, color) {
+        const g = parseInt(groupId);
+        if (isNaN(g) || g < 1 || g > root.groups.length)
+            return "INVALID_GROUP";
+
+        const finalName = (name && name.trim()) ? name.trim() : ("Group " + g);
+        const finalIcon = (icon && icon.trim()) ? icon.trim() : (root.groups[g - 1].icon || getRandomNerdfontIcon());
+        const finalColor = (color && color.trim()) ? color.trim() : (root.groups[g - 1].color || getNextGroupColor());
+
+        const newGroups = [...root.groups];
+        newGroups[g - 1] = {
+            "id": g,
+            "name": finalName,
+            "icon": finalIcon,
+            "color": finalColor
+        };
+        root.groups = newGroups;
+
+        root.closeCreateGroup();
+        root.notifyState();
+        root.writeLuaConfig();
+        root.saveStateFile();
+        return "SUCCESS";
+    }
+
+    function reorderGroup(fromIdx, toIdx) {
+        const from = parseInt(fromIdx);
+        const to = parseInt(toIdx);
+        if (isNaN(from) || isNaN(to) || from < 0 || to < 0 || from >= root.groups.length || to >= root.groups.length)
+            return "INVALID_INDICES";
+        if (from === to)
+            return "NO_OP";
+
+        const monCount = root.getMonitorCount();
+        const totalPerGroup = root.workspacesPerMonitor * monCount;
+
+        const newGroups = [...root.groups];
+        const [movedGroup] = newGroups.splice(from, 1);
+        newGroups.splice(to, 0, movedGroup);
+
+        const mapping = {};
+        for (let k = 0; k < newGroups.length; k++) {
+            const grp = newGroups[k];
+            const oldId = grp.id;
+            const newId = k + 1;
+            mapping[oldId] = newId;
+        }
+
+        const batchCommands = [];
+        const allToplevels = Hyprland.toplevels?.values || [];
+
+        if (root.isLua) {
+            const activeWorkspacesSet = {};
+            const hyprWses = Hyprland.workspaces?.values || [];
+            for (let i = 0; i < hyprWses.length; i++) {
+                const wid = hyprWses[i]?.id;
+                if (wid && wid > 0) activeWorkspacesSet[wid] = true;
+            }
+            for (let i = 0; i < allToplevels.length; i++) {
+                const wid = allToplevels[i]?.workspace?.id ?? allToplevels[i]?.lastIpcObject?.workspace?.id;
+                if (wid && wid > 0) activeWorkspacesSet[wid] = true;
+            }
+            const hyprMons = Hyprland.monitors?.values || [];
+            for (let i = 0; i < hyprMons.length; i++) {
+                const wid = hyprMons[i]?.activeWorkspace?.id;
+                if (wid && wid > 0) activeWorkspacesSet[wid] = true;
+            }
+
+            const workspacesToMigrate = [];
+            for (const wsIdStr in activeWorkspacesSet) {
+                const wsId = parseInt(wsIdStr);
+                const oldG = rawGroupFromWorkspace(wsId);
+                const newG = mapping[oldG];
+                if (newG !== undefined && newG !== oldG) {
+                    const offset = (wsId - 1) % totalPerGroup;
+                    const targetWs = (newG - 1) * totalPerGroup + 1 + offset;
+                    workspacesToMigrate.push({ oldWs: wsId, targetWs: targetWs });
+                }
+            }
+
+            for (let i = 0; i < workspacesToMigrate.length; i++) {
+                const item = workspacesToMigrate[i];
+                const tempId = item.oldWs + 100000;
+                batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${item.oldWs}', id = ${tempId} })`);
+            }
+            for (let i = 0; i < workspacesToMigrate.length; i++) {
+                const item = workspacesToMigrate[i];
+                const tempId = item.oldWs + 100000;
+                batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${tempId}', id = ${item.targetWs} })`);
+            }
+        } else {
+            for (let i = 0; i < allToplevels.length; i++) {
+                const top = allToplevels[i];
+                if (!top) continue;
+                const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+                const rawAddr = top.lastIpcObject?.address || top.address;
+                const addr = root.formatWindowAddress(rawAddr);
+                if (!addr || wsId === undefined || wsId < 1) continue;
+
+                const oldG = rawGroupFromWorkspace(wsId);
+                const newG = mapping[oldG];
+                if (newG !== undefined && newG !== oldG) {
+                    const offset = (wsId - 1) % totalPerGroup;
+                    const targetWs = (newG - 1) * totalPerGroup + 1 + offset;
+                    batchCommands.push(`dispatch movetoworkspacesilent ${targetWs},address:${addr}`);
+                }
+            }
+        }
+
+        const oldLastActive = root.lastActiveWorkspaces || {};
+        const newLastActive = {};
+        const sortedMons = getSortedMonitors();
+        for (let newG = 1; newG <= root.groups.length; newG++) {
+            newLastActive[newG] = {};
+        }
+        for (const oldGStr in oldLastActive) {
+            const oldG = parseInt(oldGStr);
+            const newG = mapping[oldG] || oldG;
+            if (!newLastActive[newG]) newLastActive[newG] = {};
+            const monMap = oldLastActive[oldGStr];
+            if (monMap && typeof monMap === "object") {
+                for (let i = 0; i < sortedMons.length; i++) {
+                    const monName = sortedMons[i].name;
+                    const oldWs = monMap[monName];
+                    if (oldWs && root.isWorkspaceValidForGroupAndMonitor(oldWs, oldG, i)) {
+                        const offset = (oldWs - 1) % totalPerGroup;
+                        newLastActive[newG][monName] = (newG - 1) * totalPerGroup + 1 + offset;
+                    } else {
+                        newLastActive[newG][monName] = calcWorkspace(newG, i, 1);
+                    }
+                }
+            }
+        }
+        for (let gNum = 1; gNum <= root.groups.length; gNum++) {
+            if (!newLastActive[gNum]) newLastActive[gNum] = {};
+            for (let i = 0; i < sortedMons.length; i++) {
+                const monName = sortedMons[i].name;
+                if (!root.isWorkspaceValidForGroupAndMonitor(newLastActive[gNum][monName], gNum, i)) {
+                    newLastActive[gNum][monName] = calcWorkspace(gNum, i, 1);
+                }
+            }
+        }
+        root.lastActiveWorkspaces = newLastActive;
+
+        const oldActive = root.activeGroupIndex;
+        const newActive = mapping[oldActive] || oldActive;
+        root.activeGroupIndex = newActive;
+
+        if (newActive !== oldActive) {
+            const mons = getSortedMonitors();
+            const focusedMonName = Hyprland.focusedMonitor?.name || (mons[0] ? mons[0].name : "");
+            for (let i = 0; i < mons.length; i++) {
+                const m = mons[i];
+                let targetWs = root.lastActiveWorkspaces[newActive]?.[m.name];
+                if (!root.isWorkspaceValidForGroupAndMonitor(targetWs, newActive, i)) {
+                    targetWs = calcWorkspace(newActive, i, 1);
+                }
+                if (root.isLua) {
+                    batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${m.name}' })`);
+                    batchCommands.push(`dispatch hl.dsp.focus({ workspace = '${targetWs}' })`);
+                } else {
+                    batchCommands.push("dispatch focusmonitor " + m.name);
+                    batchCommands.push("dispatch workspace " + targetWs);
+                }
+            }
+            if (focusedMonName) {
+                if (root.isLua) {
+                    batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${focusedMonName}' })`);
+                } else {
+                    batchCommands.push("dispatch focusmonitor " + focusedMonName);
+                }
+            }
+        }
+
+        if (batchCommands.length > 0) {
+            Quickshell.execDetached(["hyprctl", "--batch", batchCommands.join("; ")]);
+        }
+
+        root.groups = newGroups.map((g, idx) => ({
+            "id": idx + 1,
+            "name": g.name,
+            "icon": g.icon,
+            "color": g.color
+        }));
+
+        root.notifyState();
+        root.writeLuaConfig();
+        root.saveStateFile();
+        return "SUCCESS";
     }
 
     function createGroup(name, icon, color, shouldSwitch) {
@@ -523,8 +959,15 @@ PluginComponent {
         };
 
         root.groups = [...root.groups, newGroup];
+        if (!root.lastActiveWorkspaces[newId])
+            root.lastActiveWorkspaces[newId] = {};
+        const sortedMons = getSortedMonitors();
+        for (let i = 0; i < sortedMons.length; i++) {
+            root.lastActiveWorkspaces[newId][sortedMons[i].name] = calcWorkspace(newId, i, 1);
+        }
         root.notifyState();
         root.writeLuaConfig();
+        root.saveStateFile();
 
         if (shouldSwitch !== false) {
             root.closeOverview();
@@ -568,49 +1011,20 @@ PluginComponent {
         const startWs = (g - 1) * totalPerGroup + 1;
         const endWs = g * totalPerGroup;
 
-        const allToplevels = Hyprland.toplevels?.values || [];
-        const batchCommands = [];
+        const sortedMons = getSortedMonitors();
+        const focusedMon = Hyprland.focusedMonitor;
+        const focusedMonName = focusedMon?.name || (sortedMons[0] ? sortedMons[0].name : "");
+        const oldActive = root.activeGroupIndex;
 
-        for (let i = 0; i < allToplevels.length; i++) {
-            const top = allToplevels[i];
-            if (!top) continue;
-            const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
-            const addr = top.address || top.lastIpcObject?.address;
-            if (!addr || wsId === undefined) continue;
-
-            if (wsId >= startWs && wsId <= endWs) {
-                const withinGroup = (wsId - 1) % totalPerGroup;
-                const targetWs = 1 + withinGroup;
-                if (root.isLua) {
-                    batchCommands.push(`dispatch hl.dsp.window.move({ workspace = '${targetWs}', silent = true, window = 'address:${addr}' })`);
-                } else {
-                    batchCommands.push(`dispatch movetoworkspacesilent ${targetWs},address:${addr}`);
-                }
-            } else if (wsId > endWs) {
-                const shiftedWs = wsId - totalPerGroup;
-                if (root.isLua) {
-                    batchCommands.push(`dispatch hl.dsp.window.move({ workspace = '${shiftedWs}', silent = true, window = 'address:${addr}' })`);
-                } else {
-                    batchCommands.push(`dispatch movetoworkspacesilent ${shiftedWs},address:${addr}`);
-                }
+        for (let i = 0; i < sortedMons.length; i++) {
+            const m = sortedMons[i];
+            const curWs = m.activeWorkspace ? m.activeWorkspace.id : null;
+            if (curWs && root.isWorkspaceValidForGroupAndMonitor(curWs, oldActive, i)) {
+                if (!root.lastActiveWorkspaces[oldActive])
+                    root.lastActiveWorkspaces[oldActive] = {};
+                root.lastActiveWorkspaces[oldActive][m.name] = curWs;
             }
         }
-
-        if (batchCommands.length > 0) {
-            Quickshell.execDetached(["hyprctl", "--batch", batchCommands.join("; ")]);
-        }
-
-        delete root.lastActiveWorkspaces[g];
-        const newLastActive = {};
-        for (const k in root.lastActiveWorkspaces) {
-            const numK = parseInt(k);
-            if (numK < g) {
-                newLastActive[numK] = root.lastActiveWorkspaces[k];
-            } else if (numK > g) {
-                newLastActive[numK - 1] = root.lastActiveWorkspaces[k];
-            }
-        }
-        root.lastActiveWorkspaces = newLastActive;
 
         const newGroups = [];
         for (let i = 0; i < root.groups.length; i++) {
@@ -624,17 +1038,166 @@ PluginComponent {
                 "color": grp.color
             });
         }
-        root.groups = newGroups;
 
-        if (root.activeGroupIndex === g) {
-            root.activeGroupIndex = Math.max(1, Math.min(g, root.groups.length));
-            root.switchToGroup(root.activeGroupIndex);
-        } else if (root.activeGroupIndex > g) {
-            root.activeGroupIndex = root.activeGroupIndex - 1;
+        let newActive = oldActive;
+        if (oldActive === g) {
+            newActive = Math.max(1, Math.min(g, newGroups.length));
+        } else if (oldActive > g) {
+            newActive = oldActive - 1;
+        }
+
+        delete root.lastActiveWorkspaces[g];
+        const newLastActive = {};
+        for (const k in root.lastActiveWorkspaces) {
+            const numK = parseInt(k);
+            if (numK < g) {
+                newLastActive[numK] = root.lastActiveWorkspaces[k];
+            } else if (numK > g) {
+                const shiftedG = numK - 1;
+                newLastActive[shiftedG] = {};
+                const monMap = root.lastActiveWorkspaces[k];
+                if (monMap && typeof monMap === "object") {
+                    for (let i = 0; i < sortedMons.length; i++) {
+                        const mName = sortedMons[i].name;
+                        const oldWs = monMap[mName];
+                        if (oldWs && root.isWorkspaceValidForGroupAndMonitor(oldWs, numK, i)) {
+                            newLastActive[shiftedG][mName] = oldWs - totalPerGroup;
+                        } else {
+                            newLastActive[shiftedG][mName] = calcWorkspace(shiftedG, i, 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        const allToplevels = Hyprland.toplevels?.values || [];
+        const batchCommands = [];
+
+        const activeWorkspacesSet = {};
+        const hyprWses = Hyprland.workspaces?.values || [];
+        for (let i = 0; i < hyprWses.length; i++) {
+            const wid = hyprWses[i]?.id;
+            if (wid && wid > 0) activeWorkspacesSet[wid] = true;
+        }
+        for (let i = 0; i < allToplevels.length; i++) {
+            const wid = allToplevels[i]?.workspace?.id ?? allToplevels[i]?.lastIpcObject?.workspace?.id;
+            if (wid && wid > 0) activeWorkspacesSet[wid] = true;
+        }
+
+        const groupGWsWithWindows = {};
+        for (let i = 0; i < allToplevels.length; i++) {
+            const top = allToplevels[i];
+            if (!top) continue;
+            const wid = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+            if (wid !== undefined && wid >= startWs && wid <= endWs) {
+                groupGWsWithWindows[wid] = true;
+            }
+        }
+
+        const evacuateTargetGroup = (g === 1) ? 2 : 1;
+
+        if (root.isLua) {
+            const evacuatedWorkspacesRenamed = {};
+            for (const wsIdStr in groupGWsWithWindows) {
+                const wsId = parseInt(wsIdStr);
+                const withinGroup = (wsId - 1) % totalPerGroup;
+                const targetWs = (evacuateTargetGroup - 1) * totalPerGroup + 1 + withinGroup;
+                if (g > 1 && !activeWorkspacesSet[targetWs]) {
+                    batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${wsId}', id = ${targetWs} })`);
+                    evacuatedWorkspacesRenamed[wsId] = true;
+                    activeWorkspacesSet[targetWs] = true;
+                }
+            }
+
+            for (let i = 0; i < allToplevels.length; i++) {
+                const top = allToplevels[i];
+                if (!top) continue;
+                const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+                const rawAddr = top.lastIpcObject?.address || top.address;
+                const addr = root.formatWindowAddress(rawAddr);
+                if (!addr || wsId === undefined) continue;
+
+                if (wsId >= startWs && wsId <= endWs) {
+                    if (!evacuatedWorkspacesRenamed[wsId]) {
+                        const withinGroup = (wsId - 1) % totalPerGroup;
+                        const targetWs = (evacuateTargetGroup - 1) * totalPerGroup + 1 + withinGroup;
+                        batchCommands.push(`dispatch hl.dsp.window.move({ workspace = '${targetWs}', silent = true, window = 'address:${addr}' })`);
+                    }
+                }
+            }
+
+            const higherWsList = [];
+            for (const wsIdStr in activeWorkspacesSet) {
+                const wsId = parseInt(wsIdStr);
+                if (wsId > endWs) {
+                    higherWsList.push(wsId);
+                }
+            }
+            higherWsList.sort((a, b) => a - b);
+            for (let i = 0; i < higherWsList.length; i++) {
+                const wsId = higherWsList[i];
+                const shiftedWs = wsId - totalPerGroup;
+                batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${wsId}', id = ${shiftedWs} })`);
+            }
+        } else {
+            for (let i = 0; i < allToplevels.length; i++) {
+                const top = allToplevels[i];
+                if (!top) continue;
+                const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+                const rawAddr = top.lastIpcObject?.address || top.address;
+                const addr = root.formatWindowAddress(rawAddr);
+                if (!addr || wsId === undefined) continue;
+
+                if (wsId >= startWs && wsId <= endWs) {
+                    const withinGroup = (wsId - 1) % totalPerGroup;
+                    const targetWs = (evacuateTargetGroup - 1) * totalPerGroup + 1 + withinGroup;
+                    batchCommands.push(`dispatch movetoworkspacesilent ${targetWs},address:${addr}`);
+                } else if (wsId > endWs) {
+                    const shiftedWs = wsId - totalPerGroup;
+                    batchCommands.push(`dispatch movetoworkspacesilent ${shiftedWs},address:${addr}`);
+                }
+            }
+        }
+
+        for (let i = 0; i < sortedMons.length; i++) {
+            const m = sortedMons[i];
+            let targetWs = newLastActive[newActive]?.[m.name];
+            if (!root.isWorkspaceValidForGroupAndMonitor(targetWs, newActive, i)) {
+                targetWs = calcWorkspace(newActive, i, 1);
+                if (!newLastActive[newActive]) newLastActive[newActive] = {};
+                newLastActive[newActive][m.name] = targetWs;
+            }
+            if (root.isLua) {
+                batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${m.name}' })`);
+                batchCommands.push(`dispatch hl.dsp.focus({ workspace = '${targetWs}' })`);
+            } else {
+                batchCommands.push("dispatch focusmonitor " + m.name);
+                batchCommands.push("dispatch workspace " + targetWs);
+            }
+        }
+        if (focusedMonName) {
+            if (root.isLua) {
+                batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${focusedMonName}' })`);
+            } else {
+                batchCommands.push("dispatch focusmonitor " + focusedMonName);
+            }
+        }
+
+        if (batchCommands.length > 0) {
+            Quickshell.execDetached(["hyprctl", "--batch", batchCommands.join("; ")]);
+        }
+
+        root.activeGroupIndex = newActive;
+        root.groups = newGroups;
+        root.lastActiveWorkspaces = newLastActive;
+        root.sanitizeLastActiveWorkspaces();
+        if (root.selectedOverviewIndex >= newGroups.length) {
+            root.selectedOverviewIndex = Math.max(0, newGroups.length - 1);
         }
 
         root.notifyState();
         root.writeLuaConfig();
+        root.saveStateFile();
         return "SUCCESS";
     }
 
@@ -660,11 +1223,14 @@ PluginComponent {
 
     function resetToOnLaunchGroups() {
         root.groups = JSON.parse(JSON.stringify(root.onLaunchGroups));
+        root.sanitizeLastActiveWorkspaces();
+        root.ensureGroupsCoverAllWorkspaces();
         if (root.activeGroupIndex > root.groups.length) {
             root.switchToGroup(1);
         }
         root.notifyState();
         root.writeLuaConfig();
+        root.saveStateFile();
         return "SUCCESS";
     }
 
@@ -744,6 +1310,12 @@ function M.open_create_group()
   end
 end
 
+function M.open_edit_current_group()
+  return function()
+    dms_ipc("workspaceGroups", "openEditCurrentGroup")
+  end
+end
+
 function M.delete_current_group()
   return function()
     dms_ipc("workspaceGroups", "deleteCurrentGroup")
@@ -778,6 +1350,9 @@ function M.setup(opts)
   -- Create / Manage Groups Modal
   hl.bind(mainMod .. " + ALT + Tab", M.open_create_group())
   hl.bind(mainMod .. " + ALT + N", M.open_create_group())
+
+  -- Edit Current Group Modal
+  hl.bind(mainMod .. " + ALT + E", M.open_edit_current_group())
 
   -- Group direct switch & move (1..9, and 0 for group 10)
   for _, g in ipairs(M.groups) do
@@ -826,6 +1401,16 @@ return M
 
     IpcHandler {
         target: "workspaceGroups"
+
+        function saveState(): string {
+            root.saveStateFile();
+            return "OK";
+        }
+
+        function recoverOrphanGroups(): string {
+            const added = root.ensureGroupsCoverAllWorkspaces();
+            return added ? "RECOVERED" : "NO_ORPHANS";
+        }
 
         function writeLuaConfig(): string {
             root.writeLuaConfig();
@@ -908,6 +1493,22 @@ return M
             return root.resetToOnLaunchGroups();
         }
 
+        function openEditGroup(groupId: string): string {
+            return root.openEditGroup(groupId);
+        }
+
+        function openEditCurrentGroup(): string {
+            return root.openEditCurrentGroup();
+        }
+
+        function updateGroup(groupId: string, name: string, icon: string, color: string): string {
+            return root.updateGroup(groupId, name, icon, color);
+        }
+
+        function reorderGroup(fromIdx: string, toIdx: string): string {
+            return root.reorderGroup(fromIdx, toIdx);
+        }
+
         function getActiveGroup(): string {
             return root.getActiveGroup();
         }
@@ -984,7 +1585,7 @@ return M
                                         createNameInput.forceActiveFocus();
                                     } else {
                                         focusScope.forceActiveFocus();
-                                        if (overviewFlickable) {
+                                        if (overviewFlickable && overviewFlickable.height > 0) {
                                             overviewFlickable.ensureVisible(root.selectedOverviewIndex);
                                         }
                                     }
@@ -993,6 +1594,9 @@ return M
                                 delayedGrabTimer.stop();
                                 grab.active = false;
                                 grab.hasBeenActivated = false;
+                                if (overviewFlickable) {
+                                    overviewFlickable.contentY = 0;
+                                }
                             }
                         }
                         function onSelectedOverviewIndexChanged() {
@@ -1162,7 +1766,7 @@ return M
 
                                     StyledText {
                                         Layout.fillWidth: true
-                                        text: "Press [1-9, 0] to switch • [H/J/K/L] / Arrows to move"
+                                        text: "Press [1-9, 0] to switch • [H/J/K/L] / Arrows to move • [E] Edit"
                                         font.pixelSize: Theme.fontSizeSmall
                                         color: Theme.surfaceVariantText
                                         elide: Text.ElideRight
@@ -1170,7 +1774,7 @@ return M
 
                                     StyledText {
                                         Layout.fillWidth: true
-                                        text: "[N] Add Group • [Del] Delete • Esc to close"
+                                        text: "[Shift+H/L] Reorder (or Drag & Drop) • [N] Add • [Del] Delete • Esc to close"
                                         font.pixelSize: Theme.fontSizeSmall
                                         color: Theme.surfaceVariantText
                                         elide: Text.ElideRight
@@ -1187,16 +1791,47 @@ return M
                                     boundsBehavior: Flickable.StopAtBounds
 
                                     Behavior on contentY {
-                                        enabled: !overviewFlickable.moving && !overviewFlickable.flicking
+                                        enabled: !overviewFlickable.moving && !overviewFlickable.flicking && root.contentVisible
                                         NumberAnimation {
                                             duration: 180
                                             easing.type: Easing.OutCubic
                                         }
                                     }
 
+                                    onHeightChanged: {
+                                        const maxScroll = Math.max(0, contentHeight - height);
+                                        if (contentY > maxScroll) {
+                                            contentY = maxScroll;
+                                        }
+                                        if (height > 0 && contentHeight > 0 && root.contentVisible) {
+                                            ensureVisible(root.selectedOverviewIndex);
+                                        }
+                                    }
+
+                                    onContentHeightChanged: {
+                                        const maxScroll = Math.max(0, contentHeight - height);
+                                        if (contentY > maxScroll) {
+                                            contentY = maxScroll;
+                                        }
+                                        if (height > 0 && contentHeight > 0 && root.contentVisible) {
+                                            ensureVisible(root.selectedOverviewIndex);
+                                        }
+                                    }
+
                                     function ensureVisible(idx) {
                                         if (idx < 0 || idx >= root.totalOverviewItems)
                                             return;
+                                        if (overviewFlickable.height <= 0 || overviewFlickable.contentHeight <= 0)
+                                            return;
+
+                                        const maxScroll = Math.max(0, overviewFlickable.contentHeight - overviewFlickable.height);
+                                        if (maxScroll === 0) {
+                                            if (overviewFlickable.contentY !== 0) {
+                                                overviewFlickable.contentY = 0;
+                                            }
+                                            return;
+                                        }
+
                                         const cols = root.gridColumns;
                                         const row = Math.floor(idx / cols);
                                         const cardY = groupGrid.y + row * (groupGrid.cardHeight + groupGrid.rowSpacing);
@@ -1207,12 +1842,11 @@ return M
                                         const targetBottom = cardBottom + pad;
 
                                         if (cardY - pad < overviewFlickable.contentY) {
-                                            overviewFlickable.contentY = targetTop;
+                                            overviewFlickable.contentY = Math.max(0, Math.min(maxScroll, targetTop));
                                             overviewScrollBar._scrollBarActive = true;
                                             overviewScrollBar.hideTimer.restart();
                                         } else if (cardBottom + pad > overviewFlickable.contentY + overviewFlickable.height) {
-                                            const maxScroll = Math.max(0, overviewFlickable.contentHeight - overviewFlickable.height);
-                                            overviewFlickable.contentY = Math.min(maxScroll, targetBottom - overviewFlickable.height);
+                                            overviewFlickable.contentY = Math.max(0, Math.min(maxScroll, targetBottom - overviewFlickable.height));
                                             overviewScrollBar._scrollBarActive = true;
                                             overviewScrollBar.hideTimer.restart();
                                         }
@@ -1257,12 +1891,50 @@ return M
                                                 height: groupGrid.cardHeight
                                                 radius: Theme.cornerRadius
                                                 clip: true
-                                                z: (isCurrentActive || isSelected) ? 2 : 1
+                                                z: (isCurrentActive || isSelected || isDropTarget) ? 3 : 1
 
+                                                readonly property int cardIndex: index
                                                 readonly property bool isAddCard: index === (root.groups ? root.groups.length : 0)
                                                 readonly property var cardGroupData: isAddCard ? null : root.groups[index]
                                                 readonly property bool isCurrentActive: !isAddCard && cardGroupData && root.activeGroupIndex === cardGroupData.id
                                                 readonly property bool isSelected: root.selectedOverviewIndex === index
+                                                readonly property bool isDraggedSource: root.isDraggingCard && root.dragFromIndex === index
+                                                readonly property bool isDropTarget: root.isDraggingCard && root.dragTargetIndex === index && root.dragTargetIndex !== root.dragFromIndex
+
+                                                opacity: isDraggedSource ? 0.35 : 1.0
+                                                scale: isDropTarget ? 1.02 : 1.0
+
+                                                function handleCardDragPosition(fromIndex, mouseItem, mouseX, mouseY) {
+                                                    const modalPt = mouseItem.mapToItem(overviewModalContainer, mouseX, mouseY);
+                                                    root.dragMouseX = modalPt.x;
+                                                    root.dragMouseY = modalPt.y;
+
+                                                    const gridPt = mouseItem.mapToItem(groupGrid, mouseX, mouseY);
+                                                    const colW = groupGrid.cardWidth + groupGrid.columnSpacing;
+                                                    const rowH = groupGrid.cardHeight + groupGrid.rowSpacing;
+                                                    if (colW > 0 && rowH > 0) {
+                                                        const c = Math.max(0, Math.min(groupGrid.columns - 1, Math.floor(Math.max(0, gridPt.x) / colW)));
+                                                        const r = Math.max(0, Math.floor(Math.max(0, gridPt.y) / rowH));
+                                                        const target = r * groupGrid.columns + c;
+                                                        if (target >= 0 && target < root.groups.length) {
+                                                            root.dragTargetIndex = target;
+                                                        }
+                                                    }
+                                                }
+
+                                                function handleCardDragRelease(fromIndex) {
+                                                    if (root.isDraggingCard && root.dragFromIndex === fromIndex) {
+                                                        const from = root.dragFromIndex;
+                                                        const to = root.dragTargetIndex;
+                                                        root.isDraggingCard = false;
+                                                        root.dragFromIndex = -1;
+                                                        root.dragTargetIndex = -1;
+                                                        if (to >= 0 && to !== from && to < root.groups.length) {
+                                                            root.reorderGroup(from, to);
+                                                            root.selectedOverviewIndex = to;
+                                                        }
+                                                    }
+                                                }
 
                                                 readonly property var groupWindows: {
                                                     if (overviewCard.isAddCard || !overviewCard.cardGroupData)
@@ -1290,7 +1962,7 @@ return M
                                                             const icon = Paths.getAppIcon(moddedId, desktopEntry);
                                                             const appName = Paths.getAppName(moddedId, desktopEntry) || keyBase;
                                                             const title = top.title || ipcObj.title || appName;
-                                                            const address = top.address || ipcObj.address || "";
+                                                            const address = root.formatWindowAddress(ipcObj.address || top.address);
                                                             const isFocused = top.activated || (top.wayland && top.wayland.activated) || false;
 
                                                             list.push({
@@ -1312,20 +1984,35 @@ return M
                                                     ? (isSelected ? Theme.surfaceContainerHighest : Theme.surfaceContainerLow)
                                                     : (isSelected ? (isCurrentActive ? Theme.primaryContainer : Theme.surfaceContainerHighest) : (isCurrentActive ? Theme.withAlpha(Theme.primaryContainer, 0.45) : Theme.surfaceContainerLow))
 
-                                                border.color: isAddCard
-                                                    ? (isSelected ? Theme.primary : Theme.outlineVariant)
-                                                    : (isSelected ? (isCurrentActive ? Theme.primary : Theme.secondary) : (isCurrentActive ? Theme.withAlpha(Theme.primary, 0.4) : Theme.outlineVariant))
-                                                border.width: isSelected ? 2 : 1
+                                                border.color: isDropTarget
+                                                    ? Theme.primary
+                                                    : (isAddCard
+                                                        ? (isSelected ? Theme.primary : Theme.outlineVariant)
+                                                        : (isSelected ? (isCurrentActive ? Theme.primary : Theme.secondary) : (isCurrentActive ? Theme.withAlpha(Theme.primary, 0.4) : Theme.outlineVariant)))
+                                                border.width: isDropTarget ? 3 : (isSelected ? 2 : 1)
 
                                                 Behavior on color { ColorAnimation { duration: 150 } }
                                                 Behavior on border.color { ColorAnimation { duration: 150 } }
+                                                Behavior on opacity { NumberAnimation { duration: 150 } }
+                                                Behavior on scale { NumberAnimation { duration: 150 } }
 
                                                 MouseArea {
                                                     id: cardMouseArea
                                                     anchors.fill: parent
                                                     enabled: !overviewCard.isAddCard
                                                     hoverEnabled: true
-                                                    cursorShape: Qt.PointingHandCursor
+                                                    cursorShape: root.isDraggingCard ? Qt.ClosedHandCursor : Qt.PointingHandCursor
+
+                                                    property real startMouseX: 0
+                                                    property real startMouseY: 0
+                                                    property bool dragActive: false
+
+                                                    onPressed: mouse => {
+                                                        startMouseX = mouse.x;
+                                                        startMouseY = mouse.y;
+                                                        dragActive = false;
+                                                    }
+
                                                     onPositionChanged: mouse => {
                                                         const globalPoint = mapToItem(null, mouse.x, mouse.y);
                                                         if (!root.mouseMovedSinceOpen) {
@@ -1343,11 +2030,38 @@ return M
                                                         }
                                                         root.lastGlobalMouseX = globalPoint.x;
                                                         root.lastGlobalMouseY = globalPoint.y;
-                                                        if (root.selectedOverviewIndex !== index) {
-                                                            root.selectedOverviewIndex = index;
+
+                                                        if (pressed && !overviewCard.isAddCard) {
+                                                            const dist = Math.hypot(mouse.x - startMouseX, mouse.y - startMouseY);
+                                                            if (dist > 8 && !root.isDraggingCard) {
+                                                                root.dragFromIndex = index;
+                                                                root.dragTargetIndex = index;
+                                                                root.isDraggingCard = true;
+                                                                dragActive = true;
+                                                            }
+                                                        }
+
+                                                        if (root.isDraggingCard && root.dragFromIndex === index) {
+                                                            overviewCard.handleCardDragPosition(index, cardMouseArea, mouse.x, mouse.y);
+                                                        } else if (!root.isDraggingCard) {
+                                                            if (root.selectedOverviewIndex !== index) {
+                                                                root.selectedOverviewIndex = index;
+                                                            }
                                                         }
                                                     }
-                                                    onClicked: {
+
+                                                    onReleased: mouse => {
+                                                        if (root.isDraggingCard && root.dragFromIndex === index) {
+                                                            overviewCard.handleCardDragRelease(index);
+                                                            dragActive = false;
+                                                            return;
+                                                        }
+
+                                                        if (dragActive) {
+                                                            dragActive = false;
+                                                            return;
+                                                        }
+
                                                         if (overviewCard.cardGroupData) {
                                                             const gid = overviewCard.cardGroupData.id;
                                                             root.closeOverview();
@@ -1355,6 +2069,15 @@ return M
                                                                 root.switchToGroup(gid);
                                                             });
                                                         }
+                                                    }
+
+                                                    onCanceled: {
+                                                        if (root.isDraggingCard && root.dragFromIndex === index) {
+                                                            root.isDraggingCard = false;
+                                                            root.dragFromIndex = -1;
+                                                            root.dragTargetIndex = -1;
+                                                        }
+                                                        dragActive = false;
                                                     }
                                                 }
 
@@ -1428,6 +2151,32 @@ return M
                                                             color: Theme.surfaceText
                                                             elide: Text.ElideRight
                                                             Layout.fillWidth: true
+                                                        }
+
+                                                        Rectangle {
+                                                            width: 28
+                                                            height: 28
+                                                            radius: 14
+                                                            color: editBtnMouse.containsMouse ? Theme.withAlpha(Theme.primary, 0.2) : Theme.withAlpha(Theme.surfaceContainerHighest, 0.7)
+
+                                                            DankIcon {
+                                                                anchors.centerIn: parent
+                                                                name: "edit"
+                                                                size: 15
+                                                                color: editBtnMouse.containsMouse ? Theme.primary : Theme.surfaceText
+                                                            }
+
+                                                            MouseArea {
+                                                                id: editBtnMouse
+                                                                anchors.fill: parent
+                                                                hoverEnabled: true
+                                                                cursorShape: Qt.PointingHandCursor
+                                                                onClicked: {
+                                                                    if (overviewCard.cardGroupData) {
+                                                                        root.openEditGroup(overviewCard.cardGroupData.id);
+                                                                    }
+                                                                }
+                                                            }
                                                         }
 
                                                         Rectangle {
@@ -1519,7 +2268,18 @@ return M
                                                                             id: winMouse
                                                                             anchors.fill: parent
                                                                             hoverEnabled: true
-                                                                            cursorShape: Qt.PointingHandCursor
+                                                                            cursorShape: root.isDraggingCard ? Qt.ClosedHandCursor : Qt.PointingHandCursor
+
+                                                                            property real startWinX: 0
+                                                                            property real startWinY: 0
+                                                                            property bool dragActive: false
+
+                                                                            onPressed: mouse => {
+                                                                                startWinX = mouse.x;
+                                                                                startWinY = mouse.y;
+                                                                                dragActive = false;
+                                                                            }
+
                                                                             onPositionChanged: mouse => {
                                                                                 const globalPoint = mapToItem(null, mouse.x, mouse.y);
                                                                                 if (!root.mouseMovedSinceOpen) {
@@ -1537,13 +2297,57 @@ return M
                                                                                 }
                                                                                 root.lastGlobalMouseX = globalPoint.x;
                                                                                 root.lastGlobalMouseY = globalPoint.y;
-                                                                                if (root.selectedOverviewIndex !== index) {
-                                                                                    root.selectedOverviewIndex = index;
+
+                                                                                if (pressed && !overviewCard.isAddCard) {
+                                                                                    const dist = Math.hypot(mouse.x - startWinX, mouse.y - startWinY);
+                                                                                    if (dist > 8 && !root.isDraggingCard) {
+                                                                                        root.dragFromIndex = overviewCard.cardIndex;
+                                                                                        root.dragTargetIndex = overviewCard.cardIndex;
+                                                                                        root.isDraggingCard = true;
+                                                                                        dragActive = true;
+                                                                                    }
+                                                                                }
+
+                                                                                if (root.isDraggingCard && root.dragFromIndex === overviewCard.cardIndex) {
+                                                                                    overviewCard.handleCardDragPosition(overviewCard.cardIndex, winMouse, mouse.x, mouse.y);
+                                                                                } else if (!root.isDraggingCard) {
+                                                                                    if (root.selectedOverviewIndex !== overviewCard.cardIndex) {
+                                                                                        root.selectedOverviewIndex = overviewCard.cardIndex;
+                                                                                    }
                                                                                 }
                                                                             }
+
+                                                                            onReleased: mouse => {
+                                                                                if (root.isDraggingCard && root.dragFromIndex === overviewCard.cardIndex) {
+                                                                                    overviewCard.handleCardDragRelease(overviewCard.cardIndex);
+                                                                                    dragActive = false;
+                                                                                    return;
+                                                                                }
+                                                                                if (dragActive) {
+                                                                                    dragActive = false;
+                                                                                    return;
+                                                                                }
+                                                                            }
+
+                                                                            onCanceled: {
+                                                                                if (root.isDraggingCard && root.dragFromIndex === overviewCard.cardIndex) {
+                                                                                    root.isDraggingCard = false;
+                                                                                    root.dragFromIndex = -1;
+                                                                                    root.dragTargetIndex = -1;
+                                                                                }
+                                                                                dragActive = false;
+                                                                            }
+
                                                                             onClicked: {
+                                                                                if (dragActive || root.isDraggingCard) {
+                                                                                    return;
+                                                                                }
                                                                                 if (modelData.address) {
-                                                                                    Quickshell.execDetached(["hyprctl", "dispatch", "focuswindow", "address:" + modelData.address]);
+                                                                                    if (root.isLua) {
+                                                                                        Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.focus({ window = 'address:${modelData.address}' })`]);
+                                                                                    } else {
+                                                                                        Quickshell.execDetached(["hyprctl", "dispatch", "focuswindow", "address:" + modelData.address]);
+                                                                                    }
                                                                                 } else {
                                                                                     root.switchToSubWorkspace(modelData.subWs);
                                                                                 }
@@ -1698,6 +2502,80 @@ return M
                     }
 
                     Item {
+                        id: dragProxy
+                        enabled: false
+                        visible: root.isDraggingCard && root.dragFromIndex >= 0 && root.dragFromIndex < root.groups.length
+                        width: groupGrid.cardWidth
+                        height: groupGrid.cardHeight
+                        x: Math.max(0, Math.min(overviewModalContainer.width - width, root.dragMouseX - width / 2))
+                        y: Math.max(0, Math.min(overviewModalContainer.height - height, root.dragMouseY - 30))
+                        z: 9999
+                        opacity: 0.95
+                        scale: 1.04
+
+                        readonly property var draggedGroup: (root.dragFromIndex >= 0 && root.dragFromIndex < root.groups.length) ? root.groups[root.dragFromIndex] : null
+
+                        ElevationShadow {
+                            anchors.fill: parent
+                            level: Theme.elevationLevel4
+                            targetRadius: Theme.cornerRadius
+                            targetColor: Theme.surfaceContainerHighest
+                            shadowEnabled: Theme.elevationEnabled
+                        }
+
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: Theme.cornerRadius
+                            color: Theme.surfaceContainerHighest
+                            border.color: (dragProxy.draggedGroup && dragProxy.draggedGroup.color) || Theme.primary
+                            border.width: 2.5
+
+                            ColumnLayout {
+                                anchors.centerIn: parent
+                                spacing: Theme.spacingM
+
+                                Rectangle {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    width: 46
+                                    height: 46
+                                    radius: 23
+                                    color: Theme.withAlpha((dragProxy.draggedGroup && dragProxy.draggedGroup.color) || Theme.primary, 0.2)
+                                    border.color: (dragProxy.draggedGroup && dragProxy.draggedGroup.color) || Theme.primary
+                                    border.width: 1.5
+
+                                    StyledText {
+                                        anchors.centerIn: parent
+                                        text: (dragProxy.draggedGroup && dragProxy.draggedGroup.icon) || "󰅩"
+                                        font.pixelSize: 24
+                                        color: (dragProxy.draggedGroup && dragProxy.draggedGroup.color) || Theme.primary
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    spacing: 3
+
+                                    StyledText {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: (dragProxy.draggedGroup && dragProxy.draggedGroup.name) || "Group"
+                                        font.pixelSize: Theme.fontSizeMedium
+                                        font.weight: Font.Bold
+                                        color: Theme.surfaceText
+                                    }
+
+                                    StyledText {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: "Slot " + (root.dragTargetIndex + 1)
+                                        font.pixelSize: Theme.fontSizeSmall
+                                        font.weight: Font.Medium
+                                        color: (dragProxy.draggedGroup && dragProxy.draggedGroup.color) || Theme.primary
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Item {
                         id: createModalContainer
                         anchors.centerIn: parent
                         width: Math.min(parent.width - 40, 520)
@@ -1754,7 +2632,7 @@ return M
                                     spacing: Theme.spacingM
 
                                     StyledText {
-                                        text: "Create Workspace Group"
+                                        text: root.editingGroupId > 0 ? ("Edit Workspace Group " + root.editingGroupId) : "Create Workspace Group"
                                         font.pixelSize: Theme.fontSizeLarge + 2
                                         font.weight: Font.Bold
                                         color: Theme.surfaceText
@@ -1811,7 +2689,7 @@ return M
                                             root.formGroupName = createNameInput.text;
                                         }
                                         onAccepted: {
-                                            createModalContainer.submitCreateGroup();
+                                            createModalContainer.submitForm();
                                         }
                                     }
                                 }
@@ -1861,7 +2739,7 @@ return M
                                                 root.formGroupIcon = createIconInput.text;
                                             }
                                             onAccepted: {
-                                                createModalContainer.submitCreateGroup();
+                                                createModalContainer.submitForm();
                                             }
                                         }
 
@@ -1955,6 +2833,7 @@ return M
                                 RowLayout {
                                     Layout.fillWidth: true
                                     spacing: Theme.spacingM
+                                    visible: root.editingGroupId === 0
 
                                     StyledText {
                                         text: "Switch to group immediately"
@@ -1985,18 +2864,26 @@ return M
                                     }
 
                                     DankButton {
-                                        text: "Create Group"
-                                        iconName: "add"
+                                        text: root.editingGroupId > 0 ? "Save Changes" : "Create Group"
+                                        iconName: root.editingGroupId > 0 ? "check" : "add"
                                         backgroundColor: root.formGroupColor || Theme.primary
                                         textColor: Theme.surfaceContainer
-                                        onClicked: createModalContainer.submitCreateGroup()
+                                        onClicked: createModalContainer.submitForm()
                                     }
                                 }
                             }
                         }
 
+                        function submitForm() {
+                            if (root.editingGroupId > 0) {
+                                root.updateGroup(root.editingGroupId, root.formGroupName, root.formGroupIcon, root.formGroupColor);
+                            } else {
+                                root.createGroup(root.formGroupName, root.formGroupIcon, root.formGroupColor, root.formSwitchImmediate);
+                            }
+                        }
+
                         function submitCreateGroup() {
-                            root.createGroup(root.formGroupName, root.formGroupIcon, root.formGroupColor, root.formSwitchImmediate);
+                            submitForm();
                         }
                     }
 
@@ -2104,7 +2991,11 @@ return M
                         focus: root.contentVisible && overviewWindow.monitorIsFocused
 
                         Keys.onEscapePressed: event => {
-                            if (root.deleteConfirmOpen) {
+                            if (root.isDraggingCard) {
+                                root.isDraggingCard = false;
+                                root.dragFromIndex = -1;
+                                root.dragTargetIndex = -1;
+                            } else if (root.deleteConfirmOpen) {
                                 root.deleteConfirmOpen = false;
                             } else if (root.createModalOpen) {
                                 root.closeCreateGroup();
@@ -2144,6 +3035,17 @@ return M
                                 }
                             }
 
+                            if (event.key === Qt.Key_E) {
+                                if (root.selectedOverviewIndex >= 0 && root.selectedOverviewIndex < root.groups.length) {
+                                    const chosen = root.groups[root.selectedOverviewIndex];
+                                    if (chosen) {
+                                        root.openEditGroup(chosen.id);
+                                        event.accepted = true;
+                                        return;
+                                    }
+                                }
+                            }
+
                             if (event.key === Qt.Key_N || event.key === Qt.Key_Plus) {
                                 root.openCreateGroup();
                                 event.accepted = true;
@@ -2154,6 +3056,28 @@ return M
                                 const chosen = root.groups[root.selectedOverviewIndex];
                                 if (chosen && root.groups.length > 1) {
                                     root.confirmDeleteGroup(chosen.id);
+                                    event.accepted = true;
+                                    return;
+                                }
+                            }
+
+                            if (event.modifiers & Qt.ShiftModifier) {
+                                if (event.key === Qt.Key_Left || event.key === Qt.Key_H) {
+                                    if (root.selectedOverviewIndex > 0 && root.selectedOverviewIndex < root.groups.length) {
+                                        const from = root.selectedOverviewIndex;
+                                        const to = root.selectedOverviewIndex - 1;
+                                        root.reorderGroup(from, to);
+                                        root.selectedOverviewIndex = to;
+                                    }
+                                    event.accepted = true;
+                                    return;
+                                } else if (event.key === Qt.Key_Right || event.key === Qt.Key_L) {
+                                    if (root.selectedOverviewIndex >= 0 && root.selectedOverviewIndex < root.groups.length - 1) {
+                                        const from = root.selectedOverviewIndex;
+                                        const to = root.selectedOverviewIndex + 1;
+                                        root.reorderGroup(from, to);
+                                        root.selectedOverviewIndex = to;
+                                    }
                                     event.accepted = true;
                                     return;
                                 }
