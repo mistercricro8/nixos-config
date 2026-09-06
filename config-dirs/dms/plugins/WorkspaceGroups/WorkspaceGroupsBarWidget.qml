@@ -14,13 +14,15 @@ PluginComponent {
     property var popoutService: null
 
     property string activeGroupIcon: "󰅩"
-    property string activeGroupName: "Code"
+    property string activeGroupName: "default"
     property string activeGroupColor: "#89b4fa"
     property int activeGroupIndex: 1
     property var groupsList: []
     property int workspacesPerMonitor: 10
     property int monitorCount: 1
     property bool hideEmptyWorkspaces: true
+    property var sortedMonitorNames: []
+    property var monitorPriority: ["HDMI-A-1", "DP-1"]
 
     property int _toplevelsTrigger: 0
 
@@ -33,12 +35,14 @@ PluginComponent {
             return;
         activeGroupIndex = PluginService.getGlobalVar("workspaceGroups", "activeGroupIndex", 1);
         groupsList = PluginService.getGlobalVar("workspaceGroups", "groups", []);
-        activeGroupName = PluginService.getGlobalVar("workspaceGroups", "activeGroupName", "Code");
+        activeGroupName = PluginService.getGlobalVar("workspaceGroups", "activeGroupName", "default");
         activeGroupIcon = PluginService.getGlobalVar("workspaceGroups", "activeGroupIcon", "󰅩");
         activeGroupColor = PluginService.getGlobalVar("workspaceGroups", "activeGroupColor", "#89b4fa");
         workspacesPerMonitor = PluginService.getGlobalVar("workspaceGroups", "workspacesPerMonitor", 10);
         monitorCount = PluginService.getGlobalVar("workspaceGroups", "monitorCount", 1);
         hideEmptyWorkspaces = PluginService.getGlobalVar("workspaceGroups", "hideEmptyWorkspaces", true);
+        sortedMonitorNames = PluginService.getGlobalVar("workspaceGroups", "sortedMonitorNames", []);
+        monitorPriority = PluginService.getGlobalVar("workspaceGroups", "monitorPriority", ["HDMI-A-1", "DP-1"]);
     }
 
     Component.onCompleted: {
@@ -65,11 +69,44 @@ PluginComponent {
         function onWorkspacesChanged() {
             root._toplevelsTrigger++;
         }
+        function onRawEvent(event) {
+            if (event.name === "workspace" || event.name === "focusedmon" || event.name === "moveworkspace") {
+                root._toplevelsTrigger++;
+            }
+        }
+    }
+
+    Connections {
+        target: Hyprland.monitors
+        function onValuesChanged() {
+            root._toplevelsTrigger++;
+        }
     }
 
     function getMonitorIndex() {
+        if (sortedMonitorNames && sortedMonitorNames.length > 0) {
+            const sIdx = sortedMonitorNames.indexOf(root.screenName);
+            if (sIdx >= 0)
+                return sIdx;
+        }
         const mons = Hyprland.monitors?.values || [];
-        const idx = mons.findIndex(m => m.name === root.screenName);
+        const prio = (monitorPriority && monitorPriority.length > 0) ? monitorPriority : ["HDMI-A-1", "DP-1"];
+        const sorted = [];
+        const seen = {};
+        for (let i = 0; i < prio.length; i++) {
+            const p = prio[i];
+            const m = mons.find(x => x.name === p);
+            if (m) {
+                sorted.push(m);
+                seen[m.name] = true;
+            }
+        }
+        for (let i = 0; i < mons.length; i++) {
+            const m = mons[i];
+            if (!seen[m.name])
+                sorted.push(m);
+        }
+        const idx = sorted.findIndex(m => m.name === root.screenName);
         return idx >= 0 ? idx : 0;
     }
 
@@ -287,9 +324,9 @@ PluginComponent {
                                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                                     onClicked: mouse => {
                                         if (mouse.button === Qt.RightButton) {
-                                            Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "moveWindowToSubWorkspace", wsPill.subNumber.toString()]);
+                                            Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "moveWindowToSubWorkspaceOnMonitor", wsPill.subNumber.toString(), root.screenName]);
                                         } else {
-                                            Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "switchToSubWorkspace", wsPill.subNumber.toString(), root.screenName]);
+                                            Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "switchToSubWorkspaceOnMonitor", wsPill.subNumber.toString(), root.screenName]);
                                         }
                                     }
                                 }
@@ -439,8 +476,13 @@ PluginComponent {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "switchToSubWorkspace", vertWsPill.subNumber.toString(), root.screenName]);
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            onClicked: mouse => {
+                                if (mouse.button === Qt.RightButton) {
+                                    Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "moveWindowToSubWorkspaceOnMonitor", vertWsPill.subNumber.toString(), root.screenName]);
+                                } else {
+                                    Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "switchToSubWorkspaceOnMonitor", vertWsPill.subNumber.toString(), root.screenName]);
+                                }
                             }
                         }
                     }

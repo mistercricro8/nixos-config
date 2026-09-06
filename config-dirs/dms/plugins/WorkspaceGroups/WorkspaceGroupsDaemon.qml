@@ -18,10 +18,7 @@ PluginComponent {
     layerNamespacePlugin: "workspace-groups"
 
     readonly property var defaultGroups: [
-        { "id": 1, "name": "Code", "icon": "󰅩", "color": "#89b4fa" },
-        { "id": 2, "name": "Browse", "icon": "󰈹", "color": "#f38ba8" },
-        { "id": 3, "name": "Media", "icon": "󰋋", "color": "#a6e3a1" },
-        { "id": 4, "name": "System", "icon": "󰇄", "color": "#fab387" }
+        { "id": 1, "name": "default", "icon": "󰅩", "color": "#89b4fa" }
     ]
 
     readonly property var onLaunchGroups: {
@@ -83,6 +80,10 @@ PluginComponent {
     readonly property int gridColumns: totalOverviewItems <= 4 ? 2 : (totalOverviewItems <= 9 ? 3 : 4)
     readonly property int gridRows: Math.max(1, Math.ceil(totalOverviewItems / gridColumns))
 
+    property bool mouseMovedSinceOpen: false
+    property real lastGlobalMouseX: -1
+    property real lastGlobalMouseY: -1
+
     Timer {
         id: overviewCloseTimer
         interval: Theme.modalAnimationDuration + 50
@@ -117,6 +118,16 @@ PluginComponent {
         target: Hyprland
         function onFocusedWorkspaceChanged() {
             root.syncFromCurrentWorkspace();
+        }
+        function onWorkspacesChanged() {
+            root.notifyState();
+        }
+    }
+
+    Connections {
+        target: Hyprland.monitors
+        function onValuesChanged() {
+            root.notifyState();
         }
     }
 
@@ -178,6 +189,8 @@ PluginComponent {
     }
 
     function calcGroupFromWorkspace(wsId) {
+        if (!wsId || wsId < 1)
+            return 1;
         const monCount = getMonitorCount();
         const totalPerGroup = workspacesPerMonitor * monCount;
         if (totalPerGroup <= 0)
@@ -187,6 +200,8 @@ PluginComponent {
     }
 
     function calcSubWorkspaceFromWorkspace(wsId) {
+        if (!wsId || wsId < 1)
+            return 1;
         const monCount = getMonitorCount();
         const totalPerGroup = workspacesPerMonitor * monCount;
         if (totalPerGroup <= 0)
@@ -207,6 +222,8 @@ PluginComponent {
         PluginService.setGlobalVar("workspaceGroups", "workspacesPerMonitor", root.workspacesPerMonitor);
         PluginService.setGlobalVar("workspaceGroups", "monitorCount", root.getMonitorCount());
         PluginService.setGlobalVar("workspaceGroups", "hideEmptyWorkspaces", root.hideEmptyWorkspaces);
+        PluginService.setGlobalVar("workspaceGroups", "sortedMonitorNames", root.getSortedMonitors().map(m => m.name));
+        PluginService.setGlobalVar("workspaceGroups", "monitorPriority", root.monitorPriority);
     }
 
     function switchToGroup(groupId) {
@@ -215,6 +232,10 @@ PluginComponent {
             return "INVALID_GROUP";
         if (g === root.activeGroupIndex)
             return "ALREADY_ACTIVE";
+
+        if (root.overviewOpen || root.createModalOpen || root.contentVisible) {
+            root.closeOverview();
+        }
 
         const mons = getSortedMonitors();
         const focusedMonName = Hyprland.focusedMonitor?.name || (mons[0] ? mons[0].name : "");
@@ -306,7 +327,7 @@ PluginComponent {
         if (sub < 1 || sub > root.workspacesPerMonitor)
             return "OUT_OF_RANGE";
 
-        let monName = targetMonName;
+        let monName = (targetMonName && targetMonName !== "undefined" && targetMonName !== "null") ? targetMonName : "";
         if (!monName) {
             const focusedMon = Hyprland.focusedMonitor;
             monName = focusedMon ? focusedMon.name : "";
@@ -329,7 +350,7 @@ PluginComponent {
         return "SUCCESS";
     }
 
-    function moveWindowToSubWorkspace(subWsStr) {
+    function moveWindowToSubWorkspace(subWsStr, targetMonName) {
         let sub = parseInt(subWsStr);
         if (isNaN(sub))
             return "INVALID_SUB_WORKSPACE";
@@ -338,8 +359,12 @@ PluginComponent {
         if (sub < 1 || sub > root.workspacesPerMonitor)
             return "OUT_OF_RANGE";
 
-        const focusedMon = Hyprland.focusedMonitor;
-        const monIdx = focusedMon ? getMonitorIndex(focusedMon.name) : 0;
+        let monName = (targetMonName && targetMonName !== "undefined" && targetMonName !== "null") ? targetMonName : "";
+        if (!monName) {
+            const focusedMon = Hyprland.focusedMonitor;
+            monName = focusedMon ? focusedMon.name : "";
+        }
+        const monIdx = monName ? getMonitorIndex(monName) : 0;
         const targetWs = calcWorkspace(root.activeGroupIndex, monIdx, sub);
         if (root.isLua) {
             Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.window.move({ workspace = '${targetWs}' })`]);
@@ -371,6 +396,9 @@ PluginComponent {
     function openOverview() {
         overviewCloseTimer.stop();
         root.isClosing = false;
+        root.mouseMovedSinceOpen = false;
+        root.lastGlobalMouseX = -1;
+        root.lastGlobalMouseY = -1;
         root.overviewOpen = true;
         root.selectedOverviewIndex = Math.max(0, Math.min(root.groups.length - 1, root.activeGroupIndex - 1));
         Qt.callLater(() => {
@@ -380,7 +408,7 @@ PluginComponent {
     }
 
     function closeOverview() {
-        if (!root.overviewOpen && !root.contentVisible)
+        if (!root.overviewOpen && !root.createModalOpen && !root.contentVisible)
             return "OVERVIEW_CLOSED";
         if (root.createModalOpen) {
             root.createModalOpen = false;
@@ -442,12 +470,15 @@ PluginComponent {
         root.groups = [...root.groups, newGroup];
         root.notifyState();
         root.writeLuaConfig();
-        Quickshell.execDetached(["hyprctl", "reload"]);
 
         if (shouldSwitch !== false) {
-            root.switchToGroup(newId);
+            root.closeOverview();
+            Qt.callLater(() => {
+                root.switchToGroup(newId);
+            });
+        } else {
+            root.closeCreateGroup();
         }
-        closeCreateGroup();
         return "SUCCESS";
     }
 
@@ -495,10 +526,18 @@ PluginComponent {
             if (wsId >= startWs && wsId <= endWs) {
                 const withinGroup = (wsId - 1) % totalPerGroup;
                 const targetWs = 1 + withinGroup;
-                batchCommands.push(`dispatch movetoworkspacesilent ${targetWs},address:${addr}`);
+                if (root.isLua) {
+                    batchCommands.push(`dispatch hl.dsp.window.move({ workspace = '${targetWs}', silent = true, window = 'address:${addr}' })`);
+                } else {
+                    batchCommands.push(`dispatch movetoworkspacesilent ${targetWs},address:${addr}`);
+                }
             } else if (wsId > endWs) {
                 const shiftedWs = wsId - totalPerGroup;
-                batchCommands.push(`dispatch movetoworkspacesilent ${shiftedWs},address:${addr}`);
+                if (root.isLua) {
+                    batchCommands.push(`dispatch hl.dsp.window.move({ workspace = '${shiftedWs}', silent = true, window = 'address:${addr}' })`);
+                } else {
+                    batchCommands.push(`dispatch movetoworkspacesilent ${shiftedWs},address:${addr}`);
+                }
             }
         }
 
@@ -541,7 +580,6 @@ PluginComponent {
 
         root.notifyState();
         root.writeLuaConfig();
-        Quickshell.execDetached(["hyprctl", "reload"]);
         return "SUCCESS";
     }
 
@@ -572,7 +610,6 @@ PluginComponent {
         }
         root.notifyState();
         root.writeLuaConfig();
-        Quickshell.execDetached(["hyprctl", "reload"]);
         return "SUCCESS";
     }
 
@@ -587,7 +624,7 @@ PluginComponent {
         return JSON.stringify(root.groups);
     }
 
-    function writeLuaConfig() {
+    function writeLuaConfig(callback) {
         const groupsLua = root.groups.map(g => {
             const escapedName = (g.name || "").replace(/"/g, '\\"');
             const escapedIcon = (g.icon || "").replace(/"/g, '\\"');
@@ -685,17 +722,22 @@ function M.setup(opts)
 
   -- Create / Manage Groups Modal
   hl.bind(mainMod .. " + ALT + Tab", M.open_create_group())
+  hl.bind(mainMod .. " + ALT + N", M.open_create_group())
 
-  -- Group direct switch & move
+  -- Group direct switch & move (1..9, and 0 for group 10)
   for _, g in ipairs(M.groups) do
-    local n = tostring(g.id)
-    hl.bind(mainMod .. " + ALT + " .. n, M.switch_group(g.id))
-    hl.bind(mainMod .. " + ALT + SHIFT + " .. n, M.move_to_group(g.id))
+    if g.id <= 10 then
+      local n = (g.id == 10) and "0" or tostring(g.id)
+      hl.bind(mainMod .. " + ALT + " .. n, M.switch_group(g.id))
+      hl.bind(mainMod .. " + ALT + SHIFT + " .. n, M.move_to_group(g.id))
+    end
   end
 
   -- Group cycling
   hl.bind(mainMod .. " + ALT + Right", M.cycle_groups("next"))
   hl.bind(mainMod .. " + ALT + Left", M.cycle_groups("prev"))
+  hl.bind(mainMod .. " + ALT + L", M.cycle_groups("next"))
+  hl.bind(mainMod .. " + ALT + H", M.cycle_groups("prev"))
 
   -- Sub-workspaces 1..10 within active group
   for i = 1, 10 do
@@ -714,15 +756,26 @@ end
 return M
 `;
 
-        Proc.runCommand("save-workspace-groups-lua", ["sh", "-c", `mkdir -p "${hyprDmsDir}" && cat << 'EOF' > "${luaConfigPath}"\n${luaContent}\nEOF\n`], (output, exitCode) => {
+        const tmpFile = luaConfigPath + ".tmp." + Date.now();
+        Proc.runCommand("save-workspace-groups-lua", ["sh", "-c", `mkdir -p "${hyprDmsDir}" && cat << 'EOF' > "${tmpFile}"\n${luaContent}\nEOF\nmv -f "${tmpFile}" "${luaConfigPath}"\n`], (output, exitCode) => {
             if (exitCode !== 0) {
                 console.warn("[WorkspaceGroups] Failed to write Lua config:", output);
+            } else {
+                Quickshell.execDetached(["hyprctl", "reload"]);
+                if (typeof callback === "function") {
+                    callback();
+                }
             }
         });
     }
 
     IpcHandler {
         target: "workspaceGroups"
+
+        function writeLuaConfig(): string {
+            root.writeLuaConfig();
+            return "OK";
+        }
 
         function switchToGroup(groupId: string): string {
             return root.switchToGroup(groupId);
@@ -744,8 +797,16 @@ return M
             return root.switchToSubWorkspace(subWs);
         }
 
+        function switchToSubWorkspaceOnMonitor(subWs: string, targetMon: string): string {
+            return root.switchToSubWorkspace(subWs, targetMon);
+        }
+
         function moveWindowToSubWorkspace(subWs: string): string {
             return root.moveWindowToSubWorkspace(subWs);
+        }
+
+        function moveWindowToSubWorkspaceOnMonitor(subWs: string, targetMon: string): string {
+            return root.moveWindowToSubWorkspace(subWs, targetMon);
         }
 
         function cycleSubWorkspaces(dir: string): string {
@@ -845,8 +906,12 @@ return M
                             if (active) hasBeenActivated = true;
                         }
                         onCleared: () => {
-                            if (hasBeenActivated && root.overviewOpen && !root.isClosing) {
-                                root.closeOverview();
+                            if (hasBeenActivated && !root.isClosing) {
+                                if (root.overviewOpen) {
+                                    root.closeOverview();
+                                } else if (root.createModalOpen) {
+                                    root.closeCreateGroup();
+                                }
                             }
                         }
                     }
@@ -859,11 +924,68 @@ return M
                                 if (CompositorService.useHyprlandFocusGrab) {
                                     delayedGrabTimer.start();
                                 }
-                                Qt.callLater(() => focusScope.forceActiveFocus());
+                                Qt.callLater(() => {
+                                    if (root.createModalOpen) {
+                                        createNameInput.forceActiveFocus();
+                                    } else {
+                                        focusScope.forceActiveFocus();
+                                        if (overviewFlickable) {
+                                            overviewFlickable.ensureVisible(root.selectedOverviewIndex);
+                                        }
+                                    }
+                                });
                             } else {
                                 delayedGrabTimer.stop();
                                 grab.active = false;
                                 grab.hasBeenActivated = false;
+                            }
+                        }
+                        function onSelectedOverviewIndexChanged() {
+                            if (root.contentVisible && overviewFlickable) {
+                                overviewFlickable.ensureVisible(root.selectedOverviewIndex);
+                            }
+                        }
+                        function onCreateModalOpenChanged() {
+                            if (root.contentVisible) {
+                                if (root.createModalOpen) {
+                                    Qt.callLater(() => createNameInput.forceActiveFocus());
+                                } else if (root.overviewOpen) {
+                                    Qt.callLater(() => focusScope.forceActiveFocus());
+                                }
+                            }
+                        }
+                        function onDeleteConfirmOpenChanged() {
+                            if (root.contentVisible) {
+                                if (root.deleteConfirmOpen) {
+                                    Qt.callLater(() => deleteConfirmContainer.forceActiveFocus());
+                                } else if (root.overviewOpen) {
+                                    Qt.callLater(() => focusScope.forceActiveFocus());
+                                }
+                            }
+                        }
+                    }
+
+                    Connections {
+                        target: overviewWindow
+                        function onActiveFocusItemChanged() {
+                            if (root.contentVisible && !overviewWindow.activeFocusItem) {
+                                if (root.createModalOpen) {
+                                    createNameInput.forceActiveFocus();
+                                } else if (root.deleteConfirmOpen) {
+                                    deleteConfirmContainer.forceActiveFocus();
+                                } else {
+                                    focusScope.forceActiveFocus();
+                                }
+                            }
+                        }
+                        function onMonitorIsFocusedChanged() {
+                            if (!CompositorService.useHyprlandFocusGrab)
+                                return;
+                            if (root.contentVisible && overviewWindow.monitorIsFocused && !grab.active) {
+                                grab.hasBeenActivated = false;
+                                grab.active = true;
+                            } else if (root.contentVisible && !overviewWindow.monitorIsFocused && grab.active) {
+                                grab.active = false;
                             }
                         }
                     }
@@ -911,8 +1033,8 @@ return M
                     Item {
                         id: overviewModalContainer
                         anchors.centerIn: parent
-                        width: Math.min(parent.width - 60, root.gridColumns === 2 ? 820 : (root.gridColumns === 3 ? 1160 : 1380))
-                        height: Math.min(parent.height - 60, root.gridRows <= 1 ? 380 : (root.gridRows === 2 ? 620 : 760))
+                        width: Math.min(parent.width - 60, Math.max(760, root.gridColumns * 360 + (root.gridColumns - 1) * Theme.spacingM + Theme.spacingXL * 2))
+                        height: Math.min(parent.height - 60, root.gridRows <= 1 ? 400 : (root.gridRows === 2 ? 650 : Math.min(880, parent.height - 60)))
                         transformOrigin: Item.Center
                         visible: root.overviewOpen && !root.createModalOpen && !root.deleteConfirmOpen
 
@@ -956,29 +1078,47 @@ return M
                                 anchors.margins: Theme.spacingXL
                                 spacing: Theme.spacingM
 
-                                RowLayout {
+                                ColumnLayout {
                                     Layout.fillWidth: true
-                                    spacing: Theme.spacingM
+                                    spacing: Theme.spacingXS
 
-                                    StyledText {
-                                        text: "Workspace Groups"
-                                        font.pixelSize: Theme.fontSizeLarge + 4
-                                        font.weight: Font.Bold
-                                        color: Theme.surfaceText
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: Theme.spacingM
+
+                                        StyledText {
+                                            text: "Workspace Groups"
+                                            font.pixelSize: Theme.fontSizeLarge + 4
+                                            font.weight: Font.Bold
+                                            color: Theme.surfaceText
+                                        }
+
+                                        Item { Layout.fillWidth: true }
+
+                                        DankButton {
+                                            text: "New Group"
+                                            iconName: "add"
+                                            buttonHeight: 32
+                                            horizontalPadding: Theme.spacingM
+                                            iconSize: 15
+                                            onClicked: root.openCreateGroup()
+                                        }
                                     }
 
-                                    Item { Layout.fillWidth: true }
-
                                     StyledText {
-                                        text: "Press [1-9] to switch • [N] Add Group • [Del] Delete • Esc to close"
+                                        Layout.fillWidth: true
+                                        text: "Press [1-9, 0] to switch • [H/J/K/L] / Arrows to move"
                                         font.pixelSize: Theme.fontSizeSmall
                                         color: Theme.surfaceVariantText
+                                        elide: Text.ElideRight
                                     }
 
-                                    DankButton {
-                                        text: "New Group"
-                                        iconName: "add"
-                                        onClicked: root.openCreateGroup()
+                                    StyledText {
+                                        Layout.fillWidth: true
+                                        text: "[N] Add Group • [Del] Delete • Esc to close"
+                                        font.pixelSize: Theme.fontSizeSmall
+                                        color: Theme.surfaceVariantText
+                                        elide: Text.ElideRight
                                     }
                                 }
 
@@ -988,18 +1128,70 @@ return M
                                     Layout.fillHeight: true
                                     clip: true
                                     contentWidth: width
-                                    contentHeight: groupGrid.height
+                                    contentHeight: groupGrid.height + 16
                                     boundsBehavior: Flickable.StopAtBounds
+
+                                    Behavior on contentY {
+                                        enabled: !overviewFlickable.moving && !overviewFlickable.flicking
+                                        NumberAnimation {
+                                            duration: 180
+                                            easing.type: Easing.OutCubic
+                                        }
+                                    }
+
+                                    function ensureVisible(idx) {
+                                        if (idx < 0 || idx >= root.totalOverviewItems)
+                                            return;
+                                        const cols = root.gridColumns;
+                                        const row = Math.floor(idx / cols);
+                                        const cardY = groupGrid.y + row * (groupGrid.cardHeight + groupGrid.rowSpacing);
+                                        const cardBottom = cardY + groupGrid.cardHeight;
+                                        const pad = 10;
+
+                                        const targetTop = Math.max(0, cardY - pad);
+                                        const targetBottom = cardBottom + pad;
+
+                                        if (cardY - pad < overviewFlickable.contentY) {
+                                            overviewFlickable.contentY = targetTop;
+                                            overviewScrollBar._scrollBarActive = true;
+                                            overviewScrollBar.hideTimer.restart();
+                                        } else if (cardBottom + pad > overviewFlickable.contentY + overviewFlickable.height) {
+                                            const maxScroll = Math.max(0, overviewFlickable.contentHeight - overviewFlickable.height);
+                                            overviewFlickable.contentY = Math.min(maxScroll, targetBottom - overviewFlickable.height);
+                                            overviewScrollBar._scrollBarActive = true;
+                                            overviewScrollBar.hideTimer.restart();
+                                        }
+                                    }
+
+                                    ScrollBar.vertical: DankScrollbar {
+                                        id: overviewScrollBar
+                                    }
+
+                                    WheelHandler {
+                                        target: overviewFlickable
+                                        onWheel: event => {
+                                            const step = 80;
+                                            if (event.angleDelta.y > 0) {
+                                                overviewFlickable.contentY = Math.max(0, overviewFlickable.contentY - step);
+                                            } else if (event.angleDelta.y < 0) {
+                                                overviewFlickable.contentY = Math.min(Math.max(0, overviewFlickable.contentHeight - overviewFlickable.height), overviewFlickable.contentY + step);
+                                            }
+                                            overviewScrollBar._scrollBarActive = true;
+                                            overviewScrollBar.hideTimer.restart();
+                                        }
+                                    }
 
                                     Grid {
                                         id: groupGrid
-                                        width: overviewFlickable.width
+                                        x: 4
+                                        y: 4
+                                        width: overviewFlickable.width - 18
                                         columns: root.gridColumns
                                         columnSpacing: Theme.spacingM
                                         rowSpacing: Theme.spacingM
 
                                         readonly property real cardWidth: Math.max(200, Math.floor((width - (columns - 1) * columnSpacing) / columns))
-                                        readonly property real cardHeight: 230
+                                        readonly property real cardHeight: 240
 
                                         Repeater {
                                             model: root.totalOverviewItems
@@ -1009,6 +1201,8 @@ return M
                                                 width: groupGrid.cardWidth
                                                 height: groupGrid.cardHeight
                                                 radius: Theme.cornerRadius
+                                                clip: true
+                                                z: (isCurrentActive || isSelected) ? 2 : 1
 
                                                 readonly property bool isAddCard: index === (root.groups ? root.groups.length : 0)
                                                 readonly property var cardGroupData: isAddCard ? null : root.groups[index]
@@ -1060,17 +1254,16 @@ return M
                                                 }
 
                                                 color: isAddCard
-                                                    ? (addCardMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerLow)
-                                                    : (isCurrentActive ? Theme.primaryContainer : (isSelected ? Theme.surfaceContainerHighest : Theme.surfaceContainerLow))
+                                                    ? (isSelected ? Theme.surfaceContainerHighest : Theme.surfaceContainerLow)
+                                                    : (isSelected ? (isCurrentActive ? Theme.primaryContainer : Theme.surfaceContainerHighest) : (isCurrentActive ? Theme.withAlpha(Theme.primaryContainer, 0.45) : Theme.surfaceContainerLow))
 
                                                 border.color: isAddCard
                                                     ? (isSelected ? Theme.primary : Theme.outlineVariant)
-                                                    : (isCurrentActive ? Theme.primary : (isSelected ? Theme.secondary : Theme.outlineVariant))
-                                                border.width: (isCurrentActive || isSelected) ? 2 : 1
+                                                    : (isSelected ? (isCurrentActive ? Theme.primary : Theme.secondary) : (isCurrentActive ? Theme.withAlpha(Theme.primary, 0.4) : Theme.outlineVariant))
+                                                border.width: isSelected ? 2 : 1
 
-                                                scale: (isAddCard ? addCardMouse.containsMouse : cardMouseArea.containsMouse) ? 1.01 : 1.0
-                                                Behavior on scale { NumberAnimation { duration: 120 } }
                                                 Behavior on color { ColorAnimation { duration: 150 } }
+                                                Behavior on border.color { ColorAnimation { duration: 150 } }
 
                                                 MouseArea {
                                                     id: cardMouseArea
@@ -1078,10 +1271,34 @@ return M
                                                     enabled: !overviewCard.isAddCard
                                                     hoverEnabled: true
                                                     cursorShape: Qt.PointingHandCursor
+                                                    onPositionChanged: mouse => {
+                                                        const globalPoint = mapToItem(null, mouse.x, mouse.y);
+                                                        if (!root.mouseMovedSinceOpen) {
+                                                            if (root.lastGlobalMouseX === -1) {
+                                                                root.lastGlobalMouseX = globalPoint.x;
+                                                                root.lastGlobalMouseY = globalPoint.y;
+                                                                return;
+                                                            }
+                                                            const dx = Math.abs(globalPoint.x - root.lastGlobalMouseX);
+                                                            const dy = Math.abs(globalPoint.y - root.lastGlobalMouseY);
+                                                            if (dx < 4 && dy < 4) {
+                                                                return;
+                                                            }
+                                                            root.mouseMovedSinceOpen = true;
+                                                        }
+                                                        root.lastGlobalMouseX = globalPoint.x;
+                                                        root.lastGlobalMouseY = globalPoint.y;
+                                                        if (root.selectedOverviewIndex !== index) {
+                                                            root.selectedOverviewIndex = index;
+                                                        }
+                                                    }
                                                     onClicked: {
                                                         if (overviewCard.cardGroupData) {
-                                                            root.switchToGroup(overviewCard.cardGroupData.id);
+                                                            const gid = overviewCard.cardGroupData.id;
                                                             root.closeOverview();
+                                                            Qt.callLater(() => {
+                                                                root.switchToGroup(gid);
+                                                            });
                                                         }
                                                     }
                                                 }
@@ -1092,6 +1309,27 @@ return M
                                                     enabled: overviewCard.isAddCard
                                                     hoverEnabled: true
                                                     cursorShape: Qt.PointingHandCursor
+                                                    onPositionChanged: mouse => {
+                                                        const globalPoint = mapToItem(null, mouse.x, mouse.y);
+                                                        if (!root.mouseMovedSinceOpen) {
+                                                            if (root.lastGlobalMouseX === -1) {
+                                                                root.lastGlobalMouseX = globalPoint.x;
+                                                                root.lastGlobalMouseY = globalPoint.y;
+                                                                return;
+                                                            }
+                                                            const dx = Math.abs(globalPoint.x - root.lastGlobalMouseX);
+                                                            const dy = Math.abs(globalPoint.y - root.lastGlobalMouseY);
+                                                            if (dx < 4 && dy < 4) {
+                                                                return;
+                                                            }
+                                                            root.mouseMovedSinceOpen = true;
+                                                        }
+                                                        root.lastGlobalMouseX = globalPoint.x;
+                                                        root.lastGlobalMouseY = globalPoint.y;
+                                                        if (root.selectedOverviewIndex !== index) {
+                                                            root.selectedOverviewIndex = index;
+                                                        }
+                                                    }
                                                     onClicked: {
                                                         root.openCreateGroup();
                                                     }
@@ -1108,7 +1346,7 @@ return M
                                                         spacing: Theme.spacingS
 
                                                         Rectangle {
-                                                            width: 24
+                                                            width: (overviewCard.cardGroupData && overviewCard.cardGroupData.id >= 10) ? 28 : 24
                                                             height: 24
                                                             radius: 12
                                                             color: overviewCard.isCurrentActive ? Theme.primary : Theme.surfaceContainerHighest
@@ -1138,33 +1376,17 @@ return M
                                                         }
 
                                                         Rectangle {
-                                                            visible: overviewCard.isCurrentActive
-                                                            height: 18
-                                                            width: 48
-                                                            radius: 9
-                                                            color: Theme.primary
-
-                                                            StyledText {
-                                                                anchors.centerIn: parent
-                                                                text: "ACTIVE"
-                                                                font.pixelSize: 9
-                                                                font.weight: Font.Bold
-                                                                color: Theme.onPrimary
-                                                            }
-                                                        }
-
-                                                        Rectangle {
                                                             visible: root.groups.length > 1
-                                                            width: 26
-                                                            height: 26
-                                                            radius: 13
-                                                            color: delBtnMouse.containsMouse ? Theme.withAlpha(Theme.error, 0.2) : "transparent"
+                                                            width: 28
+                                                            height: 28
+                                                            radius: 14
+                                                            color: delBtnMouse.containsMouse ? Theme.withAlpha(Theme.error, 0.2) : Theme.withAlpha(Theme.surfaceContainerHighest, 0.7)
 
                                                             DankIcon {
                                                                 anchors.centerIn: parent
                                                                 name: "delete"
                                                                 size: 15
-                                                                color: delBtnMouse.containsMouse ? Theme.error : Theme.outlineMedium
+                                                                color: delBtnMouse.containsMouse ? Theme.error : Theme.surfaceText
                                                             }
 
                                                             MouseArea {
@@ -1190,6 +1412,7 @@ return M
                                                     Item {
                                                         Layout.fillWidth: true
                                                         Layout.fillHeight: true
+                                                        implicitHeight: 0
                                                         clip: true
 
                                                         Flickable {
@@ -1201,9 +1424,28 @@ return M
                                                             contentHeight: winCol.height
                                                             boundsBehavior: Flickable.StopAtBounds
 
+                                                            ScrollBar.vertical: DankScrollbar {
+                                                                id: winScrollBar
+                                                            }
+
+                                                            WheelHandler {
+                                                                target: winFlickable
+                                                                enabled: winFlickable.contentHeight > winFlickable.height
+                                                                onWheel: event => {
+                                                                    const step = 33;
+                                                                    if (event.angleDelta.y > 0) {
+                                                                        winFlickable.contentY = Math.max(0, winFlickable.contentY - step);
+                                                                    } else if (event.angleDelta.y < 0) {
+                                                                        winFlickable.contentY = Math.min(Math.max(0, winFlickable.contentHeight - winFlickable.height), winFlickable.contentY + step);
+                                                                    }
+                                                                    winScrollBar._scrollBarActive = true;
+                                                                    winScrollBar.hideTimer.restart();
+                                                                }
+                                                            }
+
                                                             Column {
                                                                 id: winCol
-                                                                width: winFlickable.width
+                                                                width: overviewCard.groupWindows.length > 5 ? (winFlickable.width - 8) : winFlickable.width
                                                                 spacing: 3
 
                                                                 Repeater {
@@ -1214,8 +1456,8 @@ return M
                                                                         height: 30
                                                                         radius: Theme.cornerRadiusSmall
                                                                         clip: true
-                                                                        color: winMouse.containsMouse ? Theme.surfaceContainerHighest : (modelData.isFocused ? Theme.withAlpha(Theme.primary, 0.15) : Theme.surfaceContainerLowest)
-                                                                        border.color: modelData.isFocused ? Theme.primary : (winMouse.containsMouse ? Theme.outlineVariant : "transparent")
+                                                                        color: (winMouse.containsMouse && root.mouseMovedSinceOpen) ? Theme.surfaceContainerHighest : (modelData.isFocused ? Theme.withAlpha(Theme.primary, 0.15) : Theme.surfaceContainerLowest)
+                                                                        border.color: modelData.isFocused ? Theme.primary : ((winMouse.containsMouse && root.mouseMovedSinceOpen) ? Theme.outlineVariant : "transparent")
                                                                         border.width: 1
 
                                                                         MouseArea {
@@ -1223,6 +1465,27 @@ return M
                                                                             anchors.fill: parent
                                                                             hoverEnabled: true
                                                                             cursorShape: Qt.PointingHandCursor
+                                                                            onPositionChanged: mouse => {
+                                                                                const globalPoint = mapToItem(null, mouse.x, mouse.y);
+                                                                                if (!root.mouseMovedSinceOpen) {
+                                                                                    if (root.lastGlobalMouseX === -1) {
+                                                                                        root.lastGlobalMouseX = globalPoint.x;
+                                                                                        root.lastGlobalMouseY = globalPoint.y;
+                                                                                        return;
+                                                                                    }
+                                                                                    const dx = Math.abs(globalPoint.x - root.lastGlobalMouseX);
+                                                                                    const dy = Math.abs(globalPoint.y - root.lastGlobalMouseY);
+                                                                                    if (dx < 4 && dy < 4) {
+                                                                                        return;
+                                                                                    }
+                                                                                    root.mouseMovedSinceOpen = true;
+                                                                                }
+                                                                                root.lastGlobalMouseX = globalPoint.x;
+                                                                                root.lastGlobalMouseY = globalPoint.y;
+                                                                                if (root.selectedOverviewIndex !== index) {
+                                                                                    root.selectedOverviewIndex = index;
+                                                                                }
+                                                                            }
                                                                             onClicked: {
                                                                                 if (modelData.address) {
                                                                                     Quickshell.execDetached(["hyprctl", "dispatch", "focuswindow", "address:" + modelData.address]);
@@ -1230,6 +1493,20 @@ return M
                                                                                     root.switchToSubWorkspace(modelData.subWs);
                                                                                 }
                                                                                 root.closeOverview();
+                                                                            }
+                                                                            onWheel: event => {
+                                                                                if (winFlickable.contentHeight <= winFlickable.height) {
+                                                                                    event.accepted = false;
+                                                                                    return;
+                                                                                }
+                                                                                const step = 33;
+                                                                                if (event.angleDelta.y > 0) {
+                                                                                    winFlickable.contentY = Math.max(0, winFlickable.contentY - step);
+                                                                                } else if (event.angleDelta.y < 0) {
+                                                                                    winFlickable.contentY = Math.min(Math.max(0, winFlickable.contentHeight - winFlickable.height), winFlickable.contentY + step);
+                                                                                }
+                                                                                winScrollBar._scrollBarActive = true;
+                                                                                winScrollBar.hideTimer.restart();
                                                                             }
                                                                         }
 
@@ -1374,6 +1651,11 @@ return M
                         scale: visible ? 1.0 : 0.95
                         opacity: visible ? 1.0 : 0.0
 
+                        Keys.onEscapePressed: event => {
+                            root.closeCreateGroup();
+                            event.accepted = true;
+                        }
+
                         Behavior on scale { NumberAnimation { duration: Theme.modalAnimationDuration } }
                         Behavior on opacity { NumberAnimation { duration: Theme.modalAnimationDuration } }
 
@@ -1465,6 +1747,11 @@ return M
                                         text: root.formGroupName
                                         placeholderText: "e.g. Work, Gaming, Notes"
                                         focus: root.createModalOpen
+                                        keyForwardTargets: [createModalContainer, focusScope]
+                                        Keys.onEscapePressed: event => {
+                                            root.closeCreateGroup();
+                                            event.accepted = true;
+                                        }
                                         onTextEdited: {
                                             root.formGroupName = createNameInput.text;
                                         }
@@ -1510,6 +1797,11 @@ return M
                                             implicitWidth: 80
                                             text: root.formGroupIcon
                                             placeholderText: "󰅩"
+                                            keyForwardTargets: [createModalContainer, focusScope]
+                                            Keys.onEscapePressed: event => {
+                                                root.closeCreateGroup();
+                                                event.accepted = true;
+                                            }
                                             onTextEdited: {
                                                 root.formGroupIcon = createIconInput.text;
                                             }
@@ -1662,6 +1954,11 @@ return M
                         scale: visible ? 1.0 : 0.95
                         opacity: visible ? 1.0 : 0.0
 
+                        Keys.onEscapePressed: event => {
+                            root.deleteConfirmOpen = false;
+                            event.accepted = true;
+                        }
+
                         Behavior on scale { NumberAnimation { duration: Theme.modalAnimationDuration } }
                         Behavior on opacity { NumberAnimation { duration: Theme.modalAnimationDuration } }
 
@@ -1767,11 +2064,26 @@ return M
                                 return;
                             }
 
+                            root.mouseMovedSinceOpen = false;
+                            root.lastGlobalMouseX = -1;
+                            root.lastGlobalMouseY = -1;
+
                             if (event.key >= Qt.Key_1 && event.key <= Qt.Key_9) {
                                 const targetId = event.key - Qt.Key_0;
                                 if (targetId <= root.groups.length) {
-                                    root.switchToGroup(targetId);
                                     root.closeOverview();
+                                    Qt.callLater(() => {
+                                        root.switchToGroup(targetId);
+                                    });
+                                    event.accepted = true;
+                                    return;
+                                }
+                            } else if (event.key === Qt.Key_0) {
+                                if (root.groups.length >= 10) {
+                                    root.closeOverview();
+                                    Qt.callLater(() => {
+                                        root.switchToGroup(10);
+                                    });
                                     event.accepted = true;
                                     return;
                                 }
@@ -1795,16 +2107,16 @@ return M
                             const totalItems = root.groups.length + 1;
                             const cols = root.gridColumns;
 
-                            if (event.key === Qt.Key_Left || event.key === Qt.Key_Backtab) {
+                            if (event.key === Qt.Key_Left || event.key === Qt.Key_Backtab || event.key === Qt.Key_H) {
                                 root.selectedOverviewIndex = (root.selectedOverviewIndex - 1 + totalItems) % totalItems;
                                 event.accepted = true;
-                            } else if (event.key === Qt.Key_Right || event.key === Qt.Key_Tab) {
+                            } else if (event.key === Qt.Key_Right || event.key === Qt.Key_Tab || event.key === Qt.Key_L) {
                                 root.selectedOverviewIndex = (root.selectedOverviewIndex + 1) % totalItems;
                                 event.accepted = true;
-                            } else if (event.key === Qt.Key_Up) {
+                            } else if (event.key === Qt.Key_Up || event.key === Qt.Key_K) {
                                 root.selectedOverviewIndex = Math.max(0, root.selectedOverviewIndex - cols);
                                 event.accepted = true;
-                            } else if (event.key === Qt.Key_Down) {
+                            } else if (event.key === Qt.Key_Down || event.key === Qt.Key_J) {
                                 root.selectedOverviewIndex = Math.min(totalItems - 1, root.selectedOverviewIndex + cols);
                                 event.accepted = true;
                             } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) {
@@ -1813,8 +2125,10 @@ return M
                                 } else {
                                     const chosen = root.groups[root.selectedOverviewIndex];
                                     if (chosen) {
-                                        root.switchToGroup(chosen.id);
                                         root.closeOverview();
+                                        Qt.callLater(() => {
+                                            root.switchToGroup(chosen.id);
+                                        });
                                     }
                                 }
                                 event.accepted = true;

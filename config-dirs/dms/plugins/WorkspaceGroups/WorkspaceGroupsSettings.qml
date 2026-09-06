@@ -11,10 +11,7 @@ PluginSettings {
     pluginId: "workspaceGroups"
 
     readonly property var defaultGroups: [
-        { "id": 1, "name": "Code", "icon": "󰅩", "color": "#89b4fa" },
-        { "id": 2, "name": "Browse", "icon": "󰈹", "color": "#f38ba8" },
-        { "id": 3, "name": "Media", "icon": "󰋋", "color": "#a6e3a1" },
-        { "id": 4, "name": "System", "icon": "󰇄", "color": "#fab387" }
+        { "id": 1, "name": "default", "icon": "󰅩", "color": "#89b4fa" }
     ]
 
     property int currentWsPerMonitor: 10
@@ -122,7 +119,7 @@ PluginSettings {
     }
 
     function removeGroup(index) {
-        if (groupsModel.count <= 2)
+        if (groupsModel.count <= 1)
             return;
         groupsModel.remove(index);
         for (let i = 0; i < groupsModel.count; i++) {
@@ -416,7 +413,7 @@ PluginSettings {
                         }
 
                         Rectangle {
-                            visible: groupsModel.count > 2
+                            visible: groupsModel.count > 1
                             width: 34
                             height: 34
                             radius: 17
