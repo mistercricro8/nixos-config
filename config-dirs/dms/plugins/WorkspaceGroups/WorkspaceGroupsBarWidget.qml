@@ -1,28 +1,31 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
 import Quickshell.Hyprland
 import qs.Common
 import qs.Services
 import qs.Widgets
 import qs.Modules.Plugins
+import "WorkspaceGroupsDefaults.js" as Defaults
 
 PluginComponent {
     id: root
 
     layerNamespacePlugin: "workspace-groups"
     property var popoutService: null
+    WorkspaceGroupsIpc {
+        id: wgIpc
+    }
 
-    property string activeGroupIcon: "󰅩"
-    property string activeGroupName: "default"
-    property string activeGroupColor: "#89b4fa"
+    property string activeGroupIcon: Defaults.FALLBACK_ICON
+    property string activeGroupName: Defaults.DEFAULT_GROUP_NAME
+    property string activeGroupColor: Defaults.FALLBACK_COLOR
     property int activeGroupIndex: 1
     property var groupsList: []
-    property int workspacesPerMonitor: 10
+    property int workspacesPerMonitor: Defaults.WS_DEFAULT
     property int monitorCount: 1
     property bool hideEmptyWorkspaces: true
     property var sortedMonitorNames: []
-    property var monitorPriority: ["HDMI-A-1", "DP-1"]
+    property var monitorPriority: Defaults.MONITOR_PRIORITY.slice()
 
     property int _toplevelsTrigger: 0
 
@@ -33,16 +36,16 @@ PluginComponent {
     function updateFromGlobals() {
         if (!PluginService)
             return;
-        activeGroupIndex = PluginService.getGlobalVar("workspaceGroups", "activeGroupIndex", 1);
-        groupsList = PluginService.getGlobalVar("workspaceGroups", "groups", []);
-        activeGroupName = PluginService.getGlobalVar("workspaceGroups", "activeGroupName", "default");
-        activeGroupIcon = PluginService.getGlobalVar("workspaceGroups", "activeGroupIcon", "󰅩");
-        activeGroupColor = PluginService.getGlobalVar("workspaceGroups", "activeGroupColor", "#89b4fa");
-        workspacesPerMonitor = PluginService.getGlobalVar("workspaceGroups", "workspacesPerMonitor", 10);
-        monitorCount = PluginService.getGlobalVar("workspaceGroups", "monitorCount", 1);
-        hideEmptyWorkspaces = PluginService.getGlobalVar("workspaceGroups", "hideEmptyWorkspaces", true);
-        sortedMonitorNames = PluginService.getGlobalVar("workspaceGroups", "sortedMonitorNames", []);
-        monitorPriority = PluginService.getGlobalVar("workspaceGroups", "monitorPriority", ["HDMI-A-1", "DP-1"]);
+        activeGroupIndex = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_ACTIVE_INDEX, 1);
+        groupsList = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_GROUPS, []);
+        activeGroupName = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_ACTIVE_NAME, Defaults.DEFAULT_GROUP_NAME);
+        activeGroupIcon = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_ACTIVE_ICON, Defaults.FALLBACK_ICON);
+        activeGroupColor = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_ACTIVE_COLOR, Defaults.FALLBACK_COLOR);
+        workspacesPerMonitor = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_WS_PER_MON, Defaults.WS_DEFAULT);
+        monitorCount = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_MON_COUNT, 1);
+        hideEmptyWorkspaces = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_HIDE_EMPTY, true);
+        sortedMonitorNames = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_SORTED_MONS, []);
+        monitorPriority = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_MON_PRIO, Defaults.MONITOR_PRIORITY.slice());
     }
 
     Component.onCompleted: {
@@ -52,7 +55,7 @@ PluginComponent {
     Connections {
         target: PluginService
         function onGlobalVarChanged(pluginId, varName) {
-            if (pluginId === "workspaceGroups") {
+            if (pluginId === Defaults.TARGET) {
                 root.updateFromGlobals();
             }
         }
@@ -82,7 +85,6 @@ PluginComponent {
             root._toplevelsTrigger++;
         }
     }
-
     function getMonitorIndex() {
         if (sortedMonitorNames && sortedMonitorNames.length > 0) {
             const sIdx = sortedMonitorNames.indexOf(root.screenName);
@@ -157,8 +159,15 @@ PluginComponent {
         return false;
     }
 
+    function cycleGroupFromWheel(event) {
+        if (event.angleDelta.y > 0) {
+            wgIpc.call(wgIpc.prevGroup);
+        } else if (event.angleDelta.y < 0) {
+            wgIpc.call(wgIpc.nextGroup);
+        }
+    }
     pillClickAction: () => {
-        Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "toggleOverview"]);
+        wgIpc.call(wgIpc.toggleOverview);
     }
 
     pillRightClickAction: () => {
@@ -221,16 +230,10 @@ PluginComponent {
                                     pluginPopout.toggle();
                                 }
                             } else {
-                                Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "toggleOverview"]);
+                                wgIpc.call(wgIpc.toggleOverview);
                             }
                         }
-                        onWheel: event => {
-                            if (event.angleDelta.y > 0) {
-                                Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "prevGroup"]);
-                            } else if (event.angleDelta.y < 0) {
-                                Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "nextGroup"]);
-                            }
-                        }
+                        onWheel: event => root.cycleGroupFromWheel(event)
                     }
                 }
 
@@ -254,80 +257,20 @@ PluginComponent {
                         Repeater {
                             model: root.subWorkspacesList
 
-                            Rectangle {
+                            WsPill {
                                 id: wsPill
-                                readonly property int subNumber: modelData
-                                readonly property int targetWs: root.getTargetWorkspaceId(subNumber)
-                                readonly property bool isActive: root.activeWorkspaceIdOnThisMon === targetWs
-                                readonly property bool isOccupied: root.isWorkspaceOccupied(targetWs)
-
-                                width: isActive ? 28 : 24
-                                height: 26
-                                radius: Theme.cornerRadiusSmall
-
-                                color: {
-                                    if (isActive)
-                                        return root.activeGroupColor;
-                                    if (wsMouse.containsMouse)
-                                        return Theme.surfaceContainerHighest;
-                                    if (isOccupied)
-                                        return Theme.withAlpha(Theme.surfaceContainerHigh, 0.7);
-                                    return "transparent";
-                                }
-
-                                border.color: {
-                                    if (isActive)
-                                        return root.activeGroupColor;
-                                    if (isOccupied)
-                                        return Theme.withAlpha(root.activeGroupColor, 0.4);
-                                    if (wsMouse.containsMouse)
-                                        return Theme.outlineVariant;
-                                    return "transparent";
-                                }
-                                border.width: 1
-
-                                Behavior on width { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
-                                Behavior on color { ColorAnimation { duration: 100 } }
-                                Behavior on border.color { ColorAnimation { duration: 100 } }
-
-                                StyledText {
-                                    anchors.centerIn: parent
-                                    text: wsPill.subNumber.toString()
-                                    font.pixelSize: Theme.fontSizeSmall
-                                    font.weight: wsPill.isActive ? Font.Bold : (wsPill.isOccupied ? Font.DemiBold : Font.Normal)
-                                    color: {
-                                        if (wsPill.isActive)
-                                            return Theme.surfaceContainer;
-                                        if (wsPill.isOccupied)
-                                            return Theme.surfaceText;
-                                        return Theme.surfaceVariantText;
-                                    }
-                                    opacity: wsPill.isActive ? 1.0 : (wsPill.isOccupied ? 0.95 : 0.65)
-                                }
-
-                                Rectangle {
-                                    visible: wsPill.isOccupied && !wsPill.isActive
-                                    width: 4
-                                    height: 4
-                                    radius: 2
-                                    anchors.bottom: parent.bottom
-                                    anchors.bottomMargin: 2
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    color: root.activeGroupColor
-                                }
-
-                                MouseArea {
-                                    id: wsMouse
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    acceptedButtons: Qt.LeftButton | Qt.RightButton
-                                    onClicked: mouse => {
-                                        if (mouse.button === Qt.RightButton) {
-                                            Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "moveWindowToSubWorkspaceOnMonitor", wsPill.subNumber.toString(), root.screenName]);
-                                        } else {
-                                            Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "switchToSubWorkspaceOnMonitor", wsPill.subNumber.toString(), root.screenName]);
-                                        }
+                                subNumber: modelData
+                                targetWs: root.getTargetWorkspaceId(subNumber)
+                                isActive: root.activeWorkspaceIdOnThisMon === targetWs
+                                isOccupied: root.isWorkspaceOccupied(targetWs)
+                                activeColor: root.activeGroupColor
+                                orientation: "horizontal"
+                                showDot: true
+                                onClicked: mouse => {
+                                    if (mouse.button === Qt.RightButton) {
+                                        wgIpc.call(wgIpc.moveSubOnMon, subNumber.toString(), root.screenName);
+                                    } else {
+                                        wgIpc.call(wgIpc.switchSubOnMon, subNumber.toString(), root.screenName);
                                     }
                                 }
                             }
@@ -339,9 +282,9 @@ PluginComponent {
                         acceptedButtons: Qt.NoButton
                         onWheel: event => {
                             if (event.angleDelta.y > 0) {
-                                Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "cycleSubWorkspaces", "prev"]);
+                                wgIpc.call(wgIpc.cycleSub, "prev");
                             } else if (event.angleDelta.y < 0) {
-                                Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "cycleSubWorkspaces", "next"]);
+                                wgIpc.call(wgIpc.cycleSub, "next");
                             }
                         }
                     }
@@ -401,16 +344,10 @@ PluginComponent {
                                 if (root.hasPopout)
                                     pluginPopout.toggle();
                             } else {
-                                Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "toggleOverview"]);
+                                wgIpc.call(wgIpc.toggleOverview);
                             }
                         }
-                        onWheel: event => {
-                            if (event.angleDelta.y > 0) {
-                                Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "prevGroup"]);
-                            } else if (event.angleDelta.y < 0) {
-                                Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "nextGroup"]);
-                            }
-                        }
+                        onWheel: event => root.cycleGroupFromWheel(event)
                     }
                 }
 
@@ -426,63 +363,21 @@ PluginComponent {
                 Repeater {
                     model: root.subWorkspacesList
 
-                    Rectangle {
+                    WsPill {
                         id: vertWsPill
                         Layout.alignment: Qt.AlignHCenter
-                        readonly property int subNumber: modelData
-                        readonly property int targetWs: root.getTargetWorkspaceId(subNumber)
-                        readonly property bool isActive: root.activeWorkspaceIdOnThisMon === targetWs
-                        readonly property bool isOccupied: root.isWorkspaceOccupied(targetWs)
-
-                        width: 24
-                        height: isActive ? 28 : 24
-                        radius: Theme.cornerRadiusSmall
-
-                        color: {
-                            if (isActive)
-                                return root.activeGroupColor;
-                            if (vertWsMouse.containsMouse)
-                                return Theme.surfaceContainerHighest;
-                            if (isOccupied)
-                                return Theme.withAlpha(Theme.surfaceContainerHigh, 0.7);
-                            return "transparent";
-                        }
-
-                        border.color: {
-                            if (isActive)
-                                return root.activeGroupColor;
-                            if (isOccupied)
-                                return Theme.withAlpha(root.activeGroupColor, 0.4);
-                            return "transparent";
-                        }
-                        border.width: 1
-
-                        StyledText {
-                            anchors.centerIn: parent
-                            text: vertWsPill.subNumber.toString()
-                            font.pixelSize: Theme.fontSizeSmall
-                            font.weight: vertWsPill.isActive ? Font.Bold : (vertWsPill.isOccupied ? Font.DemiBold : Font.Normal)
-                            color: {
-                                if (vertWsPill.isActive)
-                                    return Theme.surfaceContainer;
-                                if (vertWsPill.isOccupied)
-                                    return Theme.surfaceText;
-                                return Theme.surfaceVariantText;
-                            }
-                        }
-
-                        MouseArea {
-                            id: vertWsMouse
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            acceptedButtons: Qt.LeftButton | Qt.RightButton
-                            onClicked: mouse => {
-                                if (mouse.button === Qt.RightButton) {
-                                    Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "moveWindowToSubWorkspaceOnMonitor", vertWsPill.subNumber.toString(), root.screenName]);
-                                } else {
-                                    Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "switchToSubWorkspaceOnMonitor", vertWsPill.subNumber.toString(), root.screenName]);
-                                }
+                        subNumber: modelData
+                        targetWs: root.getTargetWorkspaceId(subNumber)
+                        isActive: root.activeWorkspaceIdOnThisMon === targetWs
+                        isOccupied: root.isWorkspaceOccupied(targetWs)
+                        activeColor: root.activeGroupColor
+                        orientation: "vertical"
+                        showDot: false
+                        onClicked: mouse => {
+                            if (mouse.button === Qt.RightButton) {
+                                wgIpc.call(wgIpc.moveSubOnMon, subNumber.toString(), root.screenName);
+                            } else {
+                                wgIpc.call(wgIpc.switchSubOnMon, subNumber.toString(), root.screenName);
                             }
                         }
                     }
@@ -520,7 +415,7 @@ PluginComponent {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "switchToGroup", modelData.id.toString()]);
+                                wgIpc.call(wgIpc.switchGroup, modelData.id.toString());
                                 popoutComp.closePopout?.();
                             }
                         }
@@ -532,13 +427,13 @@ PluginComponent {
                             spacing: Theme.spacingS
 
                             StyledText {
-                                text: modelData.icon || "󰅩"
+                                text: modelData.icon || Defaults.FALLBACK_ICON
                                 font.pixelSize: Theme.fontSizeMedium + 2
-                                color: modelData.color || Theme.primary
+                                color: modelData.color || Defaults.FALLBACK_COLOR
                             }
 
                             StyledText {
-                                text: modelData.name || ("Group " + modelData.id)
+                                text: modelData.name || (Defaults.NAME_PREFIX + modelData.id)
                                 font.pixelSize: Theme.fontSizeMedium
                                 font.weight: Font.DemiBold
                                 color: Theme.surfaceText
@@ -553,28 +448,17 @@ PluginComponent {
                                 color: Theme.primary
                             }
 
-                            Rectangle {
+                            WGIconButton {
+                                id: delPopBtn
                                 visible: root.groupsList.length > 1
-                                width: 24
-                                height: 24
-                                radius: 12
-                                color: delPopMouse.containsMouse ? Theme.withAlpha(Theme.error, 0.2) : "transparent"
-
-                                DankIcon {
-                                    anchors.centerIn: parent
-                                    name: "delete"
-                                    size: 14
-                                    color: delPopMouse.containsMouse ? Theme.error : Theme.outlineMedium
-                                }
-
-                                MouseArea {
-                                    id: delPopMouse
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "deleteGroup", modelData.id.toString()]);
-                                    }
+                                buttonSize: 24
+                                baseColor: "transparent"
+                                hoverColor: Theme.withAlpha(Theme.error, 0.2)
+                                iconName: "delete"
+                                iconSize: 14
+                                iconColor: delPopBtn.containsMouse ? Theme.error : Theme.outlineMedium
+                                onClicked: {
+                                    wgIpc.call(wgIpc.remove, modelData.id.toString());
                                 }
                             }
                         }
@@ -587,77 +471,21 @@ PluginComponent {
                     color: Theme.outlineVariant
                 }
 
-                Rectangle {
-                    width: parent.width
-                    height: 36
-                    radius: Theme.cornerRadiusSmall
-                    color: addBtnMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainer
-
-                    MouseArea {
-                        id: addBtnMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            popoutComp.closePopout?.();
-                            Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "openCreateGroup"]);
-                        }
-                    }
-
-                    Row {
-                        anchors.centerIn: parent
-                        spacing: Theme.spacingS
-
-                        DankIcon {
-                            anchors.verticalCenter: parent.verticalCenter
-                            name: "add"
-                            size: 16
-                            color: Theme.primary
-                        }
-
-                        StyledText {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: "New Workspace Group (Super + Alt + Tab)"
-                            font.pixelSize: Theme.fontSizeSmall
-                            font.weight: Font.Medium
-                            color: Theme.primary
-                        }
+                PopoutActionCard {
+                    iconName: "add"
+                    label: "New Workspace Group (Super + Alt + Tab)"
+                    onActivated: {
+                        popoutComp.closePopout?.();
+                        wgIpc.call(wgIpc.openCreate);
                     }
                 }
 
-                Rectangle {
-                    width: parent.width
-                    height: 36
-                    radius: Theme.cornerRadiusSmall
-                    color: overviewBtnMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainer
-
-                    MouseArea {
-                        id: overviewBtnMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            popoutComp.closePopout?.();
-                            Quickshell.execDetached(["dms", "ipc", "call", "workspaceGroups", "toggleOverview"]);
-                        }
-                    }
-
-                    Row {
-                        anchors.centerIn: parent
-                        spacing: Theme.spacingS
-
-                        StyledText {
-                            text: "󰍹"
-                            font.pixelSize: Theme.fontSizeMedium
-                            color: Theme.primary
-                        }
-
-                        StyledText {
-                            text: "Open Group Overview (Super + Tab)"
-                            font.pixelSize: Theme.fontSizeSmall
-                            font.weight: Font.Medium
-                            color: Theme.primary
-                        }
+                PopoutActionCard {
+                    glyph: "󰍹"
+                    label: "Open Group Overview (Super + Tab)"
+                    onActivated: {
+                        popoutComp.closePopout?.();
+                        wgIpc.call(wgIpc.toggleOverview);
                     }
                 }
             }

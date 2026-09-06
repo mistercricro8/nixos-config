@@ -116,9 +116,7 @@
     {
       user ? "cricro",
     }:
-
-    { pkgs, ... }:
-
+    { pkgs, config, ... }:
     let
       hyprlandPkg = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
     in
@@ -158,6 +156,9 @@
           source = "/home/${user}/.cache/wal/dank-pywalfox.json";
           type = "symlink";
           clobber = true;
+        };
+        ".config/hypr/load-env" = {
+          source = config.hjem.users.${user}.environment.loadEnv;
         };
       };
     };

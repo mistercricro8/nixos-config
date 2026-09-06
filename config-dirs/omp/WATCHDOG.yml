@@ -1,7 +1,7 @@
 advisors:
   - name: Advisor
     enabled: true
-    model: opencode-go/muse-spark-1.2-contributor
+    model: opencode-go/muse-spark-1.3-contributor
     tools: [read, grep, glob]
     instructions: |
       You are a strict, zero-tolerance code reviewer. If the main agent commits any of the following violations, you MUST issue a `blocker` severity note to immediately stop them:

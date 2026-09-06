@@ -29,6 +29,20 @@ hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
 hl.env("QT_QPA_PLATFORMTHEME_QT6", "qt6ct")
 
+local load_env = io.open(home .. "/.config/hypr/load-env", "r")
+if load_env then
+  for line in load_env:lines() do
+    local name, quoted = line:match('^export ([A-Za-z_][A-Za-z0-9_]*)=(.*)$')
+    if name and quoted then
+      local val = quoted:match('^"(.*)"$') or quoted
+      val = val:gsub("%$%{([A-Za-z_][A-Za-z0-9_]*)}", function(v) return os.getenv(v) or "" end)
+      val = val:gsub("%$([A-Za-z_][A-Za-z0-9_]*)", function(v) return os.getenv(v) or "" end)
+      hl.env(name, val)
+    end
+  end
+  load_env:close()
+end
+
 hl.config({
   input = {
     kb_layout = "us,latam,br",

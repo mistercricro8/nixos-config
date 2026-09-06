@@ -5,12 +5,13 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
-import Quickshell.Widgets
 import QtCore
 import qs.Common
 import qs.Services
 import qs.Widgets
 import qs.Modules.Plugins
+import "WorkspaceGroupsDefaults.js" as Defaults
+import "WorkspaceGroupsMath.js" as WGMath
 
 PluginComponent {
     id: root
@@ -73,11 +74,15 @@ PluginComponent {
     property bool formSwitchImmediate: true
     property int editingGroupId: 0
 
-    property int dragFromIndex: -1
-    property int dragTargetIndex: -1
+    DragController {
+        id: dragCtrl
+        host: root
+    }
+    property alias dragFromIndex: dragCtrl.dragFromIndex
+    property alias dragTargetIndex: dragCtrl.dragTargetIndex
+    property alias isDraggingCard: dragCtrl.isDragging
     property real dragMouseX: 0
     property real dragMouseY: 0
-    property bool isDraggingCard: false
 
     property int groupToDeleteId: 0
     property string groupToDeleteName: ""
@@ -289,28 +294,15 @@ PluginComponent {
     }
 
     function rawGroupFromWorkspace(wsId) {
-        if (!wsId || wsId < 1)
-            return 1;
-        const monCount = getMonitorCount();
-        const totalPerGroup = workspacesPerMonitor * monCount;
-        if (totalPerGroup <= 0)
-            return 1;
-        return Math.floor((wsId - 1) / totalPerGroup) + 1;
+        return WGMath.groupFromWorkspace(wsId, workspacesPerMonitor, getMonitorCount());
     }
 
     function calcWorkspace(groupId, monIdx, subWs) {
-        const monCount = getMonitorCount();
-        return (groupId - 1) * (workspacesPerMonitor * monCount) + (monIdx * workspacesPerMonitor) + subWs;
+        return WGMath.calcWorkspace(groupId, monIdx, subWs, workspacesPerMonitor, getMonitorCount());
     }
 
     function isWorkspaceValidForGroupAndMonitor(wsId, groupId, monIdx) {
-        if (!wsId || wsId < 1 || !groupId || groupId < 1 || monIdx === undefined || monIdx < 0)
-            return false;
-        const monCount = getMonitorCount();
-        const totalPerGroup = workspacesPerMonitor * monCount;
-        const startWs = (groupId - 1) * totalPerGroup + (monIdx * workspacesPerMonitor) + 1;
-        const endWs = startWs + workspacesPerMonitor - 1;
-        return wsId >= startWs && wsId <= endWs;
+        return WGMath.isWorkspaceInRange(wsId, groupId, monIdx, workspacesPerMonitor, getMonitorCount());
     }
 
     function getValidWorkspaceForMonitor(groupId, monIdx, preferredWs) {
@@ -341,17 +333,15 @@ PluginComponent {
     }
 
     function calcSubWorkspaceFromWorkspace(wsId) {
-        if (!wsId || wsId < 1)
-            return 1;
-        const monCount = getMonitorCount();
-        const totalPerGroup = workspacesPerMonitor * monCount;
-        if (totalPerGroup <= 0)
-            return 1;
-        const withinGroup = (wsId - 1) % totalPerGroup;
-        return (withinGroup % workspacesPerMonitor) + 1;
+        return WGMath.subFromWorkspace(wsId, workspacesPerMonitor, getMonitorCount());
     }
 
-    function formatWindowAddress(rawAddr) {
+    function formatWindowAddress(rawAddrOrToplevel) {
+        let rawAddr = rawAddrOrToplevel;
+        if (rawAddrOrToplevel && typeof rawAddrOrToplevel === "object") {
+            const top = rawAddrOrToplevel;
+            rawAddr = top.lastIpcObject?.address || top.address;
+        }
         if (!rawAddr)
             return "";
         const s = String(rawAddr).trim();
@@ -421,9 +411,7 @@ PluginComponent {
         root.groups = updatedGroups;
         root.sanitizeLastActiveWorkspaces();
 
-        root.notifyState();
-        root.writeLuaConfig();
-        root.saveStateFile();
+        root.commitState(true);
         return true;
     }
 
@@ -442,97 +430,16 @@ PluginComponent {
         PluginService.setGlobalVar("workspaceGroups", "sortedMonitorNames", root.getSortedMonitors().map(m => m.name));
         PluginService.setGlobalVar("workspaceGroups", "monitorPriority", root.monitorPriority);
     }
-
-    function switchToGroup(groupId) {
-        const g = parseInt(groupId);
-        if (isNaN(g) || g < 1 || g > root.groups.length)
-            return "INVALID_GROUP";
-        if (g === root.activeGroupIndex)
-            return "ALREADY_ACTIVE";
-
-        if (root.overviewOpen || root.createModalOpen || root.contentVisible) {
-            root.closeOverview();
-        }
-
-        const mons = getSortedMonitors();
-        const focusedMonName = Hyprland.focusedMonitor?.name || (mons[0] ? mons[0].name : "");
-
-        for (let i = 0; i < mons.length; i++) {
-            const m = mons[i];
-            const curWs = m.activeWorkspace ? m.activeWorkspace.id : null;
-            if (curWs && root.isWorkspaceValidForGroupAndMonitor(curWs, root.activeGroupIndex, i)) {
-                if (!root.lastActiveWorkspaces[root.activeGroupIndex])
-                    root.lastActiveWorkspaces[root.activeGroupIndex] = {};
-                root.lastActiveWorkspaces[root.activeGroupIndex][m.name] = curWs;
-            }
-        }
-
-        if (!root.lastActiveWorkspaces[g])
-            root.lastActiveWorkspaces[g] = {};
-
-        const batchCommands = [];
-        for (let i = 0; i < mons.length; i++) {
-            const m = mons[i];
-            let targetWs = root.lastActiveWorkspaces[g]?.[m.name];
-            if (!root.isWorkspaceValidForGroupAndMonitor(targetWs, g, i)) {
-                targetWs = calcWorkspace(g, i, 1);
-                root.lastActiveWorkspaces[g][m.name] = targetWs;
-            }
-            if (root.isLua) {
-                batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${m.name}' })`);
-                batchCommands.push(`dispatch hl.dsp.focus({ workspace = '${targetWs}' })`);
-            } else {
-                batchCommands.push("dispatch focusmonitor " + m.name);
-                batchCommands.push("dispatch workspace " + targetWs);
-            }
-        }
-        if (focusedMonName) {
-            if (root.isLua) {
-                batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${focusedMonName}' })`);
-            } else {
-                batchCommands.push("dispatch focusmonitor " + focusedMonName);
-            }
-        }
-
-        const fullBatch = batchCommands.join("; ");
-        Quickshell.execDetached(["hyprctl", "--batch", fullBatch]);
-
-        root.activeGroupIndex = g;
+    function commitState(persistLua) {
         root.notifyState();
-        root.saveStateFile();
-        return "SUCCESS";
-    }
-
-    function nextGroup() {
-        let next = root.activeGroupIndex + 1;
-        if (next > root.groups.length)
-            next = 1;
-        return switchToGroup(next);
-    }
-
-    function prevGroup() {
-        let prev = root.activeGroupIndex - 1;
-        if (prev < 1)
-            prev = root.groups.length;
-        return switchToGroup(prev);
-    }
-
-    function moveWindowToGroup(groupId) {
-        const g = parseInt(groupId);
-        if (isNaN(g) || g < 1 || g > root.groups.length)
-            return "INVALID_GROUP";
-        if (g === root.activeGroupIndex)
-            return "ALREADY_ACTIVE";
-
-        if (root.overviewOpen || root.createModalOpen || root.contentVisible) {
-            root.closeOverview();
+        if (persistLua === true) {
+            root.writeLuaConfig();
         }
+        root.saveStateFile();
+    }
 
+    function snapshotCurrent() {
         const mons = getSortedMonitors();
-        const focusedMon = Hyprland.focusedMonitor;
-        const focusedMonName = focusedMon?.name || (mons[0] ? mons[0].name : "");
-        const focusedMonIdx = focusedMon ? getMonitorIndex(focusedMon.name) : 0;
-
         for (let i = 0; i < mons.length; i++) {
             const m = mons[i];
             const curWs = m.activeWorkspace ? m.activeWorkspace.id : null;
@@ -542,10 +449,12 @@ PluginComponent {
                 root.lastActiveWorkspaces[root.activeGroupIndex][m.name] = curWs;
             }
         }
+        return mons;
+    }
 
+    function ensureTargetWorkspaces(g, mons) {
         if (!root.lastActiveWorkspaces[g])
             root.lastActiveWorkspaces[g] = {};
-
         for (let i = 0; i < mons.length; i++) {
             const m = mons[i];
             let targetWs = root.lastActiveWorkspaces[g]?.[m.name];
@@ -554,16 +463,11 @@ PluginComponent {
                 root.lastActiveWorkspaces[g][m.name] = targetWs;
             }
         }
+    }
 
-        const targetWsForFocusedMon = root.lastActiveWorkspaces[g]?.[focusedMonName] || calcWorkspace(g, focusedMonIdx, 1);
-
+    function buildFocusBatch(g, mons, focusedMonName) {
+        root.ensureTargetWorkspaces(g, mons);
         const batchCommands = [];
-        if (root.isLua) {
-            batchCommands.push(`dispatch hl.dsp.window.move({ workspace = '${targetWsForFocusedMon}', silent = true })`);
-        } else {
-            batchCommands.push("dispatch movetoworkspacesilent " + targetWsForFocusedMon);
-        }
-
         for (let i = 0; i < mons.length; i++) {
             const m = mons[i];
             const targetWs = root.lastActiveWorkspaces[g][m.name];
@@ -582,19 +486,144 @@ PluginComponent {
                 batchCommands.push("dispatch focusmonitor " + focusedMonName);
             }
         }
+        return batchCommands;
+    }
 
+    function moveWindowCommand(targetWs) {
+        if (root.isLua) {
+            return `dispatch hl.dsp.window.move({ workspace = '${targetWs}', silent = true })`;
+        }
+        return "dispatch movetoworkspacesilent " + targetWs;
+    }
+
+    function windowsInGroup(groupId) {
+        const range = WGMath.workspaceRangeForGroup(groupId, workspacesPerMonitor, getMonitorCount());
+        const allToplevels = Hyprland.toplevels?.values || [];
+        const list = [];
+        for (let i = 0; i < allToplevels.length; i++) {
+            const top = allToplevels[i];
+            if (!top) continue;
+            const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+            if (wsId !== undefined && wsId >= range.start && wsId <= range.end) {
+                list.push(top);
+            }
+        }
+        return list;
+    }
+    function buildWindowRows(groupId) {
+        const wins = root.windowsInGroup(groupId);
+        const list = [];
+        for (let i = 0; i < wins.length; i++) {
+            const top = wins[i];
+            if (!top) continue;
+            const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+            if (wsId === undefined) continue;
+            const subWs = calcSubWorkspaceFromWorkspace(wsId);
+            const ipcObj = top.lastIpcObject || {};
+            const keyBase = ipcObj.class || ipcObj.initialClass || top.wayland?.appId || top.appId || "unknown";
+            const moddedId = Paths.moddedAppId(keyBase);
+            const desktopEntry = DesktopEntries.heuristicLookup(moddedId);
+            const icon = Paths.getAppIcon(moddedId, desktopEntry);
+            const appName = Paths.getAppName(moddedId, desktopEntry) || keyBase;
+            const title = top.title || ipcObj.title || appName;
+            const address = root.formatWindowAddress(ipcObj.address || top.address);
+            const isFocused = top.activated || (top.wayland && top.wayland.activated) || false;
+            list.push({
+                "subWs": subWs,
+                "wsId": wsId,
+                "appName": appName,
+                "title": title,
+                "icon": icon,
+                "address": address,
+                "isFocused": isFocused
+            });
+        }
+        list.sort((a, b) => a.subWs - b.subWs);
+        return list;
+    }
+
+    readonly property var windowRowsByGroup: {
+        const groups = root.groups || [];
+        const tops = Hyprland.toplevels?.values || [];
+        const map = {};
+        for (let i = 0; i < groups.length; i++) {
+            map[groups[i].id] = root.buildWindowRows(groups[i].id);
+        }
+        return map;
+    }
+
+    function luaEscape(s) {
+        return String(s || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ").replace(/\r/g, " ");
+    }
+
+    function switchToGroup(groupId) {
+        const g = WGMath.parseGroupId(groupId);
+        if (g === -1 || g > root.groups.length)
+            return "INVALID_GROUP";
+        if (g === root.activeGroupIndex)
+            return "ALREADY_ACTIVE";
+
+        if (root.overviewOpen || root.createModalOpen || root.contentVisible) {
+            root.closeOverview();
+        }
+
+        const mons = root.snapshotCurrent();
+        const focusedMonName = Hyprland.focusedMonitor?.name || (mons[0] ? mons[0].name : "");
+        const batchCommands = root.buildFocusBatch(g, mons, focusedMonName);
         const fullBatch = batchCommands.join("; ");
         Quickshell.execDetached(["hyprctl", "--batch", fullBatch]);
 
         root.activeGroupIndex = g;
-        root.notifyState();
-        root.saveStateFile();
+        root.commitState(false);
+        return "SUCCESS";
+    }
+
+    function nextGroup() {
+        let next = root.activeGroupIndex + 1;
+        if (next > root.groups.length)
+            next = 1;
+        return switchToGroup(next);
+    }
+
+    function prevGroup() {
+        let prev = root.activeGroupIndex - 1;
+        if (prev < 1)
+            prev = root.groups.length;
+        return switchToGroup(prev);
+    }
+
+    function moveWindowToGroup(groupId) {
+        const g = WGMath.parseGroupId(groupId);
+        if (g === -1 || g > root.groups.length)
+            return "INVALID_GROUP";
+        if (g === root.activeGroupIndex)
+            return "ALREADY_ACTIVE";
+
+        if (root.overviewOpen || root.createModalOpen || root.contentVisible) {
+            root.closeOverview();
+        }
+
+        const mons = root.snapshotCurrent();
+        const focusedMon = Hyprland.focusedMonitor;
+        const focusedMonName = focusedMon?.name || (mons[0] ? mons[0].name : "");
+        const focusedMonIdx = focusedMon ? getMonitorIndex(focusedMon.name) : 0;
+        root.ensureTargetWorkspaces(g, mons);
+        const targetWsForFocusedMon = root.lastActiveWorkspaces[g]?.[focusedMonName] || calcWorkspace(g, focusedMonIdx, 1);
+        const batchCommands = [root.moveWindowCommand(targetWsForFocusedMon)];
+        for (const cmd of root.buildFocusBatch(g, mons, focusedMonName)) {
+            batchCommands.push(cmd);
+        }
+        const fullBatch = batchCommands.join("; ");
+        Quickshell.execDetached(["hyprctl", "--batch", fullBatch]);
+
+        root.activeGroupIndex = g;
+        root.commitState(false);
         return "SUCCESS";
     }
 
     function switchToSubWorkspace(subWsStr, targetMonName) {
-        let sub = parseInt(subWsStr);
-        if (isNaN(sub))
+        let sub = WGMath.parseIndex(subWsStr);
+        if (sub === -1)
             return "INVALID_SUB_WORKSPACE";
         if (sub === 0)
             sub = 10;
@@ -625,8 +654,8 @@ PluginComponent {
     }
 
     function moveWindowToSubWorkspace(subWsStr, targetMonName) {
-        let sub = parseInt(subWsStr);
-        if (isNaN(sub))
+        let sub = WGMath.parseIndex(subWsStr);
+        if (sub === -1)
             return "INVALID_SUB_WORKSPACE";
         if (sub === 0)
             sub = 10;
@@ -649,6 +678,8 @@ PluginComponent {
     }
 
     function cycleSubWorkspaces(dir) {
+        if (dir !== "next" && dir !== "prev")
+            return "INVALID_DIRECTION";
         const focusedWs = Hyprland.focusedWorkspace?.id || 1;
         const curSub = calcSubWorkspaceFromWorkspace(focusedWs);
         let nextSub = curSub + (dir === "next" ? 1 : -1);
@@ -682,18 +713,79 @@ PluginComponent {
     }
 
     function closeOverview() {
-        if (!root.overviewOpen && !root.createModalOpen && !root.contentVisible)
+        if (!root.overviewOpen && !root.createModalOpen && !root.deleteConfirmOpen && !root.contentVisible)
+            return "OVERVIEW_CLOSED";
+        if (root.isClosing)
             return "OVERVIEW_CLOSED";
         if (root.createModalOpen) {
             root.createModalOpen = false;
         }
         if (root.deleteConfirmOpen) {
-            root.deleteConfirmOpen = false;
+            root.closeDeleteConfirm();
         }
         root.contentVisible = false;
+        root.mouseMovedSinceOpen = false;
+        root.lastGlobalMouseX = -1;
+        root.lastGlobalMouseY = -1;
         root.isClosing = true;
         overviewCloseTimer.restart();
         return "OVERVIEW_CLOSED";
+    }
+    function closeDeleteConfirm() {
+        root.deleteConfirmOpen = false;
+        root.groupToDeleteId = 0;
+        root.groupToDeleteName = "";
+        root.groupToDeleteWindowCount = 0;
+    }
+
+    function closeTopmost() {
+        if (root.deleteConfirmOpen) {
+            root.closeDeleteConfirm();
+            return "CONFIRM_CLOSED";
+        }
+        if (root.createModalOpen) {
+            return root.closeCreateGroup();
+        }
+        return root.closeOverview();
+    }
+
+    function switchAndClose(gid) {
+        root.closeOverview();
+        Qt.callLater(() => {
+            root.switchToGroup(gid);
+        });
+    }
+    function focusWindowRow(row) {
+        if (row.address) {
+            if (root.isLua) {
+                Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.focus({ window = 'address:${row.address}' })`]);
+            } else {
+                Quickshell.execDetached(["hyprctl", "dispatch", "focuswindow", "address:" + row.address]);
+            }
+        } else {
+            root.switchToSubWorkspace(row.subWs);
+        }
+        root.closeOverview();
+    }
+
+    function routeFocus() {
+        Qt.callLater(() => {
+            if (root.deleteConfirmOpen) {
+                deleteConfirmContainer.forceActiveFocus();
+            } else if (root.createModalOpen) {
+                createModalContainer.focusNameInput();
+            } else if (root.overviewOpen) {
+                focusScope.forceActiveFocus();
+                overviewGrid.ensureVisible(root.selectedOverviewIndex);
+            }
+        });
+    }
+
+    function clampSelection() {
+        const count = root.groups ? root.groups.length : 0;
+        if (root.selectedOverviewIndex >= count) {
+            root.selectedOverviewIndex = Math.max(0, count - 1);
+        }
     }
 
     function openCreateGroup() {
@@ -712,8 +804,8 @@ PluginComponent {
     }
 
     function openEditGroup(groupId) {
-        const g = parseInt(groupId);
-        if (isNaN(g) || g < 1 || g > root.groups.length)
+        const g = WGMath.parseGroupId(groupId);
+        if (g === -1 || g > root.groups.length)
             return "INVALID_GROUP";
 
         overviewCloseTimer.stop();
@@ -724,6 +816,7 @@ PluginComponent {
         root.formGroupIcon = target?.icon || "󰅩";
         root.formGroupColor = target?.color || "#89b4fa";
         root.formSwitchImmediate = false;
+        root.overviewOpen = false;
         root.createModalOpen = true;
         Qt.callLater(() => {
             root.contentVisible = true;
@@ -755,8 +848,8 @@ PluginComponent {
     }
 
     function updateGroup(groupId, name, icon, color) {
-        const g = parseInt(groupId);
-        if (isNaN(g) || g < 1 || g > root.groups.length)
+        const g = WGMath.parseGroupId(groupId);
+        if (g === -1 || g > root.groups.length)
             return "INVALID_GROUP";
 
         const finalName = (name && name.trim()) ? name.trim() : ("Group " + g);
@@ -773,17 +866,77 @@ PluginComponent {
         root.groups = newGroups;
 
         root.closeCreateGroup();
-        root.notifyState();
-        root.writeLuaConfig();
-        root.saveStateFile();
+        root.commitState(true);
         return "SUCCESS";
     }
 
+    function buildReorderMoveBatchLua(mapping, totalPerGroup) {
+        const batchCommands = [];
+        const allToplevels = Hyprland.toplevels?.values || [];
+        const activeWorkspacesSet = {};
+        const hyprWses = Hyprland.workspaces?.values || [];
+        for (let i = 0; i < hyprWses.length; i++) {
+            const wid = hyprWses[i]?.id;
+            if (wid && wid > 0) activeWorkspacesSet[wid] = true;
+        }
+        for (let i = 0; i < allToplevels.length; i++) {
+            const wid = allToplevels[i]?.workspace?.id ?? allToplevels[i]?.lastIpcObject?.workspace?.id;
+            if (wid && wid > 0) activeWorkspacesSet[wid] = true;
+        }
+        const hyprMons = Hyprland.monitors?.values || [];
+        for (let i = 0; i < hyprMons.length; i++) {
+            const wid = hyprMons[i]?.activeWorkspace?.id;
+            if (wid && wid > 0) activeWorkspacesSet[wid] = true;
+        }
+        const workspacesToMigrate = [];
+        for (const wsIdStr in activeWorkspacesSet) {
+            const wsId = parseInt(wsIdStr);
+            const oldG = rawGroupFromWorkspace(wsId);
+            const newG = mapping[oldG];
+            if (newG !== undefined && newG !== oldG) {
+                const offset = (wsId - 1) % totalPerGroup;
+                const targetWs = (newG - 1) * totalPerGroup + 1 + offset;
+                workspacesToMigrate.push({ oldWs: wsId, targetWs: targetWs });
+            }
+        }
+        for (let i = 0; i < workspacesToMigrate.length; i++) {
+            const item = workspacesToMigrate[i];
+            const tempId = item.oldWs + 100000;
+            batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${item.oldWs}', id = ${tempId} })`);
+        }
+        for (let i = 0; i < workspacesToMigrate.length; i++) {
+            const item = workspacesToMigrate[i];
+            const tempId = item.oldWs + 100000;
+            batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${tempId}', id = ${item.targetWs} })`);
+        }
+        return batchCommands;
+    }
+
+    function buildReorderMoveBatchHypr(mapping, totalPerGroup) {
+        const batchCommands = [];
+        const allToplevels = Hyprland.toplevels?.values || [];
+        for (let i = 0; i < allToplevels.length; i++) {
+            const top = allToplevels[i];
+            if (!top) continue;
+            const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+            const addr = root.formatWindowAddress(top);
+            if (!addr || wsId === undefined || wsId < 1) continue;
+            const oldG = rawGroupFromWorkspace(wsId);
+            const newG = mapping[oldG];
+            if (newG !== undefined && newG !== oldG) {
+                const offset = (wsId - 1) % totalPerGroup;
+                const targetWs = (newG - 1) * totalPerGroup + 1 + offset;
+                batchCommands.push(`dispatch movetoworkspacesilent ${targetWs},address:${addr}`);
+            }
+        }
+        return batchCommands;
+    }
+
     function reorderGroup(fromIdx, toIdx) {
-        const from = parseInt(fromIdx);
-        const to = parseInt(toIdx);
-        if (isNaN(from) || isNaN(to) || from < 0 || to < 0 || from >= root.groups.length || to >= root.groups.length)
-            return "INVALID_INDICES";
+        const from = WGMath.parseIndex(fromIdx);
+        const to = WGMath.parseIndex(toIdx);
+        if (from === -1 || to === -1 || from >= root.groups.length || to >= root.groups.length)
+            return "INVALID_RANGE";
         if (from === to)
             return "NO_OP";
 
@@ -802,66 +955,7 @@ PluginComponent {
             mapping[oldId] = newId;
         }
 
-        const batchCommands = [];
-        const allToplevels = Hyprland.toplevels?.values || [];
-
-        if (root.isLua) {
-            const activeWorkspacesSet = {};
-            const hyprWses = Hyprland.workspaces?.values || [];
-            for (let i = 0; i < hyprWses.length; i++) {
-                const wid = hyprWses[i]?.id;
-                if (wid && wid > 0) activeWorkspacesSet[wid] = true;
-            }
-            for (let i = 0; i < allToplevels.length; i++) {
-                const wid = allToplevels[i]?.workspace?.id ?? allToplevels[i]?.lastIpcObject?.workspace?.id;
-                if (wid && wid > 0) activeWorkspacesSet[wid] = true;
-            }
-            const hyprMons = Hyprland.monitors?.values || [];
-            for (let i = 0; i < hyprMons.length; i++) {
-                const wid = hyprMons[i]?.activeWorkspace?.id;
-                if (wid && wid > 0) activeWorkspacesSet[wid] = true;
-            }
-
-            const workspacesToMigrate = [];
-            for (const wsIdStr in activeWorkspacesSet) {
-                const wsId = parseInt(wsIdStr);
-                const oldG = rawGroupFromWorkspace(wsId);
-                const newG = mapping[oldG];
-                if (newG !== undefined && newG !== oldG) {
-                    const offset = (wsId - 1) % totalPerGroup;
-                    const targetWs = (newG - 1) * totalPerGroup + 1 + offset;
-                    workspacesToMigrate.push({ oldWs: wsId, targetWs: targetWs });
-                }
-            }
-
-            for (let i = 0; i < workspacesToMigrate.length; i++) {
-                const item = workspacesToMigrate[i];
-                const tempId = item.oldWs + 100000;
-                batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${item.oldWs}', id = ${tempId} })`);
-            }
-            for (let i = 0; i < workspacesToMigrate.length; i++) {
-                const item = workspacesToMigrate[i];
-                const tempId = item.oldWs + 100000;
-                batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${tempId}', id = ${item.targetWs} })`);
-            }
-        } else {
-            for (let i = 0; i < allToplevels.length; i++) {
-                const top = allToplevels[i];
-                if (!top) continue;
-                const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
-                const rawAddr = top.lastIpcObject?.address || top.address;
-                const addr = root.formatWindowAddress(rawAddr);
-                if (!addr || wsId === undefined || wsId < 1) continue;
-
-                const oldG = rawGroupFromWorkspace(wsId);
-                const newG = mapping[oldG];
-                if (newG !== undefined && newG !== oldG) {
-                    const offset = (wsId - 1) % totalPerGroup;
-                    const targetWs = (newG - 1) * totalPerGroup + 1 + offset;
-                    batchCommands.push(`dispatch movetoworkspacesilent ${targetWs},address:${addr}`);
-                }
-            }
-        }
+        const batchCommands = root.isLua ? root.buildReorderMoveBatchLua(mapping, totalPerGroup) : root.buildReorderMoveBatchHypr(mapping, totalPerGroup);
 
         const oldLastActive = root.lastActiveWorkspaces || {};
         const newLastActive = {};
@@ -905,26 +999,8 @@ PluginComponent {
         if (newActive !== oldActive) {
             const mons = getSortedMonitors();
             const focusedMonName = Hyprland.focusedMonitor?.name || (mons[0] ? mons[0].name : "");
-            for (let i = 0; i < mons.length; i++) {
-                const m = mons[i];
-                let targetWs = root.lastActiveWorkspaces[newActive]?.[m.name];
-                if (!root.isWorkspaceValidForGroupAndMonitor(targetWs, newActive, i)) {
-                    targetWs = calcWorkspace(newActive, i, 1);
-                }
-                if (root.isLua) {
-                    batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${m.name}' })`);
-                    batchCommands.push(`dispatch hl.dsp.focus({ workspace = '${targetWs}' })`);
-                } else {
-                    batchCommands.push("dispatch focusmonitor " + m.name);
-                    batchCommands.push("dispatch workspace " + targetWs);
-                }
-            }
-            if (focusedMonName) {
-                if (root.isLua) {
-                    batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${focusedMonName}' })`);
-                } else {
-                    batchCommands.push("dispatch focusmonitor " + focusedMonName);
-                }
+            for (const cmd of root.buildFocusBatch(newActive, mons, focusedMonName)) {
+                batchCommands.push(cmd);
             }
         }
 
@@ -938,11 +1014,9 @@ PluginComponent {
             "icon": g.icon,
             "color": g.color
         }));
-
-        root.notifyState();
-        root.writeLuaConfig();
-        root.saveStateFile();
-        return "SUCCESS";
+        root.clampSelection();
+        root.commitState(true);
+        return "OK";
     }
 
     function createGroup(name, icon, color, shouldSwitch) {
@@ -959,21 +1033,17 @@ PluginComponent {
         };
 
         root.groups = [...root.groups, newGroup];
+        root.clampSelection();
         if (!root.lastActiveWorkspaces[newId])
             root.lastActiveWorkspaces[newId] = {};
         const sortedMons = getSortedMonitors();
         for (let i = 0; i < sortedMons.length; i++) {
             root.lastActiveWorkspaces[newId][sortedMons[i].name] = calcWorkspace(newId, i, 1);
         }
-        root.notifyState();
-        root.writeLuaConfig();
-        root.saveStateFile();
+        root.commitState(true);
 
         if (shouldSwitch !== false) {
-            root.closeOverview();
-            Qt.callLater(() => {
-                root.switchToGroup(newId);
-            });
+            root.switchAndClose(newId);
         } else {
             root.closeCreateGroup();
         }
@@ -981,27 +1051,123 @@ PluginComponent {
     }
 
     function getWindowsInGroup(groupId) {
-        const allToplevels = Hyprland.toplevels?.values || [];
-        const list = [];
-        const monCount = root.getMonitorCount();
-        const totalPerGroup = root.workspacesPerMonitor * monCount;
-        const startWs = (groupId - 1) * totalPerGroup + 1;
-        const endWs = groupId * totalPerGroup;
+        return root.windowsInGroup(groupId);
+    }
 
-        for (let i = 0; i < allToplevels.length; i++) {
-            const top = allToplevels[i];
-            if (!top) continue;
-            const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
-            if (wsId !== undefined && wsId >= startWs && wsId <= endWs) {
-                list.push(top);
+    function evacuateGroupWindows(g, startWs, endWs, totalPerGroup, evacuateTargetGroup, activeWorkspacesSet, allToplevels) {
+        const batchCommands = [];
+        const renamed = {};
+        if (root.isLua) {
+            const groupGWsWithWindows = {};
+            const groupWins = root.windowsInGroup(g);
+            for (let i = 0; i < groupWins.length; i++) {
+                const wid = groupWins[i].workspace?.id ?? groupWins[i].lastIpcObject?.workspace?.id;
+                if (wid !== undefined && wid > 0) groupGWsWithWindows[wid] = true;
+            }
+            for (const wsIdStr in groupGWsWithWindows) {
+                const wsId = parseInt(wsIdStr);
+                const withinGroup = (wsId - 1) % totalPerGroup;
+                const targetWs = (evacuateTargetGroup - 1) * totalPerGroup + 1 + withinGroup;
+                if (g > 1 && !activeWorkspacesSet[targetWs]) {
+                    batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${wsId}', id = ${targetWs} })`);
+                    renamed[wsId] = true;
+                    activeWorkspacesSet[targetWs] = true;
+                }
+            }
+            for (let i = 0; i < allToplevels.length; i++) {
+                const top = allToplevels[i];
+                if (!top) continue;
+                const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+                const addr = root.formatWindowAddress(top);
+                if (!addr || wsId === undefined) continue;
+                if (wsId >= startWs && wsId <= endWs) {
+                    if (!renamed[wsId]) {
+                        const withinGroup = (wsId - 1) % totalPerGroup;
+                        const targetWs = (evacuateTargetGroup - 1) * totalPerGroup + 1 + withinGroup;
+                        batchCommands.push(`dispatch hl.dsp.window.move({ workspace = '${targetWs}', silent = true, window = 'address:${addr}' })`);
+                    }
+                }
+            }
+        } else {
+            for (let i = 0; i < allToplevels.length; i++) {
+                const top = allToplevels[i];
+                if (!top) continue;
+                const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+                const addr = root.formatWindowAddress(top);
+                if (!addr || wsId === undefined) continue;
+                if (wsId >= startWs && wsId <= endWs) {
+                    const withinGroup = (wsId - 1) % totalPerGroup;
+                    const targetWs = (evacuateTargetGroup - 1) * totalPerGroup + 1 + withinGroup;
+                    batchCommands.push(`dispatch movetoworkspacesilent ${targetWs},address:${addr}`);
+                }
             }
         }
-        return list;
+        return { commands: batchCommands, renamed: renamed };
+    }
+
+    function shiftHigherGroups(endWs, totalPerGroup, activeWorkspacesSet, allToplevels) {
+        const batchCommands = [];
+        if (root.isLua) {
+            const higherWsList = [];
+            for (const wsIdStr in activeWorkspacesSet) {
+                const wsId = parseInt(wsIdStr);
+                if (wsId > endWs) {
+                    higherWsList.push(wsId);
+                }
+            }
+            higherWsList.sort((a, b) => a - b);
+            for (let i = 0; i < higherWsList.length; i++) {
+                const wsId = higherWsList[i];
+                const shiftedWs = wsId - totalPerGroup;
+                batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${wsId}', id = ${shiftedWs} })`);
+            }
+        } else {
+            for (let i = 0; i < allToplevels.length; i++) {
+                const top = allToplevels[i];
+                if (!top) continue;
+                const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+                const addr = root.formatWindowAddress(top);
+                if (!addr || wsId === undefined) continue;
+                if (wsId > endWs) {
+                    const shiftedWs = wsId - totalPerGroup;
+                    batchCommands.push(`dispatch movetoworkspacesilent ${shiftedWs},address:${addr}`);
+                }
+            }
+        }
+        return batchCommands;
+    }
+
+    function refocusAfterDelete(newActive, newLastActive, sortedMons, focusedMonName) {
+        const batchCommands = [];
+        for (let i = 0; i < sortedMons.length; i++) {
+            const m = sortedMons[i];
+            let targetWs = newLastActive[newActive]?.[m.name];
+            if (!root.isWorkspaceValidForGroupAndMonitor(targetWs, newActive, i)) {
+                targetWs = calcWorkspace(newActive, i, 1);
+                if (!newLastActive[newActive]) newLastActive[newActive] = {};
+                newLastActive[newActive][m.name] = targetWs;
+            }
+            if (root.isLua) {
+                batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${m.name}' })`);
+                batchCommands.push(`dispatch hl.dsp.focus({ workspace = '${targetWs}' })`);
+            } else {
+                batchCommands.push("dispatch focusmonitor " + m.name);
+                batchCommands.push("dispatch workspace " + targetWs);
+            }
+        }
+        if (focusedMonName) {
+            if (root.isLua) {
+                batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${focusedMonName}' })`);
+            } else {
+                batchCommands.push("dispatch focusmonitor " + focusedMonName);
+            }
+        }
+        return batchCommands;
     }
 
     function deleteGroup(groupId) {
-        const g = parseInt(groupId);
-        if (isNaN(g) || g < 1 || g > root.groups.length)
+        const g = WGMath.parseGroupId(groupId);
+        if (g === -1 || g > root.groups.length)
             return "INVALID_GROUP";
         if (root.groups.length <= 1)
             return "CANNOT_DELETE_LAST_GROUP";
@@ -1011,20 +1177,9 @@ PluginComponent {
         const startWs = (g - 1) * totalPerGroup + 1;
         const endWs = g * totalPerGroup;
 
-        const sortedMons = getSortedMonitors();
-        const focusedMon = Hyprland.focusedMonitor;
-        const focusedMonName = focusedMon?.name || (sortedMons[0] ? sortedMons[0].name : "");
+        const sortedMons = root.snapshotCurrent();
+        const focusedMonName = Hyprland.focusedMonitor?.name || (sortedMons[0] ? sortedMons[0].name : "");
         const oldActive = root.activeGroupIndex;
-
-        for (let i = 0; i < sortedMons.length; i++) {
-            const m = sortedMons[i];
-            const curWs = m.activeWorkspace ? m.activeWorkspace.id : null;
-            if (curWs && root.isWorkspaceValidForGroupAndMonitor(curWs, oldActive, i)) {
-                if (!root.lastActiveWorkspaces[oldActive])
-                    root.lastActiveWorkspaces[oldActive] = {};
-                root.lastActiveWorkspaces[oldActive][m.name] = curWs;
-            }
-        }
 
         const newGroups = [];
         for (let i = 0; i < root.groups.length; i++) {
@@ -1084,103 +1239,17 @@ PluginComponent {
             if (wid && wid > 0) activeWorkspacesSet[wid] = true;
         }
 
-        const groupGWsWithWindows = {};
-        for (let i = 0; i < allToplevels.length; i++) {
-            const top = allToplevels[i];
-            if (!top) continue;
-            const wid = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
-            if (wid !== undefined && wid >= startWs && wid <= endWs) {
-                groupGWsWithWindows[wid] = true;
-            }
-        }
-
         const evacuateTargetGroup = (g === 1) ? 2 : 1;
-
-        if (root.isLua) {
-            const evacuatedWorkspacesRenamed = {};
-            for (const wsIdStr in groupGWsWithWindows) {
-                const wsId = parseInt(wsIdStr);
-                const withinGroup = (wsId - 1) % totalPerGroup;
-                const targetWs = (evacuateTargetGroup - 1) * totalPerGroup + 1 + withinGroup;
-                if (g > 1 && !activeWorkspacesSet[targetWs]) {
-                    batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${wsId}', id = ${targetWs} })`);
-                    evacuatedWorkspacesRenamed[wsId] = true;
-                    activeWorkspacesSet[targetWs] = true;
-                }
-            }
-
-            for (let i = 0; i < allToplevels.length; i++) {
-                const top = allToplevels[i];
-                if (!top) continue;
-                const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
-                const rawAddr = top.lastIpcObject?.address || top.address;
-                const addr = root.formatWindowAddress(rawAddr);
-                if (!addr || wsId === undefined) continue;
-
-                if (wsId >= startWs && wsId <= endWs) {
-                    if (!evacuatedWorkspacesRenamed[wsId]) {
-                        const withinGroup = (wsId - 1) % totalPerGroup;
-                        const targetWs = (evacuateTargetGroup - 1) * totalPerGroup + 1 + withinGroup;
-                        batchCommands.push(`dispatch hl.dsp.window.move({ workspace = '${targetWs}', silent = true, window = 'address:${addr}' })`);
-                    }
-                }
-            }
-
-            const higherWsList = [];
-            for (const wsIdStr in activeWorkspacesSet) {
-                const wsId = parseInt(wsIdStr);
-                if (wsId > endWs) {
-                    higherWsList.push(wsId);
-                }
-            }
-            higherWsList.sort((a, b) => a - b);
-            for (let i = 0; i < higherWsList.length; i++) {
-                const wsId = higherWsList[i];
-                const shiftedWs = wsId - totalPerGroup;
-                batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${wsId}', id = ${shiftedWs} })`);
-            }
-        } else {
-            for (let i = 0; i < allToplevels.length; i++) {
-                const top = allToplevels[i];
-                if (!top) continue;
-                const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
-                const rawAddr = top.lastIpcObject?.address || top.address;
-                const addr = root.formatWindowAddress(rawAddr);
-                if (!addr || wsId === undefined) continue;
-
-                if (wsId >= startWs && wsId <= endWs) {
-                    const withinGroup = (wsId - 1) % totalPerGroup;
-                    const targetWs = (evacuateTargetGroup - 1) * totalPerGroup + 1 + withinGroup;
-                    batchCommands.push(`dispatch movetoworkspacesilent ${targetWs},address:${addr}`);
-                } else if (wsId > endWs) {
-                    const shiftedWs = wsId - totalPerGroup;
-                    batchCommands.push(`dispatch movetoworkspacesilent ${shiftedWs},address:${addr}`);
-                }
-            }
+        const evac = root.evacuateGroupWindows(g, startWs, endWs, totalPerGroup, evacuateTargetGroup, activeWorkspacesSet, allToplevels);
+        for (const cmd of evac.commands) {
+            batchCommands.push(cmd);
+        }
+        for (const cmd of root.shiftHigherGroups(endWs, totalPerGroup, activeWorkspacesSet, allToplevels)) {
+            batchCommands.push(cmd);
         }
 
-        for (let i = 0; i < sortedMons.length; i++) {
-            const m = sortedMons[i];
-            let targetWs = newLastActive[newActive]?.[m.name];
-            if (!root.isWorkspaceValidForGroupAndMonitor(targetWs, newActive, i)) {
-                targetWs = calcWorkspace(newActive, i, 1);
-                if (!newLastActive[newActive]) newLastActive[newActive] = {};
-                newLastActive[newActive][m.name] = targetWs;
-            }
-            if (root.isLua) {
-                batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${m.name}' })`);
-                batchCommands.push(`dispatch hl.dsp.focus({ workspace = '${targetWs}' })`);
-            } else {
-                batchCommands.push("dispatch focusmonitor " + m.name);
-                batchCommands.push("dispatch workspace " + targetWs);
-            }
-        }
-        if (focusedMonName) {
-            if (root.isLua) {
-                batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${focusedMonName}' })`);
-            } else {
-                batchCommands.push("dispatch focusmonitor " + focusedMonName);
-            }
+        for (const cmd of root.refocusAfterDelete(newActive, newLastActive, sortedMons, focusedMonName)) {
+            batchCommands.push(cmd);
         }
 
         if (batchCommands.length > 0) {
@@ -1191,13 +1260,9 @@ PluginComponent {
         root.groups = newGroups;
         root.lastActiveWorkspaces = newLastActive;
         root.sanitizeLastActiveWorkspaces();
-        if (root.selectedOverviewIndex >= newGroups.length) {
-            root.selectedOverviewIndex = Math.max(0, newGroups.length - 1);
-        }
+        root.clampSelection();
 
-        root.notifyState();
-        root.writeLuaConfig();
-        root.saveStateFile();
+        root.commitState(true);
         return "SUCCESS";
     }
 
@@ -1206,18 +1271,20 @@ PluginComponent {
     }
 
     function confirmDeleteGroup(groupId) {
-        const g = parseInt(groupId);
-        if (isNaN(g) || g < 1 || g > root.groups.length || root.groups.length <= 1)
-            return;
+        const g = WGMath.parseGroupId(groupId);
+        if (g === -1 || g > root.groups.length || root.groups.length <= 1)
+            return "INVALID_GROUP";
         const grp = root.groups[g - 1];
         const wins = getWindowsInGroup(g);
         if (wins.length === 0) {
-            deleteGroup(g);
+            root.deleteGroup(g);
+            return "OK";
         } else {
             root.groupToDeleteId = g;
             root.groupToDeleteName = grp?.name || ("Group " + g);
             root.groupToDeleteWindowCount = wins.length;
             root.deleteConfirmOpen = true;
+            return "CONFIRM_OPEN";
         }
     }
 
@@ -1228,9 +1295,7 @@ PluginComponent {
         if (root.activeGroupIndex > root.groups.length) {
             root.switchToGroup(1);
         }
-        root.notifyState();
-        root.writeLuaConfig();
-        root.saveStateFile();
+        root.commitState(true);
         return "SUCCESS";
     }
 
@@ -1247,13 +1312,14 @@ PluginComponent {
 
     function writeLuaConfig(callback) {
         const groupsLua = root.groups.map(g => {
-            const escapedName = (g.name || "").replace(/"/g, '\\"');
-            const escapedIcon = (g.icon || "").replace(/"/g, '\\"');
-            const color = g.color || "#89b4fa";
+            const escapedName = root.luaEscape(g.name);
+            const escapedIcon = root.luaEscape(g.icon);
+            const color = root.luaEscape(g.color || Defaults.FALLBACK_COLOR);
             return `    { id = ${g.id}, name = "${escapedName}", icon = "${escapedIcon}", color = "${color}" },`;
         }).join("\n");
 
-        const priorityLua = root.monitorPriority.map(p => `"${p}"`).join(", ");
+        const priorityLua = root.monitorPriority.map(p => `"${root.luaEscape(p)}"`).join(", ");
+        const wsPerMonitorLua = Number.isInteger(root.workspacesPerMonitor) ? root.workspacesPerMonitor : Defaults.WS_DEFAULT;
 
         const luaContent = `-- Auto-generated by DMS Workspace Groups Plugin
 -- DO NOT EDIT DIRECTLY: Changes will be overwritten when plugin settings change.
@@ -1264,7 +1330,7 @@ M.groups = {
 ${groupsLua}
 }
 
-M.workspaces_per_monitor = ${root.workspacesPerMonitor}
+M.workspaces_per_monitor = ${wsPerMonitorLua}
 M.monitor_priority = { ${priorityLua} }
 
 local function dms_ipc(target, func, ...)
@@ -1379,15 +1445,21 @@ function M.setup(opts)
   -- Cycle sub-workspaces
   hl.bind(mainMod .. " + mouse_down", M.cycle_workspaces("next"))
   hl.bind(mainMod .. " + mouse_up", M.cycle_workspaces("prev"))
-  hl.bind(mainMod .. " + CTRL + mouse_down", M.move_to_workspace("+1"))
-  hl.bind(mainMod .. " + CTRL + mouse_up", M.move_to_workspace("-1"))
+  hl.bind(mainMod .. " + CTRL + mouse_down", M.cycle_workspaces("next"))
+  hl.bind(mainMod .. " + CTRL + mouse_up", M.cycle_workspaces("prev"))
 end
 
 return M
 `;
+        for (const line of luaContent.split("\n")) {
+            if (line === "WG_GROUPS_EOF") {
+                console.warn("[WorkspaceGroups] Refusing to write Lua config: content collides with heredoc delimiter");
+                return;
+            }
+        }
 
         const tmpFile = luaConfigPath + ".tmp." + Date.now();
-        Proc.runCommand("save-workspace-groups-lua", ["sh", "-c", `mkdir -p "${hyprDmsDir}" && cat << 'EOF' > "${tmpFile}"\n${luaContent}\nEOF\nmv -f "${tmpFile}" "${luaConfigPath}"\n`], (output, exitCode) => {
+        Proc.runCommand("save-workspace-groups-lua", ["sh", "-c", `mkdir -p "${hyprDmsDir}" && cat << 'WG_GROUPS_EOF' > "${tmpFile}"\n${luaContent}\nWG_GROUPS_EOF\nmv -f "${tmpFile}" "${luaConfigPath}"\n`], (output, exitCode) => {
             if (exitCode !== 0) {
                 console.warn("[WorkspaceGroups] Failed to write Lua config:", output);
             } else {
@@ -1563,11 +1635,7 @@ return M
                         }
                         onCleared: () => {
                             if (hasBeenActivated && !root.isClosing) {
-                                if (root.overviewOpen) {
-                                    root.closeOverview();
-                                } else if (root.createModalOpen) {
-                                    root.closeCreateGroup();
-                                }
+                                root.closeTopmost();
                             }
                         }
                     }
@@ -1580,45 +1648,34 @@ return M
                                 if (CompositorService.useHyprlandFocusGrab) {
                                     delayedGrabTimer.start();
                                 }
-                                Qt.callLater(() => {
-                                    if (root.createModalOpen) {
-                                        createNameInput.forceActiveFocus();
-                                    } else {
-                                        focusScope.forceActiveFocus();
-                                        if (overviewFlickable && overviewFlickable.height > 0) {
-                                            overviewFlickable.ensureVisible(root.selectedOverviewIndex);
-                                        }
-                                    }
-                                });
+                                root.routeFocus();
                             } else {
                                 delayedGrabTimer.stop();
                                 grab.active = false;
                                 grab.hasBeenActivated = false;
-                                if (overviewFlickable) {
-                                    overviewFlickable.contentY = 0;
-                                }
+                                overviewGrid.resetScroll();
                             }
                         }
                         function onSelectedOverviewIndexChanged() {
-                            if (root.contentVisible && overviewFlickable) {
-                                overviewFlickable.ensureVisible(root.selectedOverviewIndex);
+                            if (root.contentVisible) {
+                                overviewGrid.ensureVisible(root.selectedOverviewIndex);
                             }
                         }
                         function onCreateModalOpenChanged() {
                             if (root.contentVisible) {
                                 if (root.createModalOpen) {
-                                    Qt.callLater(() => createNameInput.forceActiveFocus());
+                                    root.routeFocus();
                                 } else if (root.overviewOpen) {
-                                    Qt.callLater(() => focusScope.forceActiveFocus());
+                                    root.routeFocus();
                                 }
                             }
                         }
                         function onDeleteConfirmOpenChanged() {
                             if (root.contentVisible) {
                                 if (root.deleteConfirmOpen) {
-                                    Qt.callLater(() => deleteConfirmContainer.forceActiveFocus());
+                                    root.routeFocus();
                                 } else if (root.overviewOpen) {
-                                    Qt.callLater(() => focusScope.forceActiveFocus());
+                                    root.routeFocus();
                                 }
                             }
                         }
@@ -1629,7 +1686,7 @@ return M
                         function onActiveFocusItemChanged() {
                             if (root.contentVisible && !overviewWindow.activeFocusItem) {
                                 if (root.createModalOpen) {
-                                    createNameInput.forceActiveFocus();
+                                    createModalContainer.focusNameInput();
                                 } else if (root.deleteConfirmOpen) {
                                     deleteConfirmContainer.forceActiveFocus();
                                 } else {
@@ -1678,1311 +1735,101 @@ return M
                             anchors.fill: parent
                             enabled: root.contentVisible
                             onClicked: {
-                                if (root.createModalOpen) {
-                                    root.closeCreateGroup();
-                                } else if (root.deleteConfirmOpen) {
-                                    root.deleteConfirmOpen = false;
-                                } else {
-                                    root.closeOverview();
-                                }
+                                root.closeTopmost();
                             }
                         }
                     }
 
-                    Item {
+                    WGModalCard {
                         id: overviewModalContainer
                         anchors.centerIn: parent
                         width: Math.min(parent.width - 60, Math.max(760, root.gridColumns * 360 + (root.gridColumns - 1) * Theme.spacingM + Theme.spacingXL * 2))
                         height: Math.min(parent.height - 60, root.gridRows <= 1 ? 400 : (root.gridRows === 2 ? 650 : Math.min(880, parent.height - 60)))
-                        transformOrigin: Item.Center
                         visible: root.overviewOpen && !root.createModalOpen && !root.deleteConfirmOpen
+                        shown: root.contentVisible && visible
 
-                        opacity: root.contentVisible && visible ? 1 : 0
-                        scale: root.contentVisible && visible ? 1.0 : 0.96
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: Theme.modalAnimationDuration
-                                easing.type: Easing.BezierSpline
-                                easing.bezierCurve: root.contentVisible ? Theme.expressiveCurves.expressiveDefaultSpatial : Theme.expressiveCurves.emphasized
-                            }
-                        }
-
-                        Behavior on scale {
-                            NumberAnimation {
-                                duration: Theme.modalAnimationDuration
-                                easing.type: Easing.BezierSpline
-                                easing.bezierCurve: root.contentVisible ? Theme.expressiveCurves.expressiveDefaultSpatial : Theme.expressiveCurves.emphasized
-                            }
-                        }
-
-                        ElevationShadow {
-                            anchors.fill: parent
-                            level: Theme.elevationLevel3
-                            targetRadius: Theme.cornerRadius * 1.5
-                            targetColor: Theme.surfaceContainer
-                            shadowEnabled: Theme.elevationEnabled && SettingsData.modalElevationEnabled
-                        }
-
-                        Rectangle {
-                            anchors.fill: parent
-                            color: Theme.surfaceContainer
-                            radius: Theme.cornerRadius * 1.5
-                            border.color: Theme.outlineVariant
-                            border.width: 1
-                            clip: true
-
-                            ColumnLayout {
+                            OverviewGrid {
+                                id: overviewGrid
                                 anchors.fill: parent
                                 anchors.margins: Theme.spacingXL
-                                spacing: Theme.spacingM
-
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: Theme.spacingXS
-
-                                    RowLayout {
-                                        Layout.fillWidth: true
-                                        spacing: Theme.spacingM
-
-                                        StyledText {
-                                            text: "Workspace Groups"
-                                            font.pixelSize: Theme.fontSizeLarge + 4
-                                            font.weight: Font.Bold
-                                            color: Theme.surfaceText
-                                        }
-
-                                        Item { Layout.fillWidth: true }
-
-                                        DankButton {
-                                            text: "New Group"
-                                            iconName: "add"
-                                            buttonHeight: 32
-                                            horizontalPadding: Theme.spacingM
-                                            iconSize: 15
-                                            onClicked: root.openCreateGroup()
-                                        }
-                                    }
-
-                                    StyledText {
-                                        Layout.fillWidth: true
-                                        text: "Press [1-9, 0] to switch • [H/J/K/L] / Arrows to move • [E] Edit"
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        color: Theme.surfaceVariantText
-                                        elide: Text.ElideRight
-                                    }
-
-                                    StyledText {
-                                        Layout.fillWidth: true
-                                        text: "[Shift+H/L] Reorder (or Drag & Drop) • [N] Add • [Del] Delete • Esc to close"
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        color: Theme.surfaceVariantText
-                                        elide: Text.ElideRight
-                                    }
+                                groups: root.groups
+                                activeGroupIndex: root.activeGroupIndex
+                                selectedIndex: root.selectedOverviewIndex
+                                rowsByGroup: root.windowRowsByGroup
+                                totalItems: root.totalOverviewItems
+                                columns: root.gridColumns
+                                contentVisible: root.contentVisible
+                                controller: dragCtrl
+                                dragContainer: overviewModalContainer
+                                hoverArmed: root.mouseMovedSinceOpen
+                                deletable: root.groups.length > 1
+                                onSwitchRequested: gid => root.switchAndClose(gid)
+                                onEditRequested: gid => root.openEditGroup(gid)
+                                onDeleteRequested: gid => root.confirmDeleteGroup(gid)
+                                onCreateRequested: root.openCreateGroup()
+                                onReorderRequested: (from, to) => {
+                                    root.reorderGroup(from, to);
+                                    root.selectedOverviewIndex = to;
                                 }
-
-                                Flickable {
-                                    id: overviewFlickable
-                                    Layout.fillWidth: true
-                                    Layout.fillHeight: true
-                                    clip: true
-                                    contentWidth: width
-                                    contentHeight: groupGrid.height + 16
-                                    boundsBehavior: Flickable.StopAtBounds
-
-                                    Behavior on contentY {
-                                        enabled: !overviewFlickable.moving && !overviewFlickable.flicking && root.contentVisible
-                                        NumberAnimation {
-                                            duration: 180
-                                            easing.type: Easing.OutCubic
-                                        }
-                                    }
-
-                                    onHeightChanged: {
-                                        const maxScroll = Math.max(0, contentHeight - height);
-                                        if (contentY > maxScroll) {
-                                            contentY = maxScroll;
-                                        }
-                                        if (height > 0 && contentHeight > 0 && root.contentVisible) {
-                                            ensureVisible(root.selectedOverviewIndex);
-                                        }
-                                    }
-
-                                    onContentHeightChanged: {
-                                        const maxScroll = Math.max(0, contentHeight - height);
-                                        if (contentY > maxScroll) {
-                                            contentY = maxScroll;
-                                        }
-                                        if (height > 0 && contentHeight > 0 && root.contentVisible) {
-                                            ensureVisible(root.selectedOverviewIndex);
-                                        }
-                                    }
-
-                                    function ensureVisible(idx) {
-                                        if (idx < 0 || idx >= root.totalOverviewItems)
-                                            return;
-                                        if (overviewFlickable.height <= 0 || overviewFlickable.contentHeight <= 0)
-                                            return;
-
-                                        const maxScroll = Math.max(0, overviewFlickable.contentHeight - overviewFlickable.height);
-                                        if (maxScroll === 0) {
-                                            if (overviewFlickable.contentY !== 0) {
-                                                overviewFlickable.contentY = 0;
-                                            }
-                                            return;
-                                        }
-
-                                        const cols = root.gridColumns;
-                                        const row = Math.floor(idx / cols);
-                                        const cardY = groupGrid.y + row * (groupGrid.cardHeight + groupGrid.rowSpacing);
-                                        const cardBottom = cardY + groupGrid.cardHeight;
-                                        const pad = 10;
-
-                                        const targetTop = Math.max(0, cardY - pad);
-                                        const targetBottom = cardBottom + pad;
-
-                                        if (cardY - pad < overviewFlickable.contentY) {
-                                            overviewFlickable.contentY = Math.max(0, Math.min(maxScroll, targetTop));
-                                            overviewScrollBar._scrollBarActive = true;
-                                            overviewScrollBar.hideTimer.restart();
-                                        } else if (cardBottom + pad > overviewFlickable.contentY + overviewFlickable.height) {
-                                            overviewFlickable.contentY = Math.max(0, Math.min(maxScroll, targetBottom - overviewFlickable.height));
-                                            overviewScrollBar._scrollBarActive = true;
-                                            overviewScrollBar.hideTimer.restart();
-                                        }
-                                    }
-
-                                    ScrollBar.vertical: DankScrollbar {
-                                        id: overviewScrollBar
-                                    }
-
-                                    WheelHandler {
-                                        target: overviewFlickable
-                                        onWheel: event => {
-                                            const step = 80;
-                                            if (event.angleDelta.y > 0) {
-                                                overviewFlickable.contentY = Math.max(0, overviewFlickable.contentY - step);
-                                            } else if (event.angleDelta.y < 0) {
-                                                overviewFlickable.contentY = Math.min(Math.max(0, overviewFlickable.contentHeight - overviewFlickable.height), overviewFlickable.contentY + step);
-                                            }
-                                            overviewScrollBar._scrollBarActive = true;
-                                            overviewScrollBar.hideTimer.restart();
-                                        }
-                                    }
-
-                                    Grid {
-                                        id: groupGrid
-                                        x: 4
-                                        y: 4
-                                        width: overviewFlickable.width - 18
-                                        columns: root.gridColumns
-                                        columnSpacing: Theme.spacingM
-                                        rowSpacing: Theme.spacingM
-
-                                        readonly property real cardWidth: Math.max(200, Math.floor((width - (columns - 1) * columnSpacing) / columns))
-                                        readonly property real cardHeight: 240
-
-                                        Repeater {
-                                            model: root.totalOverviewItems
-
-                                            Rectangle {
-                                                id: overviewCard
-                                                width: groupGrid.cardWidth
-                                                height: groupGrid.cardHeight
-                                                radius: Theme.cornerRadius
-                                                clip: true
-                                                z: (isCurrentActive || isSelected || isDropTarget) ? 3 : 1
-
-                                                readonly property int cardIndex: index
-                                                readonly property bool isAddCard: index === (root.groups ? root.groups.length : 0)
-                                                readonly property var cardGroupData: isAddCard ? null : root.groups[index]
-                                                readonly property bool isCurrentActive: !isAddCard && cardGroupData && root.activeGroupIndex === cardGroupData.id
-                                                readonly property bool isSelected: root.selectedOverviewIndex === index
-                                                readonly property bool isDraggedSource: root.isDraggingCard && root.dragFromIndex === index
-                                                readonly property bool isDropTarget: root.isDraggingCard && root.dragTargetIndex === index && root.dragTargetIndex !== root.dragFromIndex
-
-                                                opacity: isDraggedSource ? 0.35 : 1.0
-                                                scale: isDropTarget ? 1.02 : 1.0
-
-                                                function handleCardDragPosition(fromIndex, mouseItem, mouseX, mouseY) {
-                                                    const modalPt = mouseItem.mapToItem(overviewModalContainer, mouseX, mouseY);
-                                                    root.dragMouseX = modalPt.x;
-                                                    root.dragMouseY = modalPt.y;
-
-                                                    const gridPt = mouseItem.mapToItem(groupGrid, mouseX, mouseY);
-                                                    const colW = groupGrid.cardWidth + groupGrid.columnSpacing;
-                                                    const rowH = groupGrid.cardHeight + groupGrid.rowSpacing;
-                                                    if (colW > 0 && rowH > 0) {
-                                                        const c = Math.max(0, Math.min(groupGrid.columns - 1, Math.floor(Math.max(0, gridPt.x) / colW)));
-                                                        const r = Math.max(0, Math.floor(Math.max(0, gridPt.y) / rowH));
-                                                        const target = r * groupGrid.columns + c;
-                                                        if (target >= 0 && target < root.groups.length) {
-                                                            root.dragTargetIndex = target;
-                                                        }
-                                                    }
-                                                }
-
-                                                function handleCardDragRelease(fromIndex) {
-                                                    if (root.isDraggingCard && root.dragFromIndex === fromIndex) {
-                                                        const from = root.dragFromIndex;
-                                                        const to = root.dragTargetIndex;
-                                                        root.isDraggingCard = false;
-                                                        root.dragFromIndex = -1;
-                                                        root.dragTargetIndex = -1;
-                                                        if (to >= 0 && to !== from && to < root.groups.length) {
-                                                            root.reorderGroup(from, to);
-                                                            root.selectedOverviewIndex = to;
-                                                        }
-                                                    }
-                                                }
-
-                                                readonly property var groupWindows: {
-                                                    if (overviewCard.isAddCard || !overviewCard.cardGroupData)
-                                                        return [];
-                                                    const allToplevels = Hyprland.toplevels?.values || [];
-                                                    const list = [];
-                                                    const monCount = root.getMonitorCount();
-                                                    const totalPerGroup = root.workspacesPerMonitor * monCount;
-                                                    const startWs = (overviewCard.cardGroupData.id - 1) * totalPerGroup + 1;
-                                                    const endWs = overviewCard.cardGroupData.id * totalPerGroup;
-
-                                                    for (let i = 0; i < allToplevels.length; i++) {
-                                                        const top = allToplevels[i];
-                                                        if (!top) continue;
-
-                                                        const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
-                                                        if (wsId !== undefined && wsId >= startWs && wsId <= endWs) {
-                                                            const withinGroup = (wsId - 1) % totalPerGroup;
-                                                            const subWs = (withinGroup % root.workspacesPerMonitor) + 1;
-
-                                                            const ipcObj = top.lastIpcObject || {};
-                                                            const keyBase = ipcObj.class || ipcObj.initialClass || top.wayland?.appId || top.appId || "unknown";
-                                                            const moddedId = Paths.moddedAppId(keyBase);
-                                                            const desktopEntry = DesktopEntries.heuristicLookup(moddedId);
-                                                            const icon = Paths.getAppIcon(moddedId, desktopEntry);
-                                                            const appName = Paths.getAppName(moddedId, desktopEntry) || keyBase;
-                                                            const title = top.title || ipcObj.title || appName;
-                                                            const address = root.formatWindowAddress(ipcObj.address || top.address);
-                                                            const isFocused = top.activated || (top.wayland && top.wayland.activated) || false;
-
-                                                            list.push({
-                                                                "subWs": subWs,
-                                                                "wsId": wsId,
-                                                                "appName": appName,
-                                                                "title": title,
-                                                                "icon": icon,
-                                                                "address": address,
-                                                                "isFocused": isFocused
-                                                            });
-                                                        }
-                                                    }
-                                                    list.sort((a, b) => a.subWs - b.subWs);
-                                                    return list;
-                                                }
-
-                                                color: isAddCard
-                                                    ? (isSelected ? Theme.surfaceContainerHighest : Theme.surfaceContainerLow)
-                                                    : (isSelected ? (isCurrentActive ? Theme.primaryContainer : Theme.surfaceContainerHighest) : (isCurrentActive ? Theme.withAlpha(Theme.primaryContainer, 0.45) : Theme.surfaceContainerLow))
-
-                                                border.color: isDropTarget
-                                                    ? Theme.primary
-                                                    : (isAddCard
-                                                        ? (isSelected ? Theme.primary : Theme.outlineVariant)
-                                                        : (isSelected ? (isCurrentActive ? Theme.primary : Theme.secondary) : (isCurrentActive ? Theme.withAlpha(Theme.primary, 0.4) : Theme.outlineVariant)))
-                                                border.width: isDropTarget ? 3 : (isSelected ? 2 : 1)
-
-                                                Behavior on color { ColorAnimation { duration: 150 } }
-                                                Behavior on border.color { ColorAnimation { duration: 150 } }
-                                                Behavior on opacity { NumberAnimation { duration: 150 } }
-                                                Behavior on scale { NumberAnimation { duration: 150 } }
-
-                                                MouseArea {
-                                                    id: cardMouseArea
-                                                    anchors.fill: parent
-                                                    enabled: !overviewCard.isAddCard
-                                                    hoverEnabled: true
-                                                    cursorShape: root.isDraggingCard ? Qt.ClosedHandCursor : Qt.PointingHandCursor
-
-                                                    property real startMouseX: 0
-                                                    property real startMouseY: 0
-                                                    property bool dragActive: false
-
-                                                    onPressed: mouse => {
-                                                        startMouseX = mouse.x;
-                                                        startMouseY = mouse.y;
-                                                        dragActive = false;
-                                                    }
-
-                                                    onPositionChanged: mouse => {
-                                                        const globalPoint = mapToItem(null, mouse.x, mouse.y);
-                                                        if (!root.mouseMovedSinceOpen) {
-                                                            if (root.lastGlobalMouseX === -1) {
-                                                                root.lastGlobalMouseX = globalPoint.x;
-                                                                root.lastGlobalMouseY = globalPoint.y;
-                                                                return;
-                                                            }
-                                                            const dx = Math.abs(globalPoint.x - root.lastGlobalMouseX);
-                                                            const dy = Math.abs(globalPoint.y - root.lastGlobalMouseY);
-                                                            if (dx < 4 && dy < 4) {
-                                                                return;
-                                                            }
-                                                            root.mouseMovedSinceOpen = true;
-                                                        }
-                                                        root.lastGlobalMouseX = globalPoint.x;
-                                                        root.lastGlobalMouseY = globalPoint.y;
-
-                                                        if (pressed && !overviewCard.isAddCard) {
-                                                            const dist = Math.hypot(mouse.x - startMouseX, mouse.y - startMouseY);
-                                                            if (dist > 8 && !root.isDraggingCard) {
-                                                                root.dragFromIndex = index;
-                                                                root.dragTargetIndex = index;
-                                                                root.isDraggingCard = true;
-                                                                dragActive = true;
-                                                            }
-                                                        }
-
-                                                        if (root.isDraggingCard && root.dragFromIndex === index) {
-                                                            overviewCard.handleCardDragPosition(index, cardMouseArea, mouse.x, mouse.y);
-                                                        } else if (!root.isDraggingCard) {
-                                                            if (root.selectedOverviewIndex !== index) {
-                                                                root.selectedOverviewIndex = index;
-                                                            }
-                                                        }
-                                                    }
-
-                                                    onReleased: mouse => {
-                                                        if (root.isDraggingCard && root.dragFromIndex === index) {
-                                                            overviewCard.handleCardDragRelease(index);
-                                                            dragActive = false;
-                                                            return;
-                                                        }
-
-                                                        if (dragActive) {
-                                                            dragActive = false;
-                                                            return;
-                                                        }
-
-                                                        if (overviewCard.cardGroupData) {
-                                                            const gid = overviewCard.cardGroupData.id;
-                                                            root.closeOverview();
-                                                            Qt.callLater(() => {
-                                                                root.switchToGroup(gid);
-                                                            });
-                                                        }
-                                                    }
-
-                                                    onCanceled: {
-                                                        if (root.isDraggingCard && root.dragFromIndex === index) {
-                                                            root.isDraggingCard = false;
-                                                            root.dragFromIndex = -1;
-                                                            root.dragTargetIndex = -1;
-                                                        }
-                                                        dragActive = false;
-                                                    }
-                                                }
-
-                                                MouseArea {
-                                                    id: addCardMouse
-                                                    anchors.fill: parent
-                                                    enabled: overviewCard.isAddCard
-                                                    hoverEnabled: true
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onPositionChanged: mouse => {
-                                                        const globalPoint = mapToItem(null, mouse.x, mouse.y);
-                                                        if (!root.mouseMovedSinceOpen) {
-                                                            if (root.lastGlobalMouseX === -1) {
-                                                                root.lastGlobalMouseX = globalPoint.x;
-                                                                root.lastGlobalMouseY = globalPoint.y;
-                                                                return;
-                                                            }
-                                                            const dx = Math.abs(globalPoint.x - root.lastGlobalMouseX);
-                                                            const dy = Math.abs(globalPoint.y - root.lastGlobalMouseY);
-                                                            if (dx < 4 && dy < 4) {
-                                                                return;
-                                                            }
-                                                            root.mouseMovedSinceOpen = true;
-                                                        }
-                                                        root.lastGlobalMouseX = globalPoint.x;
-                                                        root.lastGlobalMouseY = globalPoint.y;
-                                                        if (root.selectedOverviewIndex !== index) {
-                                                            root.selectedOverviewIndex = index;
-                                                        }
-                                                    }
-                                                    onClicked: {
-                                                        root.openCreateGroup();
-                                                    }
-                                                }
-
-                                                ColumnLayout {
-                                                    anchors.fill: parent
-                                                    anchors.margins: Theme.spacingM
-                                                    spacing: Theme.spacingXS
-                                                    visible: !overviewCard.isAddCard
-
-                                                    RowLayout {
-                                                        Layout.fillWidth: true
-                                                        spacing: Theme.spacingS
-
-                                                        Rectangle {
-                                                            width: (overviewCard.cardGroupData && overviewCard.cardGroupData.id >= 10) ? 28 : 24
-                                                            height: 24
-                                                            radius: 12
-                                                            color: overviewCard.isCurrentActive ? Theme.primary : Theme.surfaceContainerHighest
-
-                                                            StyledText {
-                                                                anchors.centerIn: parent
-                                                                text: overviewCard.cardGroupData ? overviewCard.cardGroupData.id.toString() : ""
-                                                                font.pixelSize: Theme.fontSizeSmall
-                                                                font.weight: Font.Bold
-                                                                color: overviewCard.isCurrentActive ? Theme.onPrimary : Theme.surfaceText
-                                                            }
-                                                        }
-
-                                                        StyledText {
-                                                            text: (overviewCard.cardGroupData && overviewCard.cardGroupData.icon) ? overviewCard.cardGroupData.icon : "󰅩"
-                                                            font.pixelSize: 20
-                                                            color: (overviewCard.cardGroupData && overviewCard.cardGroupData.color) ? overviewCard.cardGroupData.color : Theme.primary
-                                                        }
-
-                                                        StyledText {
-                                                            text: overviewCard.cardGroupData ? (overviewCard.cardGroupData.name || ("Group " + overviewCard.cardGroupData.id)) : ""
-                                                            font.pixelSize: Theme.fontSizeMedium
-                                                            font.weight: Font.Bold
-                                                            color: Theme.surfaceText
-                                                            elide: Text.ElideRight
-                                                            Layout.fillWidth: true
-                                                        }
-
-                                                        Rectangle {
-                                                            width: 28
-                                                            height: 28
-                                                            radius: 14
-                                                            color: editBtnMouse.containsMouse ? Theme.withAlpha(Theme.primary, 0.2) : Theme.withAlpha(Theme.surfaceContainerHighest, 0.7)
-
-                                                            DankIcon {
-                                                                anchors.centerIn: parent
-                                                                name: "edit"
-                                                                size: 15
-                                                                color: editBtnMouse.containsMouse ? Theme.primary : Theme.surfaceText
-                                                            }
-
-                                                            MouseArea {
-                                                                id: editBtnMouse
-                                                                anchors.fill: parent
-                                                                hoverEnabled: true
-                                                                cursorShape: Qt.PointingHandCursor
-                                                                onClicked: {
-                                                                    if (overviewCard.cardGroupData) {
-                                                                        root.openEditGroup(overviewCard.cardGroupData.id);
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-
-                                                        Rectangle {
-                                                            visible: root.groups.length > 1
-                                                            width: 28
-                                                            height: 28
-                                                            radius: 14
-                                                            color: delBtnMouse.containsMouse ? Theme.withAlpha(Theme.error, 0.2) : Theme.withAlpha(Theme.surfaceContainerHighest, 0.7)
-
-                                                            DankIcon {
-                                                                anchors.centerIn: parent
-                                                                name: "delete"
-                                                                size: 15
-                                                                color: delBtnMouse.containsMouse ? Theme.error : Theme.surfaceText
-                                                            }
-
-                                                            MouseArea {
-                                                                id: delBtnMouse
-                                                                anchors.fill: parent
-                                                                hoverEnabled: true
-                                                                cursorShape: Qt.PointingHandCursor
-                                                                onClicked: {
-                                                                    if (overviewCard.cardGroupData) {
-                                                                        root.confirmDeleteGroup(overviewCard.cardGroupData.id);
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-
-                                                    Rectangle {
-                                                        Layout.fillWidth: true
-                                                        height: 1
-                                                        color: Theme.outlineVariant
-                                                    }
-
-                                                    Item {
-                                                        Layout.fillWidth: true
-                                                        Layout.fillHeight: true
-                                                        implicitHeight: 0
-                                                        clip: true
-
-                                                        Flickable {
-                                                            id: winFlickable
-                                                            anchors.fill: parent
-                                                            visible: overviewCard.groupWindows.length > 0
-                                                            clip: true
-                                                            contentWidth: width
-                                                            contentHeight: winCol.height
-                                                            boundsBehavior: Flickable.StopAtBounds
-
-                                                            ScrollBar.vertical: DankScrollbar {
-                                                                id: winScrollBar
-                                                            }
-
-                                                            WheelHandler {
-                                                                target: winFlickable
-                                                                enabled: winFlickable.contentHeight > winFlickable.height
-                                                                onWheel: event => {
-                                                                    const step = 33;
-                                                                    if (event.angleDelta.y > 0) {
-                                                                        winFlickable.contentY = Math.max(0, winFlickable.contentY - step);
-                                                                    } else if (event.angleDelta.y < 0) {
-                                                                        winFlickable.contentY = Math.min(Math.max(0, winFlickable.contentHeight - winFlickable.height), winFlickable.contentY + step);
-                                                                    }
-                                                                    winScrollBar._scrollBarActive = true;
-                                                                    winScrollBar.hideTimer.restart();
-                                                                }
-                                                            }
-
-                                                            Column {
-                                                                id: winCol
-                                                                width: overviewCard.groupWindows.length > 5 ? (winFlickable.width - 8) : winFlickable.width
-                                                                spacing: 3
-
-                                                                Repeater {
-                                                                    model: overviewCard.groupWindows
-
-                                                                    Rectangle {
-                                                                        width: winCol.width
-                                                                        height: 30
-                                                                        radius: Theme.cornerRadiusSmall
-                                                                        clip: true
-                                                                        color: (winMouse.containsMouse && root.mouseMovedSinceOpen) ? Theme.surfaceContainerHighest : (modelData.isFocused ? Theme.withAlpha(Theme.primary, 0.15) : Theme.surfaceContainerLowest)
-                                                                        border.color: modelData.isFocused ? Theme.primary : ((winMouse.containsMouse && root.mouseMovedSinceOpen) ? Theme.outlineVariant : "transparent")
-                                                                        border.width: 1
-
-                                                                        MouseArea {
-                                                                            id: winMouse
-                                                                            anchors.fill: parent
-                                                                            hoverEnabled: true
-                                                                            cursorShape: root.isDraggingCard ? Qt.ClosedHandCursor : Qt.PointingHandCursor
-
-                                                                            property real startWinX: 0
-                                                                            property real startWinY: 0
-                                                                            property bool dragActive: false
-
-                                                                            onPressed: mouse => {
-                                                                                startWinX = mouse.x;
-                                                                                startWinY = mouse.y;
-                                                                                dragActive = false;
-                                                                            }
-
-                                                                            onPositionChanged: mouse => {
-                                                                                const globalPoint = mapToItem(null, mouse.x, mouse.y);
-                                                                                if (!root.mouseMovedSinceOpen) {
-                                                                                    if (root.lastGlobalMouseX === -1) {
-                                                                                        root.lastGlobalMouseX = globalPoint.x;
-                                                                                        root.lastGlobalMouseY = globalPoint.y;
-                                                                                        return;
-                                                                                    }
-                                                                                    const dx = Math.abs(globalPoint.x - root.lastGlobalMouseX);
-                                                                                    const dy = Math.abs(globalPoint.y - root.lastGlobalMouseY);
-                                                                                    if (dx < 4 && dy < 4) {
-                                                                                        return;
-                                                                                    }
-                                                                                    root.mouseMovedSinceOpen = true;
-                                                                                }
-                                                                                root.lastGlobalMouseX = globalPoint.x;
-                                                                                root.lastGlobalMouseY = globalPoint.y;
-
-                                                                                if (pressed && !overviewCard.isAddCard) {
-                                                                                    const dist = Math.hypot(mouse.x - startWinX, mouse.y - startWinY);
-                                                                                    if (dist > 8 && !root.isDraggingCard) {
-                                                                                        root.dragFromIndex = overviewCard.cardIndex;
-                                                                                        root.dragTargetIndex = overviewCard.cardIndex;
-                                                                                        root.isDraggingCard = true;
-                                                                                        dragActive = true;
-                                                                                    }
-                                                                                }
-
-                                                                                if (root.isDraggingCard && root.dragFromIndex === overviewCard.cardIndex) {
-                                                                                    overviewCard.handleCardDragPosition(overviewCard.cardIndex, winMouse, mouse.x, mouse.y);
-                                                                                } else if (!root.isDraggingCard) {
-                                                                                    if (root.selectedOverviewIndex !== overviewCard.cardIndex) {
-                                                                                        root.selectedOverviewIndex = overviewCard.cardIndex;
-                                                                                    }
-                                                                                }
-                                                                            }
-
-                                                                            onReleased: mouse => {
-                                                                                if (root.isDraggingCard && root.dragFromIndex === overviewCard.cardIndex) {
-                                                                                    overviewCard.handleCardDragRelease(overviewCard.cardIndex);
-                                                                                    dragActive = false;
-                                                                                    return;
-                                                                                }
-                                                                                if (dragActive) {
-                                                                                    dragActive = false;
-                                                                                    return;
-                                                                                }
-                                                                            }
-
-                                                                            onCanceled: {
-                                                                                if (root.isDraggingCard && root.dragFromIndex === overviewCard.cardIndex) {
-                                                                                    root.isDraggingCard = false;
-                                                                                    root.dragFromIndex = -1;
-                                                                                    root.dragTargetIndex = -1;
-                                                                                }
-                                                                                dragActive = false;
-                                                                            }
-
-                                                                            onClicked: {
-                                                                                if (dragActive || root.isDraggingCard) {
-                                                                                    return;
-                                                                                }
-                                                                                if (modelData.address) {
-                                                                                    if (root.isLua) {
-                                                                                        Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.focus({ window = 'address:${modelData.address}' })`]);
-                                                                                    } else {
-                                                                                        Quickshell.execDetached(["hyprctl", "dispatch", "focuswindow", "address:" + modelData.address]);
-                                                                                    }
-                                                                                } else {
-                                                                                    root.switchToSubWorkspace(modelData.subWs);
-                                                                                }
-                                                                                root.closeOverview();
-                                                                            }
-                                                                            onWheel: event => {
-                                                                                if (winFlickable.contentHeight <= winFlickable.height) {
-                                                                                    event.accepted = false;
-                                                                                    return;
-                                                                                }
-                                                                                const step = 33;
-                                                                                if (event.angleDelta.y > 0) {
-                                                                                    winFlickable.contentY = Math.max(0, winFlickable.contentY - step);
-                                                                                } else if (event.angleDelta.y < 0) {
-                                                                                    winFlickable.contentY = Math.min(Math.max(0, winFlickable.contentHeight - winFlickable.height), winFlickable.contentY + step);
-                                                                                }
-                                                                                winScrollBar._scrollBarActive = true;
-                                                                                winScrollBar.hideTimer.restart();
-                                                                            }
-                                                                        }
-
-                                                                        RowLayout {
-                                                                            anchors.fill: parent
-                                                                            anchors.leftMargin: Theme.spacingXS
-                                                                            anchors.rightMargin: Theme.spacingXS
-                                                                            spacing: Theme.spacingXS
-
-                                                                            Rectangle {
-                                                                                width: 18
-                                                                                height: 18
-                                                                                radius: 3
-                                                                                color: Theme.withAlpha((overviewCard.cardGroupData && overviewCard.cardGroupData.color) || Theme.primary, 0.2)
-
-                                                                                StyledText {
-                                                                                    anchors.centerIn: parent
-                                                                                    text: modelData.subWs.toString()
-                                                                                    font.pixelSize: 10
-                                                                                    font.weight: Font.Bold
-                                                                                    color: (overviewCard.cardGroupData && overviewCard.cardGroupData.color) || Theme.primary
-                                                                                }
-                                                                            }
-
-                                                                            Item {
-                                                                                width: 16
-                                                                                height: 16
-                                                                                Layout.alignment: Qt.AlignVCenter
-
-                                                                                IconImage {
-                                                                                    id: winIconImg
-                                                                                    anchors.fill: parent
-                                                                                    source: modelData.icon || ""
-                                                                                    visible: modelData.icon !== "" && status === Image.Ready
-                                                                                }
-
-                                                                                DankIcon {
-                                                                                    anchors.centerIn: parent
-                                                                                    name: "desktop_windows"
-                                                                                    size: 14
-                                                                                    color: Theme.surfaceVariantText
-                                                                                    visible: !modelData.icon || (modelData.icon !== "" && winIconImg.status !== Image.Ready)
-                                                                                }
-                                                                            }
-
-                                                                            StyledText {
-                                                                                text: modelData.appName || modelData.title
-                                                                                font.pixelSize: Theme.fontSizeSmall - 1
-                                                                                color: Theme.surfaceText
-                                                                                wrapMode: Text.NoWrap
-                                                                                elide: Text.ElideRight
-                                                                                maximumLineCount: 1
-                                                                                Layout.fillWidth: true
-                                                                            }
-
-                                                                            Rectangle {
-                                                                                width: 5
-                                                                                height: 5
-                                                                                radius: 2.5
-                                                                                color: Theme.primary
-                                                                                visible: modelData.isFocused
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-
-                                                        ColumnLayout {
-                                                            anchors.centerIn: parent
-                                                            visible: overviewCard.groupWindows.length === 0
-                                                            spacing: Theme.spacingXS
-
-                                                            DankIcon {
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                name: "desktop_windows"
-                                                                size: 26
-                                                                color: Theme.outlineMedium
-                                                            }
-
-                                                            StyledText {
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                text: "No open windows"
-                                                                font.pixelSize: Theme.fontSizeSmall - 1
-                                                                color: Theme.surfaceVariantText
-                                                            }
-                                                        }
-                                                    }
-                                                }
-
-                                                ColumnLayout {
-                                                    anchors.centerIn: parent
-                                                    visible: overviewCard.isAddCard
-                                                    spacing: Theme.spacingS
-
-                                                    Rectangle {
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        width: 48
-                                                        height: 48
-                                                        radius: 24
-                                                        color: Theme.withAlpha(Theme.primary, 0.15)
-                                                        border.color: Theme.withAlpha(Theme.primary, 0.4)
-                                                        border.width: 1
-
-                                                        DankIcon {
-                                                            anchors.centerIn: parent
-                                                            name: "add"
-                                                            size: 24
-                                                            color: Theme.primary
-                                                        }
-                                                    }
-
-                                                    StyledText {
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        text: "Add Group"
-                                                        font.pixelSize: Theme.fontSizeMedium
-                                                        font.weight: Font.Bold
-                                                        color: Theme.surfaceText
-                                                    }
-
-                                                    StyledText {
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        text: "Press N or Click"
-                                                        font.pixelSize: Theme.fontSizeSmall
-                                                        color: Theme.surfaceVariantText
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
+                                onSelectionRequested: idx => {
+                                    root.selectedOverviewIndex = idx;
                                 }
+                                onFocusRequested: row => root.focusWindowRow(row)
                             }
-                        }
                     }
 
-                    Item {
+                    DragGhost {
                         id: dragProxy
-                        enabled: false
                         visible: root.isDraggingCard && root.dragFromIndex >= 0 && root.dragFromIndex < root.groups.length
-                        width: groupGrid.cardWidth
-                        height: groupGrid.cardHeight
-                        x: Math.max(0, Math.min(overviewModalContainer.width - width, root.dragMouseX - width / 2))
-                        y: Math.max(0, Math.min(overviewModalContainer.height - height, root.dragMouseY - 30))
-                        z: 9999
-                        opacity: 0.95
-                        scale: 1.04
-
-                        readonly property var draggedGroup: (root.dragFromIndex >= 0 && root.dragFromIndex < root.groups.length) ? root.groups[root.dragFromIndex] : null
-
-                        ElevationShadow {
-                            anchors.fill: parent
-                            level: Theme.elevationLevel4
-                            targetRadius: Theme.cornerRadius
-                            targetColor: Theme.surfaceContainerHighest
-                            shadowEnabled: Theme.elevationEnabled
-                        }
-
-                        Rectangle {
-                            anchors.fill: parent
-                            radius: Theme.cornerRadius
-                            color: Theme.surfaceContainerHighest
-                            border.color: (dragProxy.draggedGroup && dragProxy.draggedGroup.color) || Theme.primary
-                            border.width: 2.5
-
-                            ColumnLayout {
-                                anchors.centerIn: parent
-                                spacing: Theme.spacingM
-
-                                Rectangle {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    width: 46
-                                    height: 46
-                                    radius: 23
-                                    color: Theme.withAlpha((dragProxy.draggedGroup && dragProxy.draggedGroup.color) || Theme.primary, 0.2)
-                                    border.color: (dragProxy.draggedGroup && dragProxy.draggedGroup.color) || Theme.primary
-                                    border.width: 1.5
-
-                                    StyledText {
-                                        anchors.centerIn: parent
-                                        text: (dragProxy.draggedGroup && dragProxy.draggedGroup.icon) || "󰅩"
-                                        font.pixelSize: 24
-                                        color: (dragProxy.draggedGroup && dragProxy.draggedGroup.color) || Theme.primary
-                                    }
-                                }
-
-                                ColumnLayout {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    spacing: 3
-
-                                    StyledText {
-                                        Layout.alignment: Qt.AlignHCenter
-                                        text: (dragProxy.draggedGroup && dragProxy.draggedGroup.name) || "Group"
-                                        font.pixelSize: Theme.fontSizeMedium
-                                        font.weight: Font.Bold
-                                        color: Theme.surfaceText
-                                    }
-
-                                    StyledText {
-                                        Layout.alignment: Qt.AlignHCenter
-                                        text: "Slot " + (root.dragTargetIndex + 1)
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        font.weight: Font.Medium
-                                        color: (dragProxy.draggedGroup && dragProxy.draggedGroup.color) || Theme.primary
-                                    }
-                                }
-                            }
-                        }
+                        cardWidth: overviewGrid.cardWidth
+                        cardHeight: overviewGrid.cardHeight
+                        group: (root.dragFromIndex >= 0 && root.dragFromIndex < root.groups.length) ? root.groups[root.dragFromIndex] : null
+                        targetSlot: root.dragTargetIndex
+                        posX: overviewModalContainer.x + Math.max(0, Math.min(overviewModalContainer.width - cardWidth, root.dragMouseX - cardWidth / 2))
+                        posY: overviewModalContainer.y + Math.max(0, Math.min(overviewModalContainer.height - cardHeight, root.dragMouseY - 30))
                     }
 
-                    Item {
+                    CreateEditModal {
                         id: createModalContainer
                         anchors.centerIn: parent
                         width: Math.min(parent.width - 40, 520)
-                        implicitHeight: createCard.implicitHeight
+                        implicitHeight: surfaceImplicitHeight
                         visible: root.createModalOpen
-                        scale: visible ? 1.0 : 0.95
-                        opacity: visible ? 1.0 : 0.0
-
-                        Keys.onEscapePressed: event => {
-                            root.closeCreateGroup();
-                            event.accepted = true;
-                        }
-
-                        Behavior on scale { NumberAnimation { duration: Theme.modalAnimationDuration } }
-                        Behavior on opacity { NumberAnimation { duration: Theme.modalAnimationDuration } }
-
-                        Connections {
-                            target: root
-                            function onCreateModalOpenChanged() {
-                                if (root.createModalOpen) {
-                                    Qt.callLater(() => {
-                                        createNameInput.forceActiveFocus();
-                                    });
-                                }
-                            }
-                        }
-
-                        ElevationShadow {
-                            anchors.fill: parent
-                            level: Theme.elevationLevel3
-                            targetRadius: Theme.cornerRadius * 1.5
-                            targetColor: Theme.surfaceContainer
-                            shadowEnabled: Theme.elevationEnabled && SettingsData.modalElevationEnabled
-                        }
-
-                        Rectangle {
-                            id: createCard
-                            width: parent.width
-                            implicitHeight: createCol.implicitHeight + Theme.spacingXL * 2
-                            color: Theme.surfaceContainer
-                            radius: Theme.cornerRadius * 1.5
-                            border.color: Theme.outlineVariant
-                            border.width: 1
-                            clip: true
-
-                            ColumnLayout {
-                                id: createCol
-                                anchors.fill: parent
-                                anchors.margins: Theme.spacingXL
-                                spacing: Theme.spacingL
-
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    spacing: Theme.spacingM
-
-                                    StyledText {
-                                        text: root.editingGroupId > 0 ? ("Edit Workspace Group " + root.editingGroupId) : "Create Workspace Group"
-                                        font.pixelSize: Theme.fontSizeLarge + 2
-                                        font.weight: Font.Bold
-                                        color: Theme.surfaceText
-                                    }
-
-                                    Item { Layout.fillWidth: true }
-
-                                    Rectangle {
-                                        width: 32
-                                        height: 32
-                                        radius: 16
-                                        color: closeCreateMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent"
-
-                                        DankIcon {
-                                            anchors.centerIn: parent
-                                            name: "close"
-                                            size: 18
-                                            color: Theme.surfaceVariantText
-                                        }
-
-                                        MouseArea {
-                                            id: closeCreateMouse
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: root.closeCreateGroup()
-                                        }
-                                    }
-                                }
-
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: Theme.spacingXS
-
-                                    StyledText {
-                                        text: "Group Name"
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        font.weight: Font.Medium
-                                        color: Theme.surfaceVariantText
-                                    }
-
-                                    DankTextField {
-                                        id: createNameInput
-                                        Layout.fillWidth: true
-                                        text: root.formGroupName
-                                        placeholderText: "e.g. Work, Gaming, Notes"
-                                        focus: root.createModalOpen
-                                        keyForwardTargets: [createModalContainer, focusScope]
-                                        Keys.onEscapePressed: event => {
-                                            root.closeCreateGroup();
-                                            event.accepted = true;
-                                        }
-                                        onTextEdited: {
-                                            root.formGroupName = createNameInput.text;
-                                        }
-                                        onAccepted: {
-                                            createModalContainer.submitForm();
-                                        }
-                                    }
-                                }
-
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: Theme.spacingXS
-
-                                    StyledText {
-                                        text: "Icon (Nerd Font Glyph)"
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        font.weight: Font.Medium
-                                        color: Theme.surfaceVariantText
-                                    }
-
-                                    RowLayout {
-                                        Layout.fillWidth: true
-                                        spacing: Theme.spacingM
-
-                                        Rectangle {
-                                            width: 52
-                                            height: 52
-                                            radius: Theme.cornerRadiusSmall
-                                            color: Theme.withAlpha(root.formGroupColor, 0.15)
-                                            border.color: root.formGroupColor
-                                            border.width: 1.5
-
-                                            StyledText {
-                                                anchors.centerIn: parent
-                                                text: root.formGroupIcon || "󰅩"
-                                                font.pixelSize: 30
-                                                color: root.formGroupColor
-                                            }
-                                        }
-
-                                        DankTextField {
-                                            id: createIconInput
-                                            implicitWidth: 80
-                                            text: root.formGroupIcon
-                                            placeholderText: "󰅩"
-                                            keyForwardTargets: [createModalContainer, focusScope]
-                                            Keys.onEscapePressed: event => {
-                                                root.closeCreateGroup();
-                                                event.accepted = true;
-                                            }
-                                            onTextEdited: {
-                                                root.formGroupIcon = createIconInput.text;
-                                            }
-                                            onAccepted: {
-                                                createModalContainer.submitForm();
-                                            }
-                                        }
-
-                                        DankButton {
-                                            text: "Randomize"
-                                            iconName: "casino"
-                                            onClicked: {
-                                                root.formGroupIcon = root.getRandomNerdfontIcon();
-                                                createIconInput.text = root.formGroupIcon;
-                                            }
-                                        }
-
-                                        Item { Layout.fillWidth: true }
-                                    }
-
-                                    Row {
-                                        spacing: 6
-                                        Layout.fillWidth: true
-
-                                        Repeater {
-                                            model: ["󰅩", "󰈹", "󰝚", "󰒓", "󰊴", "󰭹", "󰠮", "󰀝", "󱄅", "󰣇"]
-
-                                            Rectangle {
-                                                width: 32
-                                                height: 32
-                                                radius: 16
-                                                color: iconPsetMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainer
-                                                border.color: root.formGroupIcon === modelData ? root.formGroupColor : "transparent"
-                                                border.width: 1.5
-
-                                                StyledText {
-                                                    anchors.centerIn: parent
-                                                    text: modelData
-                                                    font.pixelSize: 16
-                                                    color: Theme.surfaceText
-                                                }
-
-                                                MouseArea {
-                                                    id: iconPsetMouse
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onClicked: {
-                                                        root.formGroupIcon = modelData;
-                                                        createIconInput.text = modelData;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: Theme.spacingXS
-
-                                    StyledText {
-                                        text: "Color Accent"
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        font.weight: Font.Medium
-                                        color: Theme.surfaceVariantText
-                                    }
-
-                                    Row {
-                                        spacing: 8
-                                        Layout.fillWidth: true
-
-                                        Repeater {
-                                            model: root.colorPalette
-
-                                            Rectangle {
-                                                width: 28
-                                                height: 28
-                                                radius: 14
-                                                color: modelData
-                                                border.color: root.formGroupColor === modelData ? Theme.surfaceText : Theme.withAlpha(Theme.outlineVariant, 0.5)
-                                                border.width: root.formGroupColor === modelData ? 2.5 : 1
-
-                                                MouseArea {
-                                                    anchors.fill: parent
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onClicked: {
-                                                        root.formGroupColor = modelData;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    spacing: Theme.spacingM
-                                    visible: root.editingGroupId === 0
-
-                                    StyledText {
-                                        text: "Switch to group immediately"
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        color: Theme.surfaceText
-                                        Layout.fillWidth: true
-                                    }
-
-                                    DankToggle {
-                                        checked: root.formSwitchImmediate
-                                        onToggled: isChecked => {
-                                            root.formSwitchImmediate = isChecked;
-                                        }
-                                    }
-                                }
-
-                                Item { height: Theme.spacingS }
-
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    spacing: Theme.spacingM
-
-                                    Item { Layout.fillWidth: true }
-
-                                    DankButton {
-                                        text: "Cancel"
-                                        onClicked: root.closeCreateGroup()
-                                    }
-
-                                    DankButton {
-                                        text: root.editingGroupId > 0 ? "Save Changes" : "Create Group"
-                                        iconName: root.editingGroupId > 0 ? "check" : "add"
-                                        backgroundColor: root.formGroupColor || Theme.primary
-                                        textColor: Theme.surfaceContainer
-                                        onClicked: createModalContainer.submitForm()
-                                    }
-                                }
-                            }
-                        }
-
-                        function submitForm() {
-                            if (root.editingGroupId > 0) {
-                                root.updateGroup(root.editingGroupId, root.formGroupName, root.formGroupIcon, root.formGroupColor);
+                        shown: visible
+                        editingId: root.editingGroupId
+                        initialName: root.formGroupName
+                        initialIcon: root.formGroupIcon
+                        initialColor: root.formGroupColor
+                        initialSwitch: root.formSwitchImmediate
+                        colorList: root.colorPalette
+                        iconPool: root.nerdfontPool
+                        focusScopeItem: focusScope
+                        onSubmitted: (editingId, name, icon, color, switchImmediate) => {
+                            if (editingId > 0) {
+                                root.updateGroup(editingId, name, icon, color);
                             } else {
-                                root.createGroup(root.formGroupName, root.formGroupIcon, root.formGroupColor, root.formSwitchImmediate);
+                                root.createGroup(name, icon, color, switchImmediate);
                             }
                         }
-
-                        function submitCreateGroup() {
-                            submitForm();
-                        }
+                        onClosed: root.closeCreateGroup()
                     }
 
-                    Item {
+                    DeleteConfirmModal {
                         id: deleteConfirmContainer
                         anchors.centerIn: parent
                         width: Math.min(parent.width - 40, 460)
-                        implicitHeight: deleteCard.implicitHeight
+                        implicitHeight: surfaceImplicitHeight
                         visible: root.deleteConfirmOpen
-                        scale: visible ? 1.0 : 0.95
-                        opacity: visible ? 1.0 : 0.0
-
-                        Keys.onEscapePressed: event => {
-                            root.deleteConfirmOpen = false;
-                            event.accepted = true;
+                        shown: visible
+                        groupId: root.groupToDeleteId
+                        groupName: root.groupToDeleteName
+                        windowCount: root.groupToDeleteWindowCount
+                        onConfirmed: {
+                            const g = root.groupToDeleteId;
+                            root.closeDeleteConfirm();
+                            root.deleteGroup(g);
                         }
-
-                        Behavior on scale { NumberAnimation { duration: Theme.modalAnimationDuration } }
-                        Behavior on opacity { NumberAnimation { duration: Theme.modalAnimationDuration } }
-
-                        ElevationShadow {
-                            anchors.fill: parent
-                            level: Theme.elevationLevel3
-                            targetRadius: Theme.cornerRadius * 1.5
-                            targetColor: Theme.surfaceContainer
-                            shadowEnabled: Theme.elevationEnabled && SettingsData.modalElevationEnabled
-                        }
-
-                        Rectangle {
-                            id: deleteCard
-                            width: parent.width
-                            implicitHeight: deleteCol.implicitHeight + Theme.spacingXL * 2
-                            color: Theme.surfaceContainer
-                            radius: Theme.cornerRadius * 1.5
-                            border.color: Theme.outlineVariant
-                            border.width: 1
-                            clip: true
-
-                            ColumnLayout {
-                                id: deleteCol
-                                anchors.fill: parent
-                                anchors.margins: Theme.spacingXL
-                                spacing: Theme.spacingM
-
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    spacing: Theme.spacingS
-
-                                    DankIcon {
-                                        name: "warning"
-                                        size: 24
-                                        color: Theme.error
-                                    }
-
-                                    StyledText {
-                                        text: "Delete Group " + root.groupToDeleteName + "?"
-                                        font.pixelSize: Theme.fontSizeLarge
-                                        font.weight: Font.Bold
-                                        color: Theme.surfaceText
-                                    }
-                                }
-
-                                StyledText {
-                                    text: "This group has " + root.groupToDeleteWindowCount + " open window(s). Deleting it will safely move all its windows to Group 1."
-                                    font.pixelSize: Theme.fontSizeSmall
-                                    color: Theme.surfaceVariantText
-                                    wrapMode: Text.WordWrap
-                                    Layout.fillWidth: true
-                                }
-
-                                Item { height: Theme.spacingXS }
-
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    spacing: Theme.spacingM
-
-                                    Item { Layout.fillWidth: true }
-
-                                    DankButton {
-                                        text: "Cancel"
-                                        onClicked: {
-                                            root.deleteConfirmOpen = false;
-                                        }
-                                    }
-
-                                    DankButton {
-                                        text: "Delete & Move Windows"
-                                        iconName: "delete"
-                                        backgroundColor: Theme.error
-                                        textColor: Theme.surfaceContainer
-                                        onClicked: {
-                                            const g = root.groupToDeleteId;
-                                            root.deleteConfirmOpen = false;
-                                            root.deleteGroup(g);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        onClosed: root.closeDeleteConfirm()
                     }
 
                     FocusScope {
@@ -2992,15 +1839,9 @@ return M
 
                         Keys.onEscapePressed: event => {
                             if (root.isDraggingCard) {
-                                root.isDraggingCard = false;
-                                root.dragFromIndex = -1;
-                                root.dragTargetIndex = -1;
-                            } else if (root.deleteConfirmOpen) {
-                                root.deleteConfirmOpen = false;
-                            } else if (root.createModalOpen) {
-                                root.closeCreateGroup();
+                                dragCtrl.cancel();
                             } else {
-                                root.closeOverview();
+                                root.closeTopmost();
                             }
                             event.accepted = true;
                         }
@@ -3017,19 +1858,13 @@ return M
                             if (event.key >= Qt.Key_1 && event.key <= Qt.Key_9) {
                                 const targetId = event.key - Qt.Key_0;
                                 if (targetId <= root.groups.length) {
-                                    root.closeOverview();
-                                    Qt.callLater(() => {
-                                        root.switchToGroup(targetId);
-                                    });
+                                    root.switchAndClose(targetId);
                                     event.accepted = true;
                                     return;
                                 }
                             } else if (event.key === Qt.Key_0) {
                                 if (root.groups.length >= 10) {
-                                    root.closeOverview();
-                                    Qt.callLater(() => {
-                                        root.switchToGroup(10);
-                                    });
+                                    root.switchAndClose(10);
                                     event.accepted = true;
                                     return;
                                 }
@@ -3104,10 +1939,7 @@ return M
                                 } else {
                                     const chosen = root.groups[root.selectedOverviewIndex];
                                     if (chosen) {
-                                        root.closeOverview();
-                                        Qt.callLater(() => {
-                                            root.switchToGroup(chosen.id);
-                                        });
+                                        root.switchAndClose(chosen.id);
                                     }
                                 }
                                 event.accepted = true;
