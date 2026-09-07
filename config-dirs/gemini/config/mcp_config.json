@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+   "kindly-web-search": {
+      "serverUrl": "http://localhost:12000/sse",
+      "disabled": false
+    },
+    "searxng": {
+      "serverUrl": "http://localhost:12001/sse",
+      "disabled": false
+    },
+    "playwright": {
+      "serverUrl": "http://localhost:12002/mcp",
+      "disabled": false
+    }
+  }
+}

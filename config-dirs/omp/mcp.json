@@ -1,9 +1,17 @@
 {
   "$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json",
   "mcpServers": {
-    "remus": {
+    "kindly-web-search": {
       "type": "http",
-      "url": "http://127.0.0.1:12003/mcp"
+      "url": "http://localhost:12000/sse"
+    },
+    "searxng": {
+      "type": "http",
+      "url": "http://localhost:12001/sse"
+    },
+    "playwright": {
+      "type": "http",
+      "url": "http://localhost:12002/mcp"
     }
   },
   "disabledServers": [

@@ -8,6 +8,6 @@ theme:
   light: light
 setupVersion: 2
 advisor:
-  enabled: true
+  enabled: false
   syncBacklog: "1"
   immuneTurns: 0
