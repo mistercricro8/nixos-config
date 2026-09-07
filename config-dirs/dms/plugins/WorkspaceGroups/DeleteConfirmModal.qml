@@ -13,6 +13,8 @@ WGModalCard {
     signal confirmed
     signal closed
 
+    implicitHeight: deleteCol.implicitHeight + Theme.spacingXL * 2
+
     closedScale: 0.95
     useExpressiveCurves: false
 
@@ -21,7 +23,18 @@ WGModalCard {
         event.accepted = true;
     }
 
+    Keys.onReturnPressed: event => {
+        modal.confirmed();
+        event.accepted = true;
+    }
+
+    Keys.onEnterPressed: event => {
+        modal.confirmed();
+        event.accepted = true;
+    }
+
     ColumnLayout {
+        id: deleteCol
         anchors.fill: parent
         anchors.margins: Theme.spacingXL
         spacing: Theme.spacingM

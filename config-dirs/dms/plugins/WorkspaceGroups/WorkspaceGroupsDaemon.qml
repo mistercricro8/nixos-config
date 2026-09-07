@@ -1793,7 +1793,6 @@ return M
                         id: createModalContainer
                         anchors.centerIn: parent
                         width: Math.min(parent.width - 40, 520)
-                        implicitHeight: surfaceImplicitHeight
                         visible: root.createModalOpen
                         shown: visible
                         editingId: root.editingGroupId
@@ -1818,7 +1817,6 @@ return M
                         id: deleteConfirmContainer
                         anchors.centerIn: parent
                         width: Math.min(parent.width - 40, 460)
-                        implicitHeight: surfaceImplicitHeight
                         visible: root.deleteConfirmOpen
                         shown: visible
                         groupId: root.groupToDeleteId

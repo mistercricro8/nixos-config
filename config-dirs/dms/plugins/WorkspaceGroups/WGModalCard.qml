@@ -11,8 +11,10 @@ Item {
     property bool useExpressiveCurves: true
     property int shadowLevel: Theme.elevationLevel3
     property real surfaceRadius: Theme.cornerRadius * 1.5
-    readonly property alias surfaceImplicitHeight: surface.implicitHeight
+    readonly property alias surfaceImplicitHeight: card.implicitHeight
     default property alias content: surface.data
+
+    height: implicitHeight
 
     transformOrigin: Item.Center
     opacity: shown ? 1 : 0

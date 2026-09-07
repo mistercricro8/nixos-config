@@ -19,6 +19,8 @@ WGModalCard {
     signal submitted(int editingId, string name, string icon, string color, bool switchImmediate)
     signal closed
 
+    implicitHeight: formCol.implicitHeight + Theme.spacingXL * 2
+
     property string formName: ""
     property string formIcon: Defaults.FALLBACK_ICON
     property string formColor: Defaults.FALLBACK_COLOR
@@ -32,12 +34,30 @@ WGModalCard {
         modal.submitted(modal.editingId, formName, formIcon, formColor, formSwitch);
     }
 
+    function resetForm() {
+        formName = initialName;
+        formIcon = initialIcon || Defaults.FALLBACK_ICON;
+        formColor = initialColor || Defaults.FALLBACK_COLOR;
+        formSwitch = initialSwitch;
+        createNameInput.text = formName;
+        createIconInput.text = formIcon;
+    }
+
     onVisibleChanged: {
         if (visible) {
-            formName = initialName;
-            formIcon = initialIcon || Defaults.FALLBACK_ICON;
-            formColor = initialColor || Defaults.FALLBACK_COLOR;
-            formSwitch = initialSwitch;
+            resetForm();
+        }
+    }
+
+    onFormNameChanged: {
+        if (createNameInput.text !== formName) {
+            createNameInput.text = formName;
+        }
+    }
+
+    onFormIconChanged: {
+        if (createIconInput.text !== formIcon) {
+            createIconInput.text = formIcon;
         }
     }
 
@@ -50,6 +70,7 @@ WGModalCard {
     }
 
     ColumnLayout {
+        id: formCol
         anchors.fill: parent
         anchors.margins: Theme.spacingXL
         spacing: Theme.spacingL
