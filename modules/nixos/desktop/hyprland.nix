@@ -130,7 +130,6 @@
           hyprlock
           hyprshot
           hyprcursor
-          swaynotificationcenter
           wl-clipboard
           cliphist
           libnotify
