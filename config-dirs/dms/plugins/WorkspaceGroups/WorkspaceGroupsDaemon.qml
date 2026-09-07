@@ -768,18 +768,6 @@ PluginComponent {
         root.closeOverview();
     }
 
-    function routeFocus() {
-        Qt.callLater(() => {
-            if (root.deleteConfirmOpen) {
-                deleteConfirmContainer.forceActiveFocus();
-            } else if (root.createModalOpen) {
-                createModalContainer.focusNameInput();
-            } else if (root.overviewOpen) {
-                focusScope.forceActiveFocus();
-                overviewGrid.ensureVisible(root.selectedOverviewIndex);
-            }
-        });
-    }
 
     function clampSelection() {
         const count = root.groups ? root.groups.length : 0;
@@ -816,7 +804,6 @@ PluginComponent {
         root.formGroupIcon = target?.icon || "󰅩";
         root.formGroupColor = target?.color || "#89b4fa";
         root.formSwitchImmediate = false;
-        root.overviewOpen = false;
         root.createModalOpen = true;
         Qt.callLater(() => {
             root.contentVisible = true;
@@ -1108,6 +1095,26 @@ PluginComponent {
     function shiftHigherGroups(endWs, totalPerGroup, activeWorkspacesSet, allToplevels) {
         const batchCommands = [];
         if (root.isLua) {
+            const startWs = endWs - totalPerGroup + 1;
+            const wsWithWindows = {};
+            for (let i = 0; i < allToplevels.length; i++) {
+                const top = allToplevels[i];
+                if (!top) continue;
+                const wid = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+                if (wid && wid > 0) wsWithWindows[wid] = true;
+            }
+            const staleList = [];
+            for (const wsIdStr in activeWorkspacesSet) {
+                const wsId = parseInt(wsIdStr);
+                if (wsId >= startWs && wsId <= endWs && !wsWithWindows[wsId]) {
+                    staleList.push(wsId);
+                }
+            }
+            staleList.sort((a, b) => a - b);
+            for (let i = 0; i < staleList.length; i++) {
+                const wsId = staleList[i];
+                batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${wsId}', id = ${wsId + 200000} })`);
+            }
             const higherWsList = [];
             for (const wsIdStr in activeWorkspacesSet) {
                 const wsId = parseInt(wsIdStr);
@@ -1118,8 +1125,12 @@ PluginComponent {
             higherWsList.sort((a, b) => a - b);
             for (let i = 0; i < higherWsList.length; i++) {
                 const wsId = higherWsList[i];
+                batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${wsId}', id = ${wsId + 100000} })`);
+            }
+            for (let i = 0; i < higherWsList.length; i++) {
+                const wsId = higherWsList[i];
                 const shiftedWs = wsId - totalPerGroup;
-                batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${wsId}', id = ${shiftedWs} })`);
+                batchCommands.push(`dispatch hl.dsp.workspace.change_id({ workspace = '${wsId + 100000}', id = ${shiftedWs} })`);
             }
         } else {
             for (let i = 0; i < allToplevels.length; i++) {
@@ -1640,6 +1651,19 @@ return M
                         }
                     }
 
+                    function routeFocusHere() {
+                        Qt.callLater(() => {
+                            if (root.deleteConfirmOpen) {
+                                deleteConfirmContainer.forceActiveFocus();
+                            } else if (root.createModalOpen) {
+                                createModalContainer.focusNameInput();
+                            } else if (root.overviewOpen) {
+                                focusScope.forceActiveFocus();
+                                overviewGrid.ensureVisible(root.selectedOverviewIndex);
+                            }
+                        });
+                    }
+
                     Connections {
                         target: root
                         function onContentVisibleChanged() {
@@ -1648,7 +1672,7 @@ return M
                                 if (CompositorService.useHyprlandFocusGrab) {
                                     delayedGrabTimer.start();
                                 }
-                                root.routeFocus();
+                                routeFocusHere();
                             } else {
                                 delayedGrabTimer.stop();
                                 grab.active = false;
@@ -1664,18 +1688,18 @@ return M
                         function onCreateModalOpenChanged() {
                             if (root.contentVisible) {
                                 if (root.createModalOpen) {
-                                    root.routeFocus();
+                                    routeFocusHere();
                                 } else if (root.overviewOpen) {
-                                    root.routeFocus();
+                                    routeFocusHere();
                                 }
                             }
                         }
                         function onDeleteConfirmOpenChanged() {
                             if (root.contentVisible) {
                                 if (root.deleteConfirmOpen) {
-                                    root.routeFocus();
+                                    routeFocusHere();
                                 } else if (root.overviewOpen) {
-                                    root.routeFocus();
+                                    routeFocusHere();
                                 }
                             }
                         }

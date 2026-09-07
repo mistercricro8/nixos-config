@@ -28,6 +28,8 @@ WGModalCard {
 
     function focusNameInput() {
         createNameInput.forceActiveFocus();
+        if (createNameInput.selectAll)
+            createNameInput.selectAll();
     }
 
     function submitForm() {
