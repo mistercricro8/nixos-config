@@ -4,12 +4,16 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    sandbox.url = "path:../extra";
+    sandbox.inputs.nixpkgs.follows = "nixpkgs";
+    sandbox.inputs.flake-utils.follows = "flake-utils";
   };
 
   outputs =
     {
       nixpkgs,
       flake-utils,
+      sandbox,
       ...
     }:
     let
@@ -19,6 +23,7 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        sandboxEnv = sandbox.lib.mkSandbox { inherit pkgs; };
       in
       {
         devShells.default = pkgs.mkShell {
@@ -32,6 +37,7 @@
             nix-output-monitor
             nixd
             nixfmt
+            sandboxEnv.runner
           ];
           buildInputs = with pkgs; [ bashInteractive ];
           shellHook = ''
