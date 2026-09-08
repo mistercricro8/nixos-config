@@ -17,6 +17,7 @@ in
           (nixos."programs/generic/gui-utils" { inherit user; })
           (nixos."programs/generic/media-utils" { inherit user; })
           (nixos."development/tools" { inherit user; })
+          (nixos."development/semester" { inherit user; })
           (nixos."development/ai" { inherit user; })
           (nixos."programs/mpv" { inherit user; })
           (nixos."programs/obs" { inherit user; })
