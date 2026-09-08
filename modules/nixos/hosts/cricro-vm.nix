@@ -67,7 +67,7 @@
 
       networking.firewall = {
         allowedUDPPorts = [
-          6081 # Cilium Geneve overlay
+          8472 # Cilium VXLAN overlay
           41641 # tailscale
         ];
         allowedTCPPorts = [
@@ -99,17 +99,9 @@
             to = 28099;
           }
         ];
-        extraCommands = ''
-          iptables -A FORWARD -i docker0 -j ACCEPT
-          iptables -A FORWARD -o docker0 -j ACCEPT
-          iptables -A FORWARD -i br-+ -j ACCEPT
-          iptables -A FORWARD -o br-+ -j ACCEPT
-          iptables -A FORWARD -i cni0 -j ACCEPT
-          iptables -A FORWARD -o cni0 -j ACCEPT
-        '';
         trustedInterfaces = [
+          "tailscale0"
           "docker0"
-          "cni0"
           "cilium_host"
           "cilium_vxlan"
         ];
