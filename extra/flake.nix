@@ -6,7 +6,7 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { nixpkgs, flake-utils, ... }:
+  outputs = { ... }:
     let
       mkSandbox =
         { pkgs
@@ -25,7 +25,7 @@
 
           ldLibraryPath = pkgs.lib.makeLibraryPath runtimeLibs;
 
-          usrEnv = pkgs.buildEnv { name = "sandbox-usr"; paths = sandboxPkgs; };
+          usrEnv = pkgs.buildEnv { name = "sandbox-usr"; paths = sandboxPkgs ++ (with pkgs; [ bashInteractive coreutils ncurses ]); };
 
           isAarch64 = pkgs.stdenv.hostPlatform.isAarch64;
           loaderFile = if isAarch64 then AARCH64_LOADER_FILE else X86_64_LOADER_FILE;
@@ -144,16 +144,5 @@
     in
     {
       lib = { inherit mkSandbox; };
-    } // flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
-        demo = mkSandbox { inherit pkgs; };
-      in
-      {
-        packages.enter-sandbox-demo = demo.runner;
-        devShells.default = pkgs.mkShell {
-          packages = [ demo.runner ];
-          shellHook = demo.shellHook;
-        };
-      });
+    };
 }

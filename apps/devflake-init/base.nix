@@ -5,9 +5,13 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    sandbox.url = "github:mistercricro8/nixos-config?dir=extra";
-    sandbox.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    sandbox.inputs.flake-utils.follows = "flake-utils";
+    sandbox = {
+      url = "github:mistercricro8/nixos-config?dir=extra";
+      inputs = {
+        nixpkgs.follows = "nixpkgs-unstable";
+        flake-utils.follows = "flake-utils";
+      };
+    };
   };
 
   outputs =
@@ -29,28 +33,32 @@
           inherit system;
           config.allowUnfree = true;
         };
-        sandboxEnv = sandbox.lib.mkSandbox { inherit pkgs; };
+        shellPkgs = pkgs.lib.flatten [
+          (with pkgs; [
+          ])
+          (with unstable; [
+          ])
+        ];
+        ldPkgs = with pkgs; [
+          stdenv.cc.cc
+          zlib
+          glib
+          libxcb
+          libglvnd
+        ];
+        sandboxEnv = sandbox.lib.mkSandbox {
+          inherit pkgs;
+          sandboxPkgs = shellPkgs;
+          runtimeLibs = ldPkgs;
+          hostAllowedBins = [ "agy" "docker" ];
+        };
       in
       {
         devShells.default = pkgs.mkShell {
-          LD_LIBRARY_PATH =
-            with pkgs;
-            lib.makeLibraryPath [
-              stdenv.cc.cc
-              zlib
-              glib
-              libxcb
-              libglvnd
-            ];
-
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath ldPkgs;
           packages = pkgs.lib.flatten [
-            (with pkgs; [
-            ])
-            (with unstable; [
-            ])
-            [
-              sandboxEnv.runner
-            ]
+            shellPkgs
+            [ sandboxEnv.runner ]
           ];
           shellHook = "";
           buildInputs = [ pkgs.bashInteractive ];
