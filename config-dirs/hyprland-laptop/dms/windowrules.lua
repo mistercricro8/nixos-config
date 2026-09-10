@@ -1,27 +1,50 @@
-hl.workspace_rule({ workspace = "f[1]", gaps_out = 0, gaps_in = 0 })
+-- DMS Window Rules — managed by DankMaterialShell
+-- Do not edit manually; changes may be overwritten
 
-hl.window_rule({ match = { float = false, workspace = "f[1]" }, border_size = 2, rounding = 0 })
+-- DMS-RULE: id=dms_rule_0, name=
+hl.window_rule({ rounding = 0 })
+
+-- DMS-RULE: id=dms_rule_1, name=
 hl.window_rule({ match = { class = "^(org\\.wezfurlong\\.wezterm)$" }, tile = true })
+
+-- DMS-RULE: id=dms_rule_2, name=
 hl.window_rule({ match = { class = "^(org\\.gnome\\.)" }, rounding = 12 })
+
+-- DMS-RULE: id=dms_rule_3, name=
 hl.window_rule({ match = { class = "^(gnome-control-center)$" }, tile = true })
+
+-- DMS-RULE: id=dms_rule_4, name=
 hl.window_rule({ match = { class = "^(pavucontrol)$" }, tile = true })
+
+-- DMS-RULE: id=dms_rule_5, name=
 hl.window_rule({ match = { class = "^(nm-connection-editor)$" }, tile = true })
+
+-- DMS-RULE: id=dms_rule_6, name=
 hl.window_rule({ match = { class = "^(org\\.gnome\\.Calculator)$" }, float = true })
+
+-- DMS-RULE: id=dms_rule_7, name=
 hl.window_rule({ match = { class = "^(gnome-calculator)$" }, float = true })
+
+-- DMS-RULE: id=dms_rule_8, name=
 hl.window_rule({ match = { class = "^(galculator)$" }, float = true })
+
+-- DMS-RULE: id=dms_rule_9, name=
 hl.window_rule({ match = { class = "^(blueman-manager)$" }, float = true })
+
+-- DMS-RULE: id=dms_rule_10, name=
 hl.window_rule({ match = { class = "^(org\\.gnome\\.Nautilus)$" }, float = true })
+
+-- DMS-RULE: id=dms_rule_11, name=
 hl.window_rule({ match = { class = "^(xdg-desktop-portal)$" }, float = true })
-hl.window_rule({
-  match = { class = "^(steam)$", title = "^(notificationtoasts)" },
-  no_initial_focus = true,
-  pin = true,
-})
-hl.window_rule({
-  match = { class = "^(firefox)$", title = "^(Picture-in-Picture)$" },
-  float = true,
-})
+
+-- DMS-RULE: id=dms_rule_12, name=
+hl.window_rule({ match = { class = "^(steam)$", title = "^(notificationtoasts)" }, no_focus = true, pin = true })
+
+-- DMS-RULE: id=dms_rule_13, name=
+hl.window_rule({ match = { class = "^(firefox)$", title = "^(Picture-in-Picture)$" }, float = true })
+
+-- DMS-RULE: id=dms_rule_14, name=
 hl.window_rule({ match = { class = "^(zoom)$" }, float = true })
 
-hl.layer_rule({ match = { namespace = "^(quickshell)$" }, no_anim = true })
-hl.layer_rule({ match = { namespace = "^dms:.*" }, no_anim = true })
+-- DMS-RULE: id=dms-floating-windows, name=DMS Floating Windows
+hl.window_rule({ match = { class = "^com.danklinux.dms$" }, float = true })

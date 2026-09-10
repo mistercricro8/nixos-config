@@ -15,6 +15,7 @@
             opencode
             github-copilot-cli
             antigravity-cli
+            tgrep
           ])
           [ omp ]
         ]

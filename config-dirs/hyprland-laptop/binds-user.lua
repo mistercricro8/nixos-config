@@ -54,8 +54,8 @@ hl.bind("XF86AudioMute", function() hl.dispatch(hl.dsp.exec_cmd("wpctl set-mute 
 hl.bind("XF86MonBrightnessDown", function() hl.dispatch(hl.dsp.exec_cmd("brightnessctl s 5%-")) end, { repeating = true })
 hl.bind("XF86MonBrightnessUp", function() hl.dispatch(hl.dsp.exec_cmd("brightnessctl s 5%+")) end, { repeating = true })
 
-hl.bind("Print", function() hl.dispatch(hl.dsp.exec_cmd("hyprshot -z -m active -m window")) end)
-hl.bind("SHIFT + Print", function() hl.dispatch(hl.dsp.exec_cmd("hyprshot -z -m region")) end)
+hl.bind("Print", function() hl.dispatch(hl.dsp.exec_cmd("dms screenshot window")) end)
+hl.bind("SHIFT + Print", function() hl.dispatch(hl.dsp.exec_cmd("dms screenshot")) end)
 hl.bind(mainMod .. " + V", function() hl.dispatch(hl.dsp.exec_cmd("dms ipc call clipboard toggle")) end)
 hl.bind(mainMod .. " + code:95",
   function() hl.dispatch(hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" })) end)

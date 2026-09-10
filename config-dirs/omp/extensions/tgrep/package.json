@@ -1,0 +1,17 @@
+{
+  "name": "omp-tgrep-plugin",
+  "version": "0.1.0",
+  "description": "OMP extension plugin exposing microsoft/tgrep indexed search as agent tools",
+  "type": "module",
+  "license": "MIT",
+  "omp": {
+    "extensions": ["./src/tgrep.ts"]
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@oh-my-pi/pi-coding-agent": "^18.1.16",
+    "@types/node": "^22.20.2"
+  }
+}

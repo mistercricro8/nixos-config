@@ -126,7 +126,6 @@
           hyprpaper
           hypridle
           hyprlock
-          hyprshot
           hyprcursor
           wl-clipboard
           cliphist
