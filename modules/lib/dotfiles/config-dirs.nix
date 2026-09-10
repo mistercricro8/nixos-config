@@ -22,12 +22,6 @@
     dms = {
       path = ".config/DankMaterialShell";
     };
-    dms-gtk-3 = {
-      path = ".config/gtk-3.0";
-    };
-    dms-gtk-4 = {
-      path = ".config/gtk-4.0";
-    };
     dms-kde = {
       path = ".config";
     };

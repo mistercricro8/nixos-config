@@ -46,6 +46,7 @@
           wineWow64Packages.stable
           winetricks
           zellij
+          tgrep
         ]
       );
 

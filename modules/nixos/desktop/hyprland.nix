@@ -14,7 +14,7 @@
     {
       imports = [
         inputs.dms.nixosModules.dank-material-shell
-        inputs.dms.nixosModules.greeter
+        inputs.dank-greeter.nixosModules.default
       ];
 
       programs.hyprland = {
@@ -32,8 +32,6 @@
         "scripts"
         "hyprland"
         "dms"
-        "dms-gtk-3"
-        "dms-gtk-4"
         "dms-qt6ct"
         "dms-kde"
         "backgrounds"
@@ -48,13 +46,13 @@
         };
       };
 
-      programs.dank-material-shell.greeter = {
+      programs.dms-greeter = {
         enable = true;
         compositor.name = "hyprland";
         # TODO: remove when dms generates lua config
-        compositor.customConfig = ''
-          hl.env("DMS_RUN_GREETER", "1")
-        '';
+        # compositor.customConfig = ''
+        #   hl.env("DMS_RUN_GREETER", "1")
+        # '';
         configHome = "/home/cricro";
       };
 
