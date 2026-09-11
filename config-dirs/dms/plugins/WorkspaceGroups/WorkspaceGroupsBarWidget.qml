@@ -62,6 +62,24 @@ PluginComponent {
         }
     }
 
+    property int _lastActiveWsFromEvent: Defaults.INVALID_WORKSPACE_ID
+
+    function getHyprlandRawEventParts(event, argumentCount) {
+        if (!event) return [];
+        try {
+            if (typeof event.parse === "function") {
+                const parsed = event.parse(argumentCount);
+                if (parsed && parsed.length !== undefined)
+                    return parsed;
+            }
+        } catch (e) {}
+        if (event.data !== undefined && event.data !== null) {
+            const data = String(event.data);
+            return data.length > 0 ? data.split(",") : [];
+        }
+        return [];
+    }
+
     Connections {
         target: Hyprland
         function onToplevelsChanged() {
@@ -74,7 +92,24 @@ PluginComponent {
             root._toplevelsTrigger++;
         }
         function onRawEvent(event) {
-            if (event.name === "workspace" || event.name === "focusedmon" || event.name === "moveworkspace") {
+            if (event.name === Defaults.EVENT_WORKSPACE || event.name === Defaults.EVENT_WORKSPACE_V2 ||
+                event.name === Defaults.EVENT_FOCUSED_MON || event.name === Defaults.EVENT_FOCUSED_MON_V2 ||
+                event.name === Defaults.EVENT_MOVE_WORKSPACE) {
+                Hyprland.refreshMonitors();
+                let hintWs = Defaults.INVALID_WORKSPACE_ID;
+                if (event.name === Defaults.EVENT_WORKSPACE_V2) {
+                    const parts = root.getHyprlandRawEventParts(event, 2);
+                    if (parts.length > 0) hintWs = WGMath.resolveWorkspaceId(parts[0]);
+                } else if (event.name === Defaults.EVENT_WORKSPACE) {
+                    const parts = root.getHyprlandRawEventParts(event, 1);
+                    if (parts.length > 0) hintWs = WGMath.resolveWorkspaceId(parts[0]);
+                } else if (event.name === Defaults.EVENT_FOCUSED_MON_V2 || event.name === Defaults.EVENT_FOCUSED_MON) {
+                    const parts = root.getHyprlandRawEventParts(event, 2);
+                    if (parts.length > 1) hintWs = WGMath.resolveWorkspaceId(parts[1]);
+                }
+                if (hintWs > 0) {
+                    root._lastActiveWsFromEvent = hintWs;
+                }
                 root._toplevelsTrigger++;
             }
         }
@@ -115,13 +150,25 @@ PluginComponent {
 
     readonly property int activeWorkspaceIdOnThisMon: {
         root._toplevelsTrigger;
+        if (root._lastActiveWsFromEvent > 0) {
+            const K = root.workspacesPerMonitor || 10;
+            const M = Math.max(1, root.monitorCount);
+            const mIdx = root.getMonitorIndex();
+            if (WGMath.isWorkspaceInRange(root._lastActiveWsFromEvent, root.activeGroupIndex, mIdx, K, M)) {
+                return root._lastActiveWsFromEvent;
+            }
+        }
         const mon = (Hyprland.monitors?.values || []).find(m => m.name === root.screenName);
-        const monWs = WGMath.resolveWorkspaceId(mon?.activeWorkspace);
+        const monWs = WGMath.resolveWorkspaceId(mon?.activeWorkspace ?? mon);
         if (monWs > 0) return monWs;
-        const focusedWs = WGMath.resolveWorkspaceId(Hyprland.focusedWorkspace);
+        const focusedWs = WGMath.resolveWorkspaceId(Hyprland.focusedMonitor);
         if (focusedWs > 0) return focusedWs;
-        return 1;
+        const fallbackWs = WGMath.resolveWorkspaceId(Hyprland.focusedWorkspace);
+        if (fallbackWs > 0) return fallbackWs;
+        return root.getTargetWorkspaceId(Defaults.DEFAULT_SUB_WORKSPACE_INDEX);
     }
+
+
 
     readonly property var subWorkspacesList: {
         root._toplevelsTrigger;

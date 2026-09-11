@@ -65,3 +65,12 @@ var VERB_GET_GROUPS = "getGroups";
 var VERB_SAVE_STATE = "saveState";
 var VERB_RECOVER_ORPHANS = "recoverOrphanGroups";
 var VERB_WRITE_LUA = "writeLuaConfig";
+
+var INVALID_WORKSPACE_ID = -1;
+var DEFAULT_SUB_WORKSPACE_INDEX = 1;
+
+var EVENT_WORKSPACE = "workspace";
+var EVENT_WORKSPACE_V2 = "workspacev2";
+var EVENT_FOCUSED_MON = "focusedmon";
+var EVENT_FOCUSED_MON_V2 = "focusedmonv2";
+var EVENT_MOVE_WORKSPACE = "moveworkspace";

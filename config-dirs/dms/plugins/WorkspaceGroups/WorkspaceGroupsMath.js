@@ -83,85 +83,102 @@ function clampWsPerMonitor(v) {
     return Math.max(Defaults.WS_MIN, Math.min(Defaults.WS_MAX, n));
 }
 
+var INVALID_WORKSPACE_ID = Defaults.INVALID_WORKSPACE_ID;
+
 function parseGroupId(s) {
     var n = parseInt(s, 10);
     if (isNaN(n) || n < 1)
-        return -1;
+        return Defaults.INVALID_WORKSPACE_ID;
     return n;
 }
 
 function parseIndex(s) {
     var n = parseInt(s, 10);
     if (isNaN(n) || n < 0)
-        return -1;
+        return Defaults.INVALID_WORKSPACE_ID;
     return n;
 }
 
 function resolveWorkspaceId(obj) {
     if (obj === null || obj === undefined) {
-        return -1;
+        return Defaults.INVALID_WORKSPACE_ID;
     }
 
     if (typeof obj === "number") {
-        return (!isNaN(obj) && obj > 0) ? Math.floor(obj) : -1;
+        return (!isNaN(obj) && obj > 0) ? Math.floor(obj) : Defaults.INVALID_WORKSPACE_ID;
     }
 
     if (typeof obj === "string") {
         var parsedStr = parseInt(obj, 10);
-        return (!isNaN(parsedStr) && parsedStr > 0) ? parsedStr : -1;
+        return (!isNaN(parsedStr) && parsedStr > 0) ? parsedStr : Defaults.INVALID_WORKSPACE_ID;
     }
 
-    var wsTarget = null;
-    if (obj.workspace) {
-        wsTarget = obj.workspace;
-    } else if (obj.lastIpcObject && obj.lastIpcObject.workspace) {
-        wsTarget = obj.lastIpcObject.workspace;
-    } else if (obj.activeWorkspace) {
-        wsTarget = obj.activeWorkspace;
-    } else {
-        wsTarget = obj;
+    if (obj.activeWorkspace !== undefined && obj.activeWorkspace !== null) {
+        var resActive = resolveWorkspaceId(obj.activeWorkspace);
+        if (resActive > 0) {
+            return resActive;
+        }
+    }
+    if (obj.lastIpcObject !== undefined && obj.lastIpcObject !== null &&
+        obj.lastIpcObject.activeWorkspace !== undefined && obj.lastIpcObject.activeWorkspace !== null) {
+        var resIpcActive = resolveWorkspaceId(obj.lastIpcObject.activeWorkspace);
+        if (resIpcActive > 0) {
+            return resIpcActive;
+        }
     }
 
-    if (wsTarget.name !== undefined && wsTarget.name !== null && typeof wsTarget.name === "string") {
-        var parsedName = parseInt(wsTarget.name, 10);
+    var isMonitor = (obj.activeWorkspace !== undefined) ||
+                    (obj.model !== undefined) ||
+                    (obj.make !== undefined) ||
+                    (obj.refreshRate !== undefined) ||
+                    (obj.screen !== undefined) ||
+                    (obj.screenName !== undefined) ||
+                    (obj.availableGeometry !== undefined) ||
+                    (obj.lastIpcObject !== undefined && obj.lastIpcObject !== null &&
+                     (obj.lastIpcObject.activeWorkspace !== undefined || obj.lastIpcObject.model !== undefined));
+
+    if (isMonitor) {
+        return Defaults.INVALID_WORKSPACE_ID;
+    }
+
+    if (obj.workspace !== undefined && obj.workspace !== null) {
+        var resWs = resolveWorkspaceId(obj.workspace);
+        if (resWs > 0) {
+            return resWs;
+        }
+    }
+    if (obj.lastIpcObject !== undefined && obj.lastIpcObject !== null &&
+        obj.lastIpcObject.workspace !== undefined && obj.lastIpcObject.workspace !== null) {
+        var resIpcWs = resolveWorkspaceId(obj.lastIpcObject.workspace);
+        if (resIpcWs > 0) {
+            return resIpcWs;
+        }
+    }
+
+    if (obj.id !== undefined && obj.id !== null && typeof obj.id === "number" && obj.id > 0) {
+        return Math.floor(obj.id);
+    }
+
+    if (obj.name !== undefined && obj.name !== null && typeof obj.name === "string") {
+        var parsedName = parseInt(obj.name, 10);
         if (!isNaN(parsedName) && parsedName > 0) {
             return parsedName;
         }
     }
 
-    if (wsTarget.address !== undefined && wsTarget.address !== null) {
-        var parsedAddr = parseInt(wsTarget.address, 10);
-        if (!isNaN(parsedAddr) && parsedAddr > 0) {
-            return parsedAddr;
+    if (obj.lastIpcObject !== undefined && obj.lastIpcObject !== null) {
+        var ipc = obj.lastIpcObject;
+        if (ipc.id !== undefined && ipc.id !== null && typeof ipc.id === "number" && ipc.id > 0) {
+            return Math.floor(ipc.id);
         }
-    }
-
-    if (wsTarget.id !== undefined && wsTarget.id !== null && typeof wsTarget.id === "number" && wsTarget.id > 0) {
-        return wsTarget.id;
-    }
-
-    if (wsTarget.lastIpcObject) {
-        var ipc = wsTarget.lastIpcObject;
         if (ipc.name !== undefined && ipc.name !== null) {
             var parsedIpcName = parseInt(ipc.name, 10);
             if (!isNaN(parsedIpcName) && parsedIpcName > 0) {
                 return parsedIpcName;
             }
         }
-        if (ipc.address !== undefined && ipc.address !== null) {
-            var parsedIpcAddr = parseInt(ipc.address, 10);
-            if (!isNaN(parsedIpcAddr) && parsedIpcAddr > 0) {
-                return parsedIpcAddr;
-            }
-        }
-        if (ipc.id !== undefined && ipc.id !== null && typeof ipc.id === "number" && ipc.id > 0) {
-            return ipc.id;
-        }
     }
 
-    if (typeof obj.id === "number" && obj.id > 0) {
-        return obj.id;
-    }
-
-    return -1;
+    return Defaults.INVALID_WORKSPACE_ID;
 }
+
