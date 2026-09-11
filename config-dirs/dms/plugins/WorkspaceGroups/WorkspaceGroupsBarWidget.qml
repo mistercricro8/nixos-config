@@ -6,6 +6,7 @@ import qs.Services
 import qs.Widgets
 import qs.Modules.Plugins
 import "WorkspaceGroupsDefaults.js" as Defaults
+import "WorkspaceGroupsMath.js" as WGMath
 
 PluginComponent {
     id: root
@@ -115,7 +116,11 @@ PluginComponent {
     readonly property int activeWorkspaceIdOnThisMon: {
         root._toplevelsTrigger;
         const mon = (Hyprland.monitors?.values || []).find(m => m.name === root.screenName);
-        return mon?.activeWorkspace?.id || Hyprland.focusedWorkspace?.id || 1;
+        const monWs = WGMath.resolveWorkspaceId(mon?.activeWorkspace);
+        if (monWs > 0) return monWs;
+        const focusedWs = WGMath.resolveWorkspaceId(Hyprland.focusedWorkspace);
+        if (focusedWs > 0) return focusedWs;
+        return 1;
     }
 
     readonly property var subWorkspacesList: {
@@ -147,12 +152,12 @@ PluginComponent {
         const toplevels = Hyprland.toplevels?.values || [];
         for (let i = 0; i < toplevels.length; i++) {
             const tl = toplevels[i];
-            const wId = tl.workspace?.id ?? tl.lastIpcObject?.workspace?.id;
+            const wId = WGMath.resolveWorkspaceId(tl);
             if (wId === wsId)
                 return true;
         }
         const workspaces = Hyprland.workspaces?.values || [];
-        const foundWs = workspaces.find(w => w.id === wsId);
+        const foundWs = workspaces.find(w => WGMath.resolveWorkspaceId(w) === wsId);
         if (foundWs && (foundWs.windows > 0 || (foundWs.lastIpcObject && foundWs.lastIpcObject.windows > 0))) {
             return true;
         }

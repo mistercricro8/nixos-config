@@ -58,6 +58,7 @@ PluginComponent {
     property int workspacesPerMonitor: (pluginData && pluginData.workspacesPerMonitor) ? pluginData.workspacesPerMonitor : 10
     property var monitorPriority: (pluginData && pluginData.monitorPriority) ? pluginData.monitorPriority : ["HDMI-A-1", "DP-1"]
     property bool hideEmptyWorkspaces: (pluginData && pluginData.hideEmptyWorkspaces !== undefined) ? pluginData.hideEmptyWorkspaces : true
+    property int _toplevelsTrigger: 0
 
     property int activeGroupIndex: 1
     property var lastActiveWorkspaces: ({})
@@ -216,22 +217,34 @@ PluginComponent {
     Connections {
         target: Hyprland
         function onFocusedWorkspaceChanged() {
+            root._toplevelsTrigger++;
             root.syncFromCurrentWorkspace();
         }
         function onWorkspacesChanged() {
+            root._toplevelsTrigger++;
             root.notifyState();
+        }
+        function onToplevelsChanged() {
+            root._toplevelsTrigger++;
+        }
+        function onRawEvent(event) {
+            const name = event.name;
+            if (name === "openwindow" || name === "closewindow" || name === "movewindow" || name === "movewindowv2" || name === "workspace" || name === "focusedmon") {
+                root._toplevelsTrigger++;
+            }
         }
     }
 
     Connections {
         target: Hyprland.monitors
         function onValuesChanged() {
+            root._toplevelsTrigger++;
             root.notifyState();
         }
     }
 
     function syncFromCurrentWorkspace() {
-        const activeWs = Hyprland.focusedWorkspace?.id;
+        const activeWs = WGMath.resolveWorkspaceId(Hyprland.focusedWorkspace);
         if (!activeWs || activeWs < 1)
             return;
 
@@ -357,7 +370,7 @@ PluginComponent {
         for (let i = 0; i < wses.length; i++) {
             const ws = wses[i];
             if (!ws) continue;
-            const wid = ws.id;
+            const wid = WGMath.resolveWorkspaceId(ws);
             if (wid && wid > 0) {
                 const winCount = (ws.windows !== undefined) ? ws.windows : (ws.lastIpcObject?.windows || 0);
                 const isPersistent = (ws.ispersistent === true) || (ws.lastIpcObject?.ispersistent === true);
@@ -385,7 +398,7 @@ PluginComponent {
         for (let i = 0; i < tops.length; i++) {
             const top = tops[i];
             if (!top) continue;
-            const wid = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+            const wid = WGMath.resolveWorkspaceId(top);
             if (wid !== undefined && wid > 0) {
                 const g = rawGroupFromWorkspace(wid);
                 if (g > maxG)
@@ -442,8 +455,8 @@ PluginComponent {
         const mons = getSortedMonitors();
         for (let i = 0; i < mons.length; i++) {
             const m = mons[i];
-            const curWs = m.activeWorkspace ? m.activeWorkspace.id : null;
-            if (curWs && root.isWorkspaceValidForGroupAndMonitor(curWs, root.activeGroupIndex, i)) {
+            const curWs = m.activeWorkspace ? WGMath.resolveWorkspaceId(m.activeWorkspace) : -1;
+            if (curWs > 0 && root.isWorkspaceValidForGroupAndMonitor(curWs, root.activeGroupIndex, i)) {
                 if (!root.lastActiveWorkspaces[root.activeGroupIndex])
                     root.lastActiveWorkspaces[root.activeGroupIndex] = {};
                 root.lastActiveWorkspaces[root.activeGroupIndex][m.name] = curWs;
@@ -503,8 +516,8 @@ PluginComponent {
         for (let i = 0; i < allToplevels.length; i++) {
             const top = allToplevels[i];
             if (!top) continue;
-            const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
-            if (wsId !== undefined && wsId >= range.start && wsId <= range.end) {
+            const wsId = WGMath.resolveWorkspaceId(top);
+            if (wsId > 0 && wsId >= range.start && wsId <= range.end) {
                 list.push(top);
             }
         }
@@ -516,8 +529,8 @@ PluginComponent {
         for (let i = 0; i < wins.length; i++) {
             const top = wins[i];
             if (!top) continue;
-            const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
-            if (wsId === undefined) continue;
+            const wsId = WGMath.resolveWorkspaceId(top);
+            if (wsId <= 0) continue;
             const subWs = calcSubWorkspaceFromWorkspace(wsId);
             const ipcObj = top.lastIpcObject || {};
             const keyBase = ipcObj.class || ipcObj.initialClass || top.wayland?.appId || top.appId || "unknown";
@@ -543,6 +556,7 @@ PluginComponent {
     }
 
     readonly property var windowRowsByGroup: {
+        root._toplevelsTrigger;
         const groups = root.groups || [];
         const tops = Hyprland.toplevels?.values || [];
         const map = {};
@@ -680,7 +694,8 @@ PluginComponent {
     function cycleSubWorkspaces(dir) {
         if (dir !== "next" && dir !== "prev")
             return "INVALID_DIRECTION";
-        const focusedWs = Hyprland.focusedWorkspace?.id || 1;
+        const rawWs = WGMath.resolveWorkspaceId(Hyprland.focusedWorkspace);
+        const focusedWs = rawWs > 0 ? rawWs : 1;
         const curSub = calcSubWorkspaceFromWorkspace(focusedWs);
         let nextSub = curSub + (dir === "next" ? 1 : -1);
         if (nextSub > root.workspacesPerMonitor)
@@ -699,6 +714,9 @@ PluginComponent {
     }
 
     function openOverview() {
+        Hyprland.refreshWorkspaces();
+        Hyprland.refreshToplevels();
+        root._toplevelsTrigger++;
         overviewCloseTimer.stop();
         root.isClosing = false;
         root.mouseMovedSinceOpen = false;
@@ -863,16 +881,16 @@ PluginComponent {
         const activeWorkspacesSet = {};
         const hyprWses = Hyprland.workspaces?.values || [];
         for (let i = 0; i < hyprWses.length; i++) {
-            const wid = hyprWses[i]?.id;
+            const wid = WGMath.resolveWorkspaceId(hyprWses[i]);
             if (wid && wid > 0) activeWorkspacesSet[wid] = true;
         }
         for (let i = 0; i < allToplevels.length; i++) {
-            const wid = allToplevels[i]?.workspace?.id ?? allToplevels[i]?.lastIpcObject?.workspace?.id;
+            const wid = WGMath.resolveWorkspaceId(allToplevels[i]);
             if (wid && wid > 0) activeWorkspacesSet[wid] = true;
         }
         const hyprMons = Hyprland.monitors?.values || [];
         for (let i = 0; i < hyprMons.length; i++) {
-            const wid = hyprMons[i]?.activeWorkspace?.id;
+            const wid = WGMath.resolveWorkspaceId(hyprMons[i]?.activeWorkspace);
             if (wid && wid > 0) activeWorkspacesSet[wid] = true;
         }
         const workspacesToMigrate = [];
@@ -905,7 +923,7 @@ PluginComponent {
         for (let i = 0; i < allToplevels.length; i++) {
             const top = allToplevels[i];
             if (!top) continue;
-            const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+            const wsId = WGMath.resolveWorkspaceId(top);
             const addr = root.formatWindowAddress(top);
             if (!addr || wsId === undefined || wsId < 1) continue;
             const oldG = rawGroupFromWorkspace(wsId);
@@ -1048,7 +1066,7 @@ PluginComponent {
             const groupGWsWithWindows = {};
             const groupWins = root.windowsInGroup(g);
             for (let i = 0; i < groupWins.length; i++) {
-                const wid = groupWins[i].workspace?.id ?? groupWins[i].lastIpcObject?.workspace?.id;
+                const wid = WGMath.resolveWorkspaceId(groupWins[i]);
                 if (wid !== undefined && wid > 0) groupGWsWithWindows[wid] = true;
             }
             for (const wsIdStr in groupGWsWithWindows) {
@@ -1064,9 +1082,9 @@ PluginComponent {
             for (let i = 0; i < allToplevels.length; i++) {
                 const top = allToplevels[i];
                 if (!top) continue;
-                const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+                const wsId = WGMath.resolveWorkspaceId(top);
                 const addr = root.formatWindowAddress(top);
-                if (!addr || wsId === undefined) continue;
+                if (!addr || wsId === undefined || wsId <= 0) continue;
                 if (wsId >= startWs && wsId <= endWs) {
                     if (!renamed[wsId]) {
                         const withinGroup = (wsId - 1) % totalPerGroup;
@@ -1079,9 +1097,9 @@ PluginComponent {
             for (let i = 0; i < allToplevels.length; i++) {
                 const top = allToplevels[i];
                 if (!top) continue;
-                const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+                const wsId = WGMath.resolveWorkspaceId(top);
                 const addr = root.formatWindowAddress(top);
-                if (!addr || wsId === undefined) continue;
+                if (!addr || wsId === undefined || wsId <= 0) continue;
                 if (wsId >= startWs && wsId <= endWs) {
                     const withinGroup = (wsId - 1) % totalPerGroup;
                     const targetWs = (evacuateTargetGroup - 1) * totalPerGroup + 1 + withinGroup;
@@ -1100,7 +1118,7 @@ PluginComponent {
             for (let i = 0; i < allToplevels.length; i++) {
                 const top = allToplevels[i];
                 if (!top) continue;
-                const wid = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+                const wid = WGMath.resolveWorkspaceId(top);
                 if (wid && wid > 0) wsWithWindows[wid] = true;
             }
             const staleList = [];
@@ -1136,9 +1154,9 @@ PluginComponent {
             for (let i = 0; i < allToplevels.length; i++) {
                 const top = allToplevels[i];
                 if (!top) continue;
-                const wsId = top.workspace?.id ?? top.lastIpcObject?.workspace?.id;
+                const wsId = WGMath.resolveWorkspaceId(top);
                 const addr = root.formatWindowAddress(top);
-                if (!addr || wsId === undefined) continue;
+                if (!addr || wsId === undefined || wsId <= 0) continue;
                 if (wsId > endWs) {
                     const shiftedWs = wsId - totalPerGroup;
                     batchCommands.push(`dispatch movetoworkspacesilent ${shiftedWs},address:${addr}`);
@@ -1242,11 +1260,11 @@ PluginComponent {
         const activeWorkspacesSet = {};
         const hyprWses = Hyprland.workspaces?.values || [];
         for (let i = 0; i < hyprWses.length; i++) {
-            const wid = hyprWses[i]?.id;
+            const wid = WGMath.resolveWorkspaceId(hyprWses[i]);
             if (wid && wid > 0) activeWorkspacesSet[wid] = true;
         }
         for (let i = 0; i < allToplevels.length; i++) {
-            const wid = allToplevels[i]?.workspace?.id ?? allToplevels[i]?.lastIpcObject?.workspace?.id;
+            const wid = WGMath.resolveWorkspaceId(allToplevels[i]);
             if (wid && wid > 0) activeWorkspacesSet[wid] = true;
         }
 
@@ -1582,6 +1600,11 @@ return M
 
         function openEditCurrentGroup(): string {
             return root.openEditCurrentGroup();
+        }
+
+        function getWindowRows(groupId: string): string {
+            const g = WGMath.parseGroupId(groupId);
+            return JSON.stringify(root.buildWindowRows(g));
         }
 
         function updateGroup(groupId: string, name: string, icon: string, color: string): string {

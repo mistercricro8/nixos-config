@@ -120,6 +120,7 @@
   "terminalsAlwaysDark": true,
   "muxType": "zellij",
   "matugenTemplateNeovim": true,
+  "matugenTemplateKitty": false,
   "dockGroupByApp": true,
   "dockSpacing": 8,
   "dockIconSize": 48,

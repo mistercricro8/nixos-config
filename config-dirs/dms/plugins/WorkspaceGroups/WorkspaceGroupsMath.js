@@ -96,3 +96,72 @@ function parseIndex(s) {
         return -1;
     return n;
 }
+
+function resolveWorkspaceId(obj) {
+    if (obj === null || obj === undefined) {
+        return -1;
+    }
+
+    if (typeof obj === "number") {
+        return (!isNaN(obj) && obj > 0) ? Math.floor(obj) : -1;
+    }
+
+    if (typeof obj === "string") {
+        var parsedStr = parseInt(obj, 10);
+        return (!isNaN(parsedStr) && parsedStr > 0) ? parsedStr : -1;
+    }
+
+    var wsTarget = null;
+    if (obj.workspace) {
+        wsTarget = obj.workspace;
+    } else if (obj.lastIpcObject && obj.lastIpcObject.workspace) {
+        wsTarget = obj.lastIpcObject.workspace;
+    } else if (obj.activeWorkspace) {
+        wsTarget = obj.activeWorkspace;
+    } else {
+        wsTarget = obj;
+    }
+
+    if (wsTarget.name !== undefined && wsTarget.name !== null && typeof wsTarget.name === "string") {
+        var parsedName = parseInt(wsTarget.name, 10);
+        if (!isNaN(parsedName) && parsedName > 0) {
+            return parsedName;
+        }
+    }
+
+    if (wsTarget.address !== undefined && wsTarget.address !== null) {
+        var parsedAddr = parseInt(wsTarget.address, 10);
+        if (!isNaN(parsedAddr) && parsedAddr > 0) {
+            return parsedAddr;
+        }
+    }
+
+    if (wsTarget.id !== undefined && wsTarget.id !== null && typeof wsTarget.id === "number" && wsTarget.id > 0) {
+        return wsTarget.id;
+    }
+
+    if (wsTarget.lastIpcObject) {
+        var ipc = wsTarget.lastIpcObject;
+        if (ipc.name !== undefined && ipc.name !== null) {
+            var parsedIpcName = parseInt(ipc.name, 10);
+            if (!isNaN(parsedIpcName) && parsedIpcName > 0) {
+                return parsedIpcName;
+            }
+        }
+        if (ipc.address !== undefined && ipc.address !== null) {
+            var parsedIpcAddr = parseInt(ipc.address, 10);
+            if (!isNaN(parsedIpcAddr) && parsedIpcAddr > 0) {
+                return parsedIpcAddr;
+            }
+        }
+        if (ipc.id !== undefined && ipc.id !== null && typeof ipc.id === "number" && ipc.id > 0) {
+            return ipc.id;
+        }
+    }
+
+    if (typeof obj.id === "number" && obj.id > 0) {
+        return obj.id;
+    }
+
+    return -1;
+}

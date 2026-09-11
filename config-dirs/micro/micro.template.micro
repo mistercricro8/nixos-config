@@ -1,7 +1,7 @@
 color-link default "%on_surface%"
 color-link comment "%on_surface_variant%"
 color-link selection "%on_surface%,%surface_container_high%"
-color-link hlsearch "%secondary_container%"
+color-link hlsearch "%secondary%"
 
 color-link identifier "%primary%"
 color-link identifier.class "%primary%"
@@ -22,7 +22,7 @@ color-link special "%secondary_fixed%"
 color-link statement "%primary%"
 color-link preproc "%secondary_fixed%"
 
-color-link underlined "%tertiary_container%"
+color-link underlined "%primary_fixed%"
 color-link error "bold %secondary_fixed%"
 color-link todo "bold %tertiary%"
 
@@ -37,8 +37,8 @@ color-link scrollbar "%on_surface_variant%"
 color-link statusline "%on_surface%,%surface_dim%"
 color-link tabbar "%on_surface%,%surface_dim%"
 color-link indent-char "%surface_container_high%"
-color-link line-number "%surface_container_high%"
-color-link current-line-number "%primary_container%"
+color-link line-number "%outline%"
+color-link current-line-number "%primary%"
 
 color-link cursor-line "%surface_container%,%on_surface%"
 color-link color-column "%surface_container%"

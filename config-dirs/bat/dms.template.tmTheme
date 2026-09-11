@@ -133,7 +133,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -181,7 +181,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -192,7 +192,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -269,7 +269,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%tertiary_container%</string>
+          <string>%primary_fixed%</string>
         </dict>
       </dict>
       <dict>
@@ -381,7 +381,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -425,7 +425,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -436,7 +436,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -467,7 +467,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%tertiary_container%</string>
+          <string>%primary_fixed%</string>
         </dict>
       </dict>
       <dict>
@@ -746,7 +746,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -838,7 +838,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -968,7 +968,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -1003,7 +1003,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
           <key>fontStyle</key>
           <string>italic</string>
         </dict>
@@ -1038,7 +1038,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -1049,7 +1049,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%tertiary_container%</string>
+          <string>%primary_fixed%</string>
         </dict>
       </dict>
       <dict>
@@ -1149,7 +1149,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%primary_container%</string>
+          <string>%primary_fixed%</string>
         </dict>
       </dict>
       <dict>
@@ -1204,7 +1204,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%primary_container%</string>
+          <string>%primary_fixed%</string>
         </dict>
       </dict>
       <dict>
@@ -1226,7 +1226,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%tertiary_container%</string>
+          <string>%primary_fixed%</string>
         </dict>
       </dict>
       <dict>
@@ -1259,7 +1259,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -1270,7 +1270,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -1316,7 +1316,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%primary_container%</string>
+          <string>%primary_fixed%</string>
           <key>fontStyle</key>
           <string/>
         </dict>
@@ -1375,7 +1375,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%tertiary_container%</string>
+          <string>%primary_fixed%</string>
         </dict>
       </dict>
       <dict>
@@ -1408,7 +1408,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%tertiary_container%</string>
+          <string>%primary_fixed%</string>
           <key>fontStyle</key>
           <string>italic</string>
         </dict>
@@ -1456,7 +1456,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%tertiary_container%</string>
+          <string>%primary_fixed%</string>
         </dict>
       </dict>
       <dict>
@@ -1649,7 +1649,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -1802,7 +1802,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -1872,7 +1872,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%tertiary_container%</string>
+          <string>%primary_fixed%</string>
         </dict>
       </dict>
       <dict>
@@ -1951,7 +1951,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
           <key>fontStyle</key>
           <string>italic</string>
         </dict>
@@ -1986,7 +1986,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
@@ -2077,7 +2077,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>%secondary_container%</string>
+          <string>%secondary%</string>
         </dict>
       </dict>
       <dict>
