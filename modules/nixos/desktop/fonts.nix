@@ -8,7 +8,6 @@
         [
           nerd-fonts.caskaydia-mono
           nerd-fonts.jetbrains-mono
-          papirus-icon-theme
         ]
       );
     };

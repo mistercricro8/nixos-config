@@ -131,6 +131,7 @@
           cliphist
           libnotify
           catppuccin-cursors.mochaYellow
+          papirus-icon-theme
           adw-gtk3
           nur.repos.ilya-fedin.qt6ct
           pywalfox-native
