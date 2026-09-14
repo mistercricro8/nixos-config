@@ -1,79 +1,146 @@
 .pragma library
 .import WorkspaceGroupsDefaults.js as Defaults
 
-function calcWorkspace(groupId, monIdx, subWs, wsPerMonitor, monCount) {
+function totalPerGroupFixed(wsPerMonitor) {
     var K = wsPerMonitor || Defaults.WS_DEFAULT;
-    var M = Math.max(1, monCount || 1);
-    return (groupId - 1) * (K * M) + (monIdx * K) + subWs;
+    return K * Defaults.MAX_MONITOR_SLOTS;
 }
 
-function workspaceRangeForGroup(groupId, wsPerMonitor, monCount) {
+function clampSlot(slotIdx) {
+    var n = parseInt(slotIdx, 10);
+    if (isNaN(n))
+        return 0;
+    return Math.max(0, Math.min(Defaults.MAX_MONITOR_SLOTS - 1, n));
+}
+
+function calcWorkspaceFixed(groupId, slotIdx, subWs, wsPerMonitor) {
     var K = wsPerMonitor || Defaults.WS_DEFAULT;
-    var M = Math.max(1, monCount || 1);
-    var totalPerGroup = K * M;
+    var S = Defaults.MAX_MONITOR_SLOTS;
+    return (groupId - 1) * (K * S) + (clampSlot(slotIdx) * K) + subWs;
+}
+
+function workspaceRangeForGroupFixed(groupId, wsPerMonitor) {
+    var totalPerGroup = totalPerGroupFixed(wsPerMonitor);
     var start = (groupId - 1) * totalPerGroup + 1;
     return { start: start, end: start + totalPerGroup - 1, totalPerGroup: totalPerGroup };
 }
 
-function isWorkspaceInRange(wsId, groupId, monIdx, wsPerMonitor, monCount) {
-    if (!wsId || wsId < 1 || !groupId || groupId < 1 || monIdx === undefined || monIdx < 0)
+function isWorkspaceInRangeFixed(wsId, groupId, slotIdx, wsPerMonitor) {
+    if (!wsId || wsId < 1 || !groupId || groupId < 1 || slotIdx === undefined || slotIdx === null)
         return false;
     var K = wsPerMonitor || Defaults.WS_DEFAULT;
-    var M = Math.max(1, monCount || 1);
-    var totalPerGroup = K * M;
-    var startWs = (groupId - 1) * totalPerGroup + (monIdx * K) + 1;
+    var slot = clampSlot(slotIdx);
+    var totalPerGroup = totalPerGroupFixed(K);
+    var startWs = (groupId - 1) * totalPerGroup + (slot * K) + 1;
     var endWs = startWs + K - 1;
     return wsId >= startWs && wsId <= endWs;
 }
 
-function groupFromWorkspace(wsId, wsPerMonitor, monCount) {
+function groupFromWorkspaceFixed(wsId, wsPerMonitor) {
     if (!wsId || wsId < 1)
         return 1;
-    var K = wsPerMonitor || Defaults.WS_DEFAULT;
-    var M = Math.max(1, monCount || 1);
-    var totalPerGroup = K * M;
+    var totalPerGroup = totalPerGroupFixed(wsPerMonitor);
     if (totalPerGroup <= 0)
         return 1;
     return Math.floor((wsId - 1) / totalPerGroup) + 1;
 }
 
-function subFromWorkspace(wsId, wsPerMonitor, monCount) {
+function subFromWorkspaceFixed(wsId, wsPerMonitor) {
     if (!wsId || wsId < 1)
         return 1;
     var K = wsPerMonitor || Defaults.WS_DEFAULT;
-    var M = Math.max(1, monCount || 1);
-    var totalPerGroup = K * M;
+    var totalPerGroup = totalPerGroupFixed(K);
     if (totalPerGroup <= 0)
         return 1;
     var withinGroup = (wsId - 1) % totalPerGroup;
     return (withinGroup % K) + 1;
 }
 
-function sortMonitorNames(allNames, priority) {
+function assignMonitorSlots(allNames, priority, existingSlots, maxSlots) {
+    var max = maxSlots || Defaults.MAX_MONITOR_SLOTS;
+    if (max < 1)
+        max = 1;
+    var names = (allNames && allNames.slice) ? allNames.slice() : [];
     var prio = (priority && priority.length > 0) ? priority : Defaults.MONITOR_PRIORITY;
-    var sorted = [];
-    var seen = {};
-    for (var i = 0; i < prio.length; i++) {
-        if (seen[prio[i]])
-            continue;
-        if (allNames.indexOf(prio[i]) >= 0) {
-            sorted.push(prio[i]);
-            seen[prio[i]] = true;
+    var prev = (existingSlots && typeof existingSlots === "object") ? existingSlots : {};
+    var slots = {};
+    var used = {};
+    for (var i = 0; i < names.length; i++) {
+        var keep = parseInt(prev[names[i]], 10);
+        if (!isNaN(keep) && keep >= 0 && keep < max && !used[keep]) {
+            slots[names[i]] = keep;
+            used[keep] = true;
         }
     }
-    for (var j = 0; j < allNames.length; j++) {
-        if (!seen[allNames[j]]) {
-            sorted.push(allNames[j]);
-            seen[allNames[j]] = true;
+    var newcomers = [];
+    for (var j = 0; j < names.length; j++) {
+        if (slots[names[j]] === undefined)
+            newcomers.push(names[j]);
+    }
+    newcomers.sort(function (a, b) {
+        var pa = prio.indexOf(a);
+        var pb = prio.indexOf(b);
+        var ra = pa >= 0 ? pa : prio.length;
+        var rb = pb >= 0 ? pb : prio.length;
+        if (ra !== rb)
+            return ra - rb;
+        if (a < b)
+            return -1;
+        if (a > b)
+            return 1;
+        return 0;
+    });
+    for (var k = 0; k < newcomers.length; k++) {
+        var free = -1;
+        for (var s = 0; s < max; s++) {
+            if (!used[s]) {
+                free = s;
+                break;
+            }
+        }
+        if (free < 0)
+            free = max - 1;
+        slots[newcomers[k]] = free;
+        used[free] = true;
+    }
+    var changed = false;
+    var prevKeys = 0;
+    for (var pk in prev) {
+        if (names.indexOf(pk) >= 0)
+            prevKeys++;
+        else
+            changed = true;
+    }
+    var nextKeys = 0;
+    for (var nk in slots) {
+        nextKeys++;
+    }
+    if (prevKeys !== nextKeys) {
+        changed = true;
+    } else {
+        for (var ck in slots) {
+            if (prev[ck] !== slots[ck]) {
+                changed = true;
+                break;
+            }
         }
     }
-    return sorted;
+    return { slots: slots, changed: changed };
 }
 
-function monitorIndexFromNames(allNames, priority, targetName) {
-    var sorted = sortMonitorNames(allNames, priority);
-    var idx = sorted.indexOf(targetName);
-    return idx >= 0 ? idx : 0;
+function legacyGroupAndSub(wsId, wsPerMonitor, legacyMonCount) {
+    if (wsId === null || wsId === undefined)
+        return null;
+    var id = (typeof wsId === "number") ? Math.floor(wsId) : parseInt(wsId, 10);
+    if (isNaN(id) || id < 1)
+        return null;
+    var K = wsPerMonitor || Defaults.WS_DEFAULT;
+    var M = Math.max(1, parseInt(legacyMonCount, 10) || 1);
+    var total = K * M;
+    if (total <= 0)
+        return null;
+    var within = (id - 1) % total;
+    return { group: Math.floor((id - 1) / total) + 1, sub: (within % K) + 1 };
 }
 
 function clampWsPerMonitor(v) {
@@ -181,4 +248,3 @@ function resolveWorkspaceId(obj) {
 
     return Defaults.INVALID_WORKSPACE_ID;
 }
-

@@ -18,7 +18,8 @@ var WS_DEFAULT = 10;
 var WS_MIN = 5;
 var WS_MAX = 20;
 
-var MONITOR_PRIORITY = ["HDMI-A-1", "DP-1"];
+var MAX_MONITOR_SLOTS = 4;
+var STATE_VERSION = 2;
 
 var STATUS_TIMEOUT = 4000;
 var DRAG_THRESHOLD = 8;
@@ -36,6 +37,7 @@ var KEY_MON_COUNT = "monitorCount";
 var KEY_HIDE_EMPTY = "hideEmptyWorkspaces";
 var KEY_SORTED_MONS = "sortedMonitorNames";
 var KEY_MON_PRIO = "monitorPriority";
+var KEY_MON_SLOTS = "monitorSlots";
 
 var VERB_SWITCH_GROUP = "switchToGroup";
 var VERB_MOVE_TO_GROUP = "moveWindowToGroup";

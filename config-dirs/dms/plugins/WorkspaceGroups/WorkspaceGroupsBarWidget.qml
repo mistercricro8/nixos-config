@@ -23,7 +23,7 @@ PluginComponent {
     property int activeGroupIndex: 1
     property var groupsList: []
     property int workspacesPerMonitor: Defaults.WS_DEFAULT
-    property int monitorCount: 1
+    property var monitorSlots: ({})
     property bool hideEmptyWorkspaces: true
     property var sortedMonitorNames: []
     property var monitorPriority: Defaults.MONITOR_PRIORITY.slice()
@@ -41,9 +41,8 @@ PluginComponent {
         groupsList = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_GROUPS, []);
         activeGroupName = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_ACTIVE_NAME, Defaults.DEFAULT_GROUP_NAME);
         activeGroupIcon = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_ACTIVE_ICON, Defaults.FALLBACK_ICON);
-        activeGroupColor = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_ACTIVE_COLOR, Defaults.FALLBACK_COLOR);
         workspacesPerMonitor = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_WS_PER_MON, Defaults.WS_DEFAULT);
-        monitorCount = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_MON_COUNT, 1);
+        monitorSlots = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_MON_SLOTS, ({}));
         hideEmptyWorkspaces = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_HIDE_EMPTY, true);
         sortedMonitorNames = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_SORTED_MONS, []);
         monitorPriority = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_MON_PRIO, Defaults.MONITOR_PRIORITY.slice());
@@ -121,14 +120,17 @@ PluginComponent {
             root._toplevelsTrigger++;
         }
     }
-    function getMonitorIndex() {
+    function getMonitorSlot() {
+        if (root.monitorSlots && root.monitorSlots[root.screenName] !== undefined) {
+            return WGMath.clampSlot(root.monitorSlots[root.screenName]);
+        }
         if (sortedMonitorNames && sortedMonitorNames.length > 0) {
             const sIdx = sortedMonitorNames.indexOf(root.screenName);
             if (sIdx >= 0)
-                return sIdx;
+                return WGMath.clampSlot(sIdx);
         }
         const mons = Hyprland.monitors?.values || [];
-        const prio = (monitorPriority && monitorPriority.length > 0) ? monitorPriority : ["HDMI-A-1", "DP-1"];
+        const prio = (monitorPriority && monitorPriority.length > 0) ? monitorPriority : Defaults.MONITOR_PRIORITY;
         const sorted = [];
         const seen = {};
         for (let i = 0; i < prio.length; i++) {
@@ -145,16 +147,15 @@ PluginComponent {
                 sorted.push(m);
         }
         const idx = sorted.findIndex(m => m.name === root.screenName);
-        return idx >= 0 ? idx : 0;
+        return WGMath.clampSlot(idx);
     }
 
     readonly property int activeWorkspaceIdOnThisMon: {
         root._toplevelsTrigger;
         if (root._lastActiveWsFromEvent > 0) {
             const K = root.workspacesPerMonitor || 10;
-            const M = Math.max(1, root.monitorCount);
-            const mIdx = root.getMonitorIndex();
-            if (WGMath.isWorkspaceInRange(root._lastActiveWsFromEvent, root.activeGroupIndex, mIdx, K, M)) {
+            const slot = root.getMonitorSlot();
+            if (WGMath.isWorkspaceInRangeFixed(root._lastActiveWsFromEvent, root.activeGroupIndex, slot, K)) {
                 return root._lastActiveWsFromEvent;
             }
         }
@@ -188,10 +189,9 @@ PluginComponent {
 
     function getTargetWorkspaceId(subWs) {
         const K = root.workspacesPerMonitor || 10;
-        const M = Math.max(1, root.monitorCount);
         const G = root.activeGroupIndex;
-        const m = root.getMonitorIndex();
-        return (G - 1) * (K * M) + (m * K) + subWs;
+        const slot = root.getMonitorSlot();
+        return WGMath.calcWorkspaceFixed(G, slot, subWs, K);
     }
 
     function isWorkspaceOccupied(wsId) {
