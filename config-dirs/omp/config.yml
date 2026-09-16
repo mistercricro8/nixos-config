@@ -11,3 +11,22 @@ advisor:
   enabled: false
   syncBacklog: "1"
   immuneTurns: 0
+providers:
+  webSearchExclude:
+    - perplexity
+    - gemini
+    - anthropic
+    - codex
+    - xai
+    - zai
+    - exa
+    - tinyfish
+    - jina
+    - kagi
+    - tavily
+    - firecrawl
+    - brave
+    - kimi
+    - parallel
+    - synthetic
+    - searxng

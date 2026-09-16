@@ -7,6 +7,16 @@
     { pkgs, lib, ... }:
     let
       omp = inputs.omp.packages.${pkgs.stdenv.hostPlatform.system}.omp;
+      # TODO: remove whenever the flake adds fish completions or
+      # the package gets to nixpkgs
+      ompWithCompletions = pkgs.symlinkJoin {
+        name = "omp-with-fish-completions-${omp.version}";
+        paths = [ omp ];
+        postBuild = ''
+          mkdir -p $out/share/fish/vendor_completions.d
+          HOME=$TMPDIR ${lib.getExe omp} completions fish > $out/share/fish/vendor_completions.d/omp.fish
+        '';
+      };
     in
     {
       users.users.${user}.packages = inputs.self.lib.util.filterInvalidPackages pkgs (
@@ -17,7 +27,7 @@
             antigravity-cli
             tgrep
           ])
-          [ omp ]
+          [ ompWithCompletions ]
         ]
       );
 
@@ -29,11 +39,5 @@
         "copilot"
         "omp"
       ];
-
-      userConfig.${user}.fish.integrations = {
-        omp = ''
-          omp completions fish > $HOME/.config/fish/completions/omp.fish
-        '';
-      };
     };
 }

@@ -52,7 +52,10 @@
               export GOPATH="$PWD/.go"
               export GOBIN="$GOPATH/bin"
               mkdir -p "$GOBIN"
-              export PATH="$GOBIN:$PATH"
+              case ":$PATH:" in
+                *":$GOBIN:"*) ;;
+                *) export PATH="$GOBIN:$PATH" ;;
+              esac
             '';
           };
 
@@ -74,7 +77,12 @@
               RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
             };
             shellHook = ''
-              export PATH="$PATH:$HOME/.cargo/bin:$HOME/.rustup/toolchains"
+              for p in "$HOME/.cargo/bin" "$HOME/.rustup/toolchains"; do
+                case ":$PATH:" in
+                  *":$p:"*) ;;
+                  *) export PATH="$PATH:$p" ;;
+                esac
+              done
             '';
           };
         };

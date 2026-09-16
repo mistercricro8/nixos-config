@@ -1,6 +1,4 @@
-[mgr]
-append_keymap = [
-    { on = [ "<C-n>" ], run = '''
-        shell 'ripdrag "$@" -a -x 2>/dev/null &' --confirm
-    ''' },
-]
+[[mgr.prepend_keymap]]
+on   = "<C-n>"
+run  = '''shell --orphan -- set -- %s; [ $# -eq 0 ] && set -- %h; [ -n "$1" ] || exit 0; exec ripdrag "$@" -a -x 2>/dev/null'''
+desc = "Drag selected or hovered files"

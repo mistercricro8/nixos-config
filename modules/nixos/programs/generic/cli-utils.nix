@@ -76,9 +76,6 @@
             ${pkgs.starship}/bin/starship init fish | source
           end
         '';
-        zoxide = ''
-          ${pkgs.zoxide}/bin/zoxide init fish | source
-        '';
         fzf = {
           order = 40;
           text = ''
@@ -87,11 +84,6 @@
         };
         atuin = ''
           ${pkgs.atuin}/bin/atuin init fish | source
-        '';
-        direnv = ''
-          if not functions -q __direnv_export_eval
-            ${pkgs.direnv}/bin/direnv hook fish | source
-          end
         '';
       };
     };
