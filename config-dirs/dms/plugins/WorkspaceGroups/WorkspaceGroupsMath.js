@@ -1,21 +1,28 @@
 .pragma library
-.import WorkspaceGroupsDefaults.js as Defaults
+
+// TODO: .import felt like not working today, whenever it does just import from defaults
+var WS_DEFAULT = 10;
+var WS_MIN = 5;
+var WS_MAX = 20;
+var MAX_MONITOR_SLOTS = 4;
+var INVALID_WORKSPACE_ID = -1;
+var MONITOR_PRIORITY = ["HDMI-A-1", "DP-1"];
 
 function totalPerGroupFixed(wsPerMonitor) {
-    var K = wsPerMonitor || Defaults.WS_DEFAULT;
-    return K * Defaults.MAX_MONITOR_SLOTS;
+    var K = wsPerMonitor || WS_DEFAULT;
+    return K * MAX_MONITOR_SLOTS;
 }
 
 function clampSlot(slotIdx) {
     var n = parseInt(slotIdx, 10);
     if (isNaN(n))
         return 0;
-    return Math.max(0, Math.min(Defaults.MAX_MONITOR_SLOTS - 1, n));
+    return Math.max(0, Math.min(MAX_MONITOR_SLOTS - 1, n));
 }
 
 function calcWorkspaceFixed(groupId, slotIdx, subWs, wsPerMonitor) {
-    var K = wsPerMonitor || Defaults.WS_DEFAULT;
-    var S = Defaults.MAX_MONITOR_SLOTS;
+    var K = wsPerMonitor || WS_DEFAULT;
+    var S = MAX_MONITOR_SLOTS;
     return (groupId - 1) * (K * S) + (clampSlot(slotIdx) * K) + subWs;
 }
 
@@ -28,7 +35,7 @@ function workspaceRangeForGroupFixed(groupId, wsPerMonitor) {
 function isWorkspaceInRangeFixed(wsId, groupId, slotIdx, wsPerMonitor) {
     if (!wsId || wsId < 1 || !groupId || groupId < 1 || slotIdx === undefined || slotIdx === null)
         return false;
-    var K = wsPerMonitor || Defaults.WS_DEFAULT;
+    var K = wsPerMonitor || WS_DEFAULT;
     var slot = clampSlot(slotIdx);
     var totalPerGroup = totalPerGroupFixed(K);
     var startWs = (groupId - 1) * totalPerGroup + (slot * K) + 1;
@@ -48,7 +55,7 @@ function groupFromWorkspaceFixed(wsId, wsPerMonitor) {
 function subFromWorkspaceFixed(wsId, wsPerMonitor) {
     if (!wsId || wsId < 1)
         return 1;
-    var K = wsPerMonitor || Defaults.WS_DEFAULT;
+    var K = wsPerMonitor || WS_DEFAULT;
     var totalPerGroup = totalPerGroupFixed(K);
     if (totalPerGroup <= 0)
         return 1;
@@ -57,11 +64,11 @@ function subFromWorkspaceFixed(wsId, wsPerMonitor) {
 }
 
 function assignMonitorSlots(allNames, priority, existingSlots, maxSlots) {
-    var max = maxSlots || Defaults.MAX_MONITOR_SLOTS;
+    var max = maxSlots || MAX_MONITOR_SLOTS;
     if (max < 1)
         max = 1;
     var names = (allNames && allNames.slice) ? allNames.slice() : [];
-    var prio = (priority && priority.length > 0) ? priority : Defaults.MONITOR_PRIORITY;
+    var prio = (priority && priority.length > 0) ? priority : MONITOR_PRIORITY;
     var prev = (existingSlots && typeof existingSlots === "object") ? existingSlots : {};
     var slots = {};
     var used = {};
@@ -134,7 +141,7 @@ function legacyGroupAndSub(wsId, wsPerMonitor, legacyMonCount) {
     var id = (typeof wsId === "number") ? Math.floor(wsId) : parseInt(wsId, 10);
     if (isNaN(id) || id < 1)
         return null;
-    var K = wsPerMonitor || Defaults.WS_DEFAULT;
+    var K = wsPerMonitor || WS_DEFAULT;
     var M = Math.max(1, parseInt(legacyMonCount, 10) || 1);
     var total = K * M;
     if (total <= 0)
@@ -146,38 +153,36 @@ function legacyGroupAndSub(wsId, wsPerMonitor, legacyMonCount) {
 function clampWsPerMonitor(v) {
     var n = parseInt(v, 10);
     if (isNaN(n))
-        return Defaults.WS_DEFAULT;
-    return Math.max(Defaults.WS_MIN, Math.min(Defaults.WS_MAX, n));
+        return WS_DEFAULT;
+    return Math.max(WS_MIN, Math.min(WS_MAX, n));
 }
-
-var INVALID_WORKSPACE_ID = Defaults.INVALID_WORKSPACE_ID;
 
 function parseGroupId(s) {
     var n = parseInt(s, 10);
     if (isNaN(n) || n < 1)
-        return Defaults.INVALID_WORKSPACE_ID;
+        return INVALID_WORKSPACE_ID;
     return n;
 }
 
 function parseIndex(s) {
     var n = parseInt(s, 10);
     if (isNaN(n) || n < 0)
-        return Defaults.INVALID_WORKSPACE_ID;
+        return INVALID_WORKSPACE_ID;
     return n;
 }
 
 function resolveWorkspaceId(obj) {
     if (obj === null || obj === undefined) {
-        return Defaults.INVALID_WORKSPACE_ID;
+        return INVALID_WORKSPACE_ID;
     }
 
     if (typeof obj === "number") {
-        return (!isNaN(obj) && obj > 0) ? Math.floor(obj) : Defaults.INVALID_WORKSPACE_ID;
+        return (!isNaN(obj) && obj > 0) ? Math.floor(obj) : INVALID_WORKSPACE_ID;
     }
 
     if (typeof obj === "string") {
         var parsedStr = parseInt(obj, 10);
-        return (!isNaN(parsedStr) && parsedStr > 0) ? parsedStr : Defaults.INVALID_WORKSPACE_ID;
+        return (!isNaN(parsedStr) && parsedStr > 0) ? parsedStr : INVALID_WORKSPACE_ID;
     }
 
     if (obj.activeWorkspace !== undefined && obj.activeWorkspace !== null) {
@@ -205,7 +210,7 @@ function resolveWorkspaceId(obj) {
                      (obj.lastIpcObject.activeWorkspace !== undefined || obj.lastIpcObject.model !== undefined));
 
     if (isMonitor) {
-        return Defaults.INVALID_WORKSPACE_ID;
+        return INVALID_WORKSPACE_ID;
     }
 
     if (obj.workspace !== undefined && obj.workspace !== null) {
@@ -246,5 +251,5 @@ function resolveWorkspaceId(obj) {
         }
     }
 
-    return Defaults.INVALID_WORKSPACE_ID;
+    return INVALID_WORKSPACE_ID;
 }

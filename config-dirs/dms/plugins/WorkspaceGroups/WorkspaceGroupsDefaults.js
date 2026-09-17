@@ -18,6 +18,7 @@ var WS_DEFAULT = 10;
 var WS_MIN = 5;
 var WS_MAX = 20;
 
+var MONITOR_PRIORITY = ["HDMI-A-1", "DP-1"];
 var MAX_MONITOR_SLOTS = 4;
 var STATE_VERSION = 2;
 
