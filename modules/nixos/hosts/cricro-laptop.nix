@@ -41,7 +41,6 @@
               }
             ];
           })
-          (nixos."virtualisation/waydroid" { user = "cricro"; })
           (nixos."system/settings/networking" {
             netInterfaces = [
               "wlp3s0"
