@@ -70,6 +70,20 @@ PluginSettings {
             root.statusMessage = "";
         }
     }
+    Timer {
+        id: saveDebounceTimer
+        interval: 400
+        repeat: false
+        onTriggered: root.saveAll();
+    }
+    function requestSave() {
+        if (!isReady)
+            return;
+        if (!saveDebounceTimer.running)
+            saveDebounceTimer.start();
+        else
+            saveDebounceTimer.restart();
+    }
 
     function getGroupsArray() {
         const arr = [];
@@ -221,7 +235,7 @@ PluginSettings {
                         onClicked: {
                             if (root.currentWsPerMonitor > Defaults.WS_MIN) {
                                 root.currentWsPerMonitor--;
-                                root.saveAll();
+                                root.requestSave();
                             }
                         }
                     }
@@ -254,7 +268,7 @@ PluginSettings {
                         onClicked: {
                             if (root.currentWsPerMonitor < Defaults.WS_MAX) {
                                 root.currentWsPerMonitor++;
-                                root.saveAll();
+                                root.requestSave();
                             }
                         }
                     }
@@ -296,7 +310,7 @@ PluginSettings {
                     checked: root.currentHideEmptyWorkspaces
                     onToggled: isChecked => {
                         root.currentHideEmptyWorkspaces = isChecked;
-                        root.saveAll();
+                        root.requestSave();
                     }
                 }
             }
@@ -346,11 +360,11 @@ PluginSettings {
                 onEditingFinished: root.saveAll()
                 onIconPicked: (idx, icon) => {
                     groupsModel.setProperty(idx, "icon", icon);
-                    root.saveAll();
+                    root.requestSave();
                 }
                 onColorPicked: (idx, color) => {
                     groupsModel.setProperty(idx, "color", color);
-                    root.saveAll();
+                    root.requestSave();
                 }
                 onRemoved: idx => root.removeGroup(idx)
             }

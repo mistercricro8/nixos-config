@@ -60,7 +60,39 @@ PluginComponent {
     property bool hideEmptyWorkspaces: (pluginData && pluginData.hideEmptyWorkspaces !== undefined) ? pluginData.hideEmptyWorkspaces : true
     property int _toplevelsTrigger: 0
     property var _lastKnownMonitors: []
+    property var _appMetaCache: ({})
+    property var _sortedCache: []
+    property string _sortedCacheKey: ""
+    property var _lastRowsByGroup: ({})
+    property var _lastNotified: ({})
+    property string _lastLuaContent: ""
+    property string _lastStateJson: ""
+    property int _wsTriggerCoalesced: 0
 
+    Timer {
+        id: heavyCoalesceTimer
+        interval: 16
+        repeat: false
+        onTriggered: {
+            root._toplevelsTrigger++;
+            root._wsTriggerCoalesced++;
+        }
+    }
+    function requestHeavyRecompute() {
+        if (!heavyCoalesceTimer.running)
+            heavyCoalesceTimer.start();
+        else
+            heavyCoalesceTimer.restart();
+    }
+    function execBatchedHyprctl(commands) {
+        if (!commands || commands.length === 0)
+            return;
+        const CHUNK = 50;
+        for (let i = 0; i < commands.length; i += CHUNK) {
+            const slice = commands.slice(i, i + CHUNK);
+            Quickshell.execDetached(["hyprctl", "--batch", slice.join("; ")]);
+        }
+    }
     property int activeGroupIndex: 1
     property var lastActiveWorkspaces: ({})
     property var monitorSlots: ({})
@@ -172,10 +204,15 @@ PluginComponent {
             "groups": root.groups,
             "activeGroupIndex": root.activeGroupIndex,
             "lastActiveWorkspaces": root.lastActiveWorkspaces,
-            "monitorSlots": root.monitorSlots,
-            "timestamp": new Date().toISOString()
+            "monitorSlots": root.monitorSlots
         };
-        const jsonString = JSON.stringify(data, null, 2);
+        const jsonString = JSON.stringify(data);
+        if (jsonString === root._lastStateJson) {
+            if (typeof callback === "function")
+                callback();
+            return;
+        }
+        root._lastStateJson = jsonString;
         const tmpFile = root.stateFilePath + ".tmp." + Date.now();
 
         Proc.runCommand(
@@ -300,7 +337,7 @@ PluginComponent {
             }
         }
         if (batchCommands.length > 0)
-            Quickshell.execDetached(["hyprctl", "--batch", batchCommands.join("; ")]);
+            root.execBatchedHyprctl(batchCommands);
     }
 
     function snapMonitorsToActiveGroup(mons) {
@@ -312,10 +349,11 @@ PluginComponent {
             const m = mons[i];
             if (!m || !m.name)
                 continue;
+            const slot = root.getMonitorSlot(m.name);
             const curWs = WGMath.resolveWorkspaceId(m.activeWorkspace ?? m);
-            if (root.isWorkspaceValidForGroupAndMonitor(curWs, g, root.getMonitorSlot(m.name)))
+            if (root.isWorkspaceValidForGroupAndMonitor(curWs, g, slot))
                 continue;
-            const targetWs = root.lastActiveWorkspaces[g]?.[m.name] || root.calcWorkspace(g, root.getMonitorSlot(m.name), 1);
+            const targetWs = root.lastActiveWorkspaces[g]?.[m.name] || root.calcWorkspace(g, slot, 1);
             if (root.isLua) {
                 batchCommands.push(`dispatch hl.dsp.focus({ monitor = '${m.name}' })`);
                 batchCommands.push(`dispatch hl.dsp.focus({ workspace = '${targetWs}' })`);
@@ -333,7 +371,7 @@ PluginComponent {
                 batchCommands.push("dispatch focusmonitor " + focusedMonName);
             }
         }
-        Quickshell.execDetached(["hyprctl", "--batch", batchCommands.join("; ")]);
+        root.execBatchedHyprctl(batchCommands);
     }
 
 
@@ -398,25 +436,24 @@ PluginComponent {
     Connections {
         target: Hyprland
         function onFocusedWorkspaceChanged() {
-            root._toplevelsTrigger++;
+            root.requestHeavyRecompute();
             root.syncFromCurrentWorkspace();
         }
         function onWorkspacesChanged() {
-            root._toplevelsTrigger++;
+            root.requestHeavyRecompute();
             root.notifyState();
         }
         function onToplevelsChanged() {
-            root._toplevelsTrigger++;
+            root.requestHeavyRecompute();
         }
         function onRawEvent(event) {
             const name = event.name;
             if (name === "openwindow" || name === "closewindow" || name === "movewindow" || name === "movewindowv2") {
-                root._toplevelsTrigger++;
+                root.requestHeavyRecompute();
             } else if (name === Defaults.EVENT_WORKSPACE || name === Defaults.EVENT_WORKSPACE_V2 ||
                        name === Defaults.EVENT_FOCUSED_MON || name === Defaults.EVENT_FOCUSED_MON_V2 ||
                        name === Defaults.EVENT_MOVE_WORKSPACE) {
-                root._toplevelsTrigger++;
-                Hyprland.refreshMonitors();
+                root.requestHeavyRecompute();
                 let hintWs = Defaults.INVALID_WORKSPACE_ID;
                 if (name === Defaults.EVENT_WORKSPACE_V2) {
                     const parts = root.getHyprlandRawEventParts(event, 2);
@@ -445,7 +482,7 @@ PluginComponent {
     Connections {
         target: Hyprland.monitors
         function onValuesChanged() {
-            root._toplevelsTrigger++;
+            root.requestHeavyRecompute();
             const mons = root.getSortedMonitors();
             const names = mons.map(m => m.name);
             const prev = root._lastKnownMonitorNames || [];
@@ -530,16 +567,22 @@ PluginComponent {
             }
             return [{ "name": "default", "id": 0 }];
         }
-
         const names = mons.map(m => m.name);
+        const prioKey = (root.monitorPriority || []).join(",");
+        const slotsKey = JSON.stringify(root.monitorSlots || {});
+        const cacheKey = names.join(",") + "|" + prioKey + "|" + slotsKey;
+        if (cacheKey === root._sortedCacheKey && root._sortedCache.length === mons.length) {
+            return root._sortedCache;
+        }
         const assigned = WGMath.assignMonitorSlots(names, root.monitorPriority, root.monitorSlots, Defaults.MAX_MONITOR_SLOTS);
         if (assigned.changed) {
             root.monitorSlots = assigned.slots;
             saveStateDebounceTimer.restart();
         }
+        const slots = root.monitorSlots || {};
         const sorted = [...mons].sort((a, b) => {
-            const sa = (root.monitorSlots && root.monitorSlots[a.name] !== undefined) ? root.monitorSlots[a.name] : Defaults.MAX_MONITOR_SLOTS;
-            const sb = (root.monitorSlots && root.monitorSlots[b.name] !== undefined) ? root.monitorSlots[b.name] : Defaults.MAX_MONITOR_SLOTS;
+            const sa = (slots[a.name] !== undefined) ? slots[a.name] : Defaults.MAX_MONITOR_SLOTS;
+            const sb = (slots[b.name] !== undefined) ? slots[b.name] : Defaults.MAX_MONITOR_SLOTS;
             if (sa !== sb)
                 return sa - sb;
             if (a.name < b.name)
@@ -548,6 +591,8 @@ PluginComponent {
                 return 1;
             return 0;
         });
+        root._sortedCacheKey = cacheKey;
+        root._sortedCache = sorted;
         root._lastKnownMonitors = sorted;
         return sorted;
     }
@@ -581,24 +626,19 @@ PluginComponent {
     function isWorkspaceValidForGroupAndMonitor(wsId, groupId, slotIdx) {
         return WGMath.isWorkspaceInRangeFixed(wsId, groupId, slotIdx, workspacesPerMonitor);
     }
-
-    function getValidWorkspaceForMonitor(groupId, slotIdx, preferredWs) {
-        if (isWorkspaceValidForGroupAndMonitor(preferredWs, groupId, slotIdx)) {
-            return preferredWs;
-        }
-        return calcWorkspace(groupId, slotIdx, 1);
-    }
-
     function sanitizeLastActiveWorkspaces() {
         const sanitized = {};
         const sortedMons = getSortedMonitors();
+        const slotsByMon = ({});
+        for (let s = 0; s < sortedMons.length; s++)
+            slotsByMon[sortedMons[s].name] = getMonitorSlot(sortedMons[s].name);
         const numGroups = (root.groups && root.groups.length > 0) ? root.groups.length : 1;
         for (let gNum = 1; gNum <= numGroups; gNum++) {
             sanitized[gNum] = {};
             const gMap = (root.lastActiveWorkspaces && root.lastActiveWorkspaces[gNum]) ? root.lastActiveWorkspaces[gNum] : {};
             for (let mIdx = 0; mIdx < sortedMons.length; mIdx++) {
                 const mName = sortedMons[mIdx].name;
-                sanitized[gNum][mName] = getValidWorkspaceForMonitor(gNum, getMonitorSlot(mName), gMap[mName]);
+                sanitized[gNum][mName] = getValidWorkspaceForMonitor(gNum, slotsByMon[mName], gMap[mName]);
             }
         }
         root.lastActiveWorkspaces = sanitized;
@@ -694,36 +734,47 @@ PluginComponent {
         return true;
     }
 
+    function setGlobalIfChanged(key, value) {
+        const prev = root._lastNotified[key];
+        const same = (typeof value === "object") ? (JSON.stringify(prev) === JSON.stringify(value)) : (prev === value);
+        if (same)
+            return;
+        root._lastNotified[key] = (typeof value === "object") ? JSON.parse(JSON.stringify(value)) : value;
+        PluginService.setGlobalVar("workspaceGroups", key, value);
+    }
     function notifyState() {
         if (!PluginService)
             return;
-        PluginService.setGlobalVar("workspaceGroups", "activeGroupIndex", root.activeGroupIndex);
-        PluginService.setGlobalVar("workspaceGroups", "groups", root.groups);
+        const sortedMons = root.getSortedMonitors();
+        const sortedNames = sortedMons.map(m => m.name);
         const activeGroup = root.groups[root.activeGroupIndex - 1] || root.defaultGroups[0];
-        PluginService.setGlobalVar("workspaceGroups", "activeGroupName", activeGroup.name || "");
-        PluginService.setGlobalVar("workspaceGroups", "activeGroupIcon", activeGroup.icon || "󰅩");
-        PluginService.setGlobalVar("workspaceGroups", "activeGroupColor", activeGroup.color || "#89b4fa");
-        PluginService.setGlobalVar("workspaceGroups", "workspacesPerMonitor", root.workspacesPerMonitor);
-        PluginService.setGlobalVar("workspaceGroups", "monitorCount", root.getMonitorCount());
-        PluginService.setGlobalVar("workspaceGroups", "hideEmptyWorkspaces", root.hideEmptyWorkspaces);
-        PluginService.setGlobalVar("workspaceGroups", "sortedMonitorNames", root.getSortedMonitors().map(m => m.name));
-        PluginService.setGlobalVar("workspaceGroups", "monitorPriority", root.monitorPriority);
-        PluginService.setGlobalVar("workspaceGroups", "monitorSlots", root.monitorSlots);
+        setGlobalIfChanged("activeGroupIndex", root.activeGroupIndex);
+        setGlobalIfChanged("groups", root.groups);
+        setGlobalIfChanged("activeGroupName", activeGroup.name || "");
+        setGlobalIfChanged("activeGroupIcon", activeGroup.icon || "󰅩");
+        setGlobalIfChanged("activeGroupColor", activeGroup.color || "#89b4fa");
+        setGlobalIfChanged("workspacesPerMonitor", root.workspacesPerMonitor);
+        setGlobalIfChanged("monitorCount", Math.max(1, sortedMons.length));
+        setGlobalIfChanged("hideEmptyWorkspaces", root.hideEmptyWorkspaces);
+        setGlobalIfChanged("sortedMonitorNames", sortedNames);
+        setGlobalIfChanged("monitorPriority", root.monitorPriority);
+        setGlobalIfChanged("monitorSlots", root.monitorSlots);
     }
     function commitState(persistLua) {
         root.notifyState();
         if (persistLua === true) {
             root.writeLuaConfig();
         }
-        root.saveStateFile();
+        saveStateDebounceTimer.restart();
     }
 
     function snapshotCurrent() {
         const mons = getSortedMonitors();
         for (let i = 0; i < mons.length; i++) {
             const m = mons[i];
+            const slot = getMonitorSlot(m.name);
             const curWs = WGMath.resolveWorkspaceId(m.activeWorkspace ?? m);
-            if (curWs > 0 && root.isWorkspaceValidForGroupAndMonitor(curWs, root.activeGroupIndex, getMonitorSlot(m.name))) {
+            if (curWs > 0 && root.isWorkspaceValidForGroupAndMonitor(curWs, root.activeGroupIndex, slot)) {
                 if (!root.lastActiveWorkspaces[root.activeGroupIndex])
                     root.lastActiveWorkspaces[root.activeGroupIndex] = {};
                 root.lastActiveWorkspaces[root.activeGroupIndex][m.name] = curWs;
@@ -738,9 +789,10 @@ PluginComponent {
             root.lastActiveWorkspaces[g] = {};
         for (let i = 0; i < mons.length; i++) {
             const m = mons[i];
+            const slot = getMonitorSlot(m.name);
             let targetWs = root.lastActiveWorkspaces[g]?.[m.name];
-            if (!root.isWorkspaceValidForGroupAndMonitor(targetWs, g, getMonitorSlot(m.name))) {
-                targetWs = calcWorkspace(g, getMonitorSlot(m.name), 1);
+            if (!root.isWorkspaceValidForGroupAndMonitor(targetWs, g, slot)) {
+                targetWs = calcWorkspace(g, slot, 1);
                 root.lastActiveWorkspaces[g][m.name] = targetWs;
             }
         }
@@ -791,6 +843,21 @@ PluginComponent {
         }
         return list;
     }
+    function resolveAppMeta(keyBase) {
+        const cached = root._appMetaCache[keyBase];
+        if (cached)
+            return cached;
+        const moddedId = Paths.moddedAppId(keyBase);
+        const desktopEntry = DesktopEntries.heuristicLookup(moddedId);
+        const meta = {
+            "icon": Paths.getAppIcon(moddedId, desktopEntry),
+            "appName": Paths.getAppName(moddedId, desktopEntry) || keyBase
+        };
+        if (Object.keys(root._appMetaCache).length > 500)
+            root._appMetaCache = ({});
+        root._appMetaCache[keyBase] = meta;
+        return meta;
+    }
     function buildWindowRows(groupId) {
         const wins = root.windowsInGroup(groupId);
         const list = [];
@@ -802,19 +869,16 @@ PluginComponent {
             const subWs = calcSubWorkspaceFromWorkspace(wsId);
             const ipcObj = top.lastIpcObject || {};
             const keyBase = ipcObj.class || ipcObj.initialClass || top.wayland?.appId || top.appId || "unknown";
-            const moddedId = Paths.moddedAppId(keyBase);
-            const desktopEntry = DesktopEntries.heuristicLookup(moddedId);
-            const icon = Paths.getAppIcon(moddedId, desktopEntry);
-            const appName = Paths.getAppName(moddedId, desktopEntry) || keyBase;
-            const title = top.title || ipcObj.title || appName;
+            const meta = root.resolveAppMeta(keyBase);
+            const title = top.title || ipcObj.title || meta.appName;
             const address = root.formatWindowAddress(ipcObj.address || top.address);
             const isFocused = top.activated || (top.wayland && top.wayland.activated) || false;
             list.push({
                 "subWs": subWs,
                 "wsId": wsId,
-                "appName": appName,
+                "appName": meta.appName,
                 "title": title,
-                "icon": icon,
+                "icon": meta.icon,
                 "address": address,
                 "isFocused": isFocused
             });
@@ -825,12 +889,14 @@ PluginComponent {
 
     readonly property var windowRowsByGroup: {
         root._toplevelsTrigger;
+        if (!root.overviewOpen && !root.createModalOpen)
+            return root._lastRowsByGroup;
         const groups = root.groups || [];
-        const tops = Hyprland.toplevels?.values || [];
         const map = {};
         for (let i = 0; i < groups.length; i++) {
             map[groups[i].id] = root.buildWindowRows(groups[i].id);
         }
+        root._lastRowsByGroup = map;
         return map;
     }
 
@@ -855,8 +921,7 @@ PluginComponent {
         const targetWs = root.lastActiveWorkspaces[g]?.[focusedMonName] || calcWorkspace(g, 0, 1);
         root.currentWorkspaceId = targetWs;
         const batchCommands = root.buildFocusBatch(g, mons, focusedMonName);
-        const fullBatch = batchCommands.join("; ");
-        Quickshell.execDetached(["hyprctl", "--batch", fullBatch]);
+        root.execBatchedHyprctl(batchCommands);
 
         root.targetSwitchGroup = g;
         targetSwitchTimeoutTimer.restart();
@@ -901,8 +966,7 @@ PluginComponent {
         for (const cmd of root.buildFocusBatch(g, mons, focusedMonName)) {
             batchCommands.push(cmd);
         }
-        const fullBatch = batchCommands.join("; ");
-        Quickshell.execDetached(["hyprctl", "--batch", fullBatch]);
+        root.execBatchedHyprctl(batchCommands);
 
         root.targetSwitchGroup = g;
         targetSwitchTimeoutTimer.restart();
@@ -996,9 +1060,7 @@ PluginComponent {
     }
 
     function openOverview() {
-        Hyprland.refreshWorkspaces();
-        Hyprland.refreshToplevels();
-        root._toplevelsTrigger++;
+        root.requestHeavyRecompute();
         overviewCloseTimer.stop();
         root.isClosing = false;
         root.mouseMovedSinceOpen = false;
@@ -1291,7 +1353,7 @@ PluginComponent {
         }
 
         if (batchCommands.length > 0) {
-            Quickshell.execDetached(["hyprctl", "--batch", batchCommands.join("; ")]);
+            root.execBatchedHyprctl(batchCommands);
         }
 
         root.groups = newGroups.map((g, idx) => ({
@@ -1565,7 +1627,7 @@ PluginComponent {
         }
 
         if (batchCommands.length > 0) {
-            Quickshell.execDetached(["hyprctl", "--batch", batchCommands.join("; ")]);
+            root.execBatchedHyprctl(batchCommands);
         }
 
         root.activeGroupIndex = newActive;
@@ -1763,13 +1825,18 @@ end
 
 return M
 `;
+        if (luaContent === root._lastLuaContent) {
+            if (typeof callback === "function")
+                callback();
+            return;
+        }
         for (const line of luaContent.split("\n")) {
             if (line === "WG_GROUPS_EOF") {
                 console.warn("[WorkspaceGroups] Refusing to write Lua config: content collides with heredoc delimiter");
                 return;
             }
         }
-
+        root._lastLuaContent = luaContent;
         const tmpFile = luaConfigPath + ".tmp." + Date.now();
         Proc.runCommand("save-workspace-groups-lua", ["sh", "-c", `mkdir -p "${hyprDmsDir}" && cat << 'WG_GROUPS_EOF' > "${tmpFile}"\n${luaContent}\nWG_GROUPS_EOF\nmv -f "${tmpFile}" "${luaConfigPath}"\n`], (output, exitCode) => {
             if (exitCode !== 0) {

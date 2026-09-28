@@ -9,7 +9,7 @@ QtObject {
     property bool isDragging: false
     property string ownerToken: ""
     property var host: null
-
+    property double _lastMoveMs: 0
     function trackGlobalMouse(item, x, y) {
         if (!host)
             return false;
@@ -53,6 +53,10 @@ QtObject {
     function move(token, fromIndex, mouseItem, x, y, container, grid, slotCount) {
         if (!isDraggingFor(token, fromIndex))
             return false;
+        const now = Date.now();
+        if (now - ctrl._lastMoveMs < 16)
+            return true;
+        ctrl._lastMoveMs = now;
         const modalPt = mouseItem.mapToItem(container, x, y);
         if (host) {
             host.dragMouseX = modalPt.x;

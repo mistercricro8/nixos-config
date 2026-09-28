@@ -29,25 +29,57 @@ PluginComponent {
     property var monitorPriority: Defaults.MONITOR_PRIORITY.slice()
 
     property int _toplevelsTrigger: 0
+    property int _wsTrigger: 0
+    property int _winTrigger: 0
+    property int _memoSlot: 0
+    property bool _memoSlotValid: false
+    property var _lastSubList: []
+    onMonitorSlotsChanged: _memoSlotValid = false
+    onSortedMonitorNamesChanged: _memoSlotValid = false
+    onMonitorPriorityChanged: _memoSlotValid = false
+    onScreenNameChanged: _memoSlotValid = false
 
+    Timer {
+        id: heavyCoalesceTimer
+        interval: 16
+        repeat: false
+        onTriggered: root._toplevelsTrigger++
+    }
+    function requestHeavyRecompute() {
+        if (!heavyCoalesceTimer.running)
+            heavyCoalesceTimer.start();
+        else
+            heavyCoalesceTimer.restart();
+    }
     readonly property string screenName: root.parentScreen?.name || ""
 
     popoutWidth: 320
 
-    function updateFromGlobals() {
+    function updateFromGlobals(varName) {
         if (!PluginService)
             return;
-        activeGroupIndex = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_ACTIVE_INDEX, 1);
-        groupsList = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_GROUPS, []);
-        activeGroupName = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_ACTIVE_NAME, Defaults.DEFAULT_GROUP_NAME);
-        activeGroupIcon = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_ACTIVE_ICON, Defaults.FALLBACK_ICON);
-        workspacesPerMonitor = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_WS_PER_MON, Defaults.WS_DEFAULT);
-        monitorSlots = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_MON_SLOTS, ({}));
-        hideEmptyWorkspaces = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_HIDE_EMPTY, true);
-        sortedMonitorNames = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_SORTED_MONS, []);
-        monitorPriority = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_MON_PRIO, Defaults.MONITOR_PRIORITY.slice());
+        if (varName === undefined || varName === Defaults.KEY_ACTIVE_INDEX)
+            activeGroupIndex = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_ACTIVE_INDEX, 1);
+        if (varName === undefined || varName === Defaults.KEY_GROUPS) {
+            const nextGroups = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_GROUPS, []);
+            if (nextGroups !== groupsList)
+                groupsList = nextGroups;
+        }
+        if (varName === undefined || varName === Defaults.KEY_ACTIVE_NAME)
+            activeGroupName = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_ACTIVE_NAME, Defaults.DEFAULT_GROUP_NAME);
+        if (varName === undefined || varName === Defaults.KEY_ACTIVE_ICON)
+            activeGroupIcon = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_ACTIVE_ICON, Defaults.FALLBACK_ICON);
+        if (varName === undefined || varName === Defaults.KEY_WS_PER_MON)
+            workspacesPerMonitor = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_WS_PER_MON, Defaults.WS_DEFAULT);
+        if (varName === undefined || varName === Defaults.KEY_MON_SLOTS)
+            monitorSlots = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_MON_SLOTS, ({}));
+        if (varName === undefined || varName === Defaults.KEY_HIDE_EMPTY)
+            hideEmptyWorkspaces = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_HIDE_EMPTY, true);
+        if (varName === undefined || varName === Defaults.KEY_SORTED_MONS)
+            sortedMonitorNames = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_SORTED_MONS, []);
+        if (varName === undefined || varName === Defaults.KEY_MON_PRIO)
+            monitorPriority = PluginService.getGlobalVar(Defaults.TARGET, Defaults.KEY_MON_PRIO, Defaults.MONITOR_PRIORITY.slice());
     }
-
     Component.onCompleted: {
         updateFromGlobals();
     }
@@ -56,7 +88,7 @@ PluginComponent {
         target: PluginService
         function onGlobalVarChanged(pluginId, varName) {
             if (pluginId === Defaults.TARGET) {
-                root.updateFromGlobals();
+                root.updateFromGlobals(varName);
             }
         }
     }
@@ -82,19 +114,21 @@ PluginComponent {
     Connections {
         target: Hyprland
         function onToplevelsChanged() {
-            root._toplevelsTrigger++;
+            root._winTrigger++;
+            root.requestHeavyRecompute();
         }
         function onFocusedWorkspaceChanged() {
-            root._toplevelsTrigger++;
+            root._wsTrigger++;
+            root.requestHeavyRecompute();
         }
         function onWorkspacesChanged() {
-            root._toplevelsTrigger++;
+            root._wsTrigger++;
+            root.requestHeavyRecompute();
         }
         function onRawEvent(event) {
             if (event.name === Defaults.EVENT_WORKSPACE || event.name === Defaults.EVENT_WORKSPACE_V2 ||
                 event.name === Defaults.EVENT_FOCUSED_MON || event.name === Defaults.EVENT_FOCUSED_MON_V2 ||
                 event.name === Defaults.EVENT_MOVE_WORKSPACE) {
-                Hyprland.refreshMonitors();
                 let hintWs = Defaults.INVALID_WORKSPACE_ID;
                 if (event.name === Defaults.EVENT_WORKSPACE_V2) {
                     const parts = root.getHyprlandRawEventParts(event, 2);
@@ -109,7 +143,8 @@ PluginComponent {
                 if (hintWs > 0) {
                     root._lastActiveWsFromEvent = hintWs;
                 }
-                root._toplevelsTrigger++;
+                root._wsTrigger++;
+                root.requestHeavyRecompute();
             }
         }
     }
@@ -117,10 +152,12 @@ PluginComponent {
     Connections {
         target: Hyprland.monitors
         function onValuesChanged() {
-            root._toplevelsTrigger++;
+            root._memoSlotValid = false;
+            root._wsTrigger++;
+            root.requestHeavyRecompute();
         }
     }
-    function getMonitorSlot() {
+    function computeMonitorSlotUncached() {
         if (root.monitorSlots && root.monitorSlots[root.screenName] !== undefined) {
             return WGMath.clampSlot(root.monitorSlots[root.screenName]);
         }
@@ -149,8 +186,31 @@ PluginComponent {
         const idx = sorted.findIndex(m => m.name === root.screenName);
         return WGMath.clampSlot(idx);
     }
+    function getMonitorSlot() {
+        if (root._memoSlotValid)
+            return root._memoSlot;
+        const slot = root.computeMonitorSlotUncached();
+        root._memoSlot = slot;
+        root._memoSlotValid = true;
+        return slot;
+    }
 
+    function fastWorkspaceId(obj) {
+        if (obj === null || obj === undefined)
+            return Defaults.INVALID_WORKSPACE_ID;
+        if (typeof obj === "number")
+            return obj > 0 ? Math.floor(obj) : Defaults.INVALID_WORKSPACE_ID;
+        const directWs = obj.workspace;
+        if (typeof directWs === "number" && directWs > 0)
+            return Math.floor(directWs);
+        if (directWs && typeof directWs === "object" && typeof directWs.id === "number" && directWs.id > 0)
+            return Math.floor(directWs.id);
+        if (typeof obj.id === "number" && obj.id > 0 && obj.address !== undefined)
+            return Math.floor(obj.id);
+        return WGMath.resolveWorkspaceId(obj);
+    }
     readonly property int activeWorkspaceIdOnThisMon: {
+        root._wsTrigger;
         root._toplevelsTrigger;
         if (root._lastActiveWsFromEvent > 0) {
             const K = root.workspacesPerMonitor || 10;
@@ -160,55 +220,74 @@ PluginComponent {
             }
         }
         const mon = (Hyprland.monitors?.values || []).find(m => m.name === root.screenName);
-        const monWs = WGMath.resolveWorkspaceId(mon?.activeWorkspace ?? mon);
+        const monWs = root.fastWorkspaceId(mon?.activeWorkspace ?? mon);
         if (monWs > 0) return monWs;
-        const focusedWs = WGMath.resolveWorkspaceId(Hyprland.focusedMonitor);
+        const focusedWs = root.fastWorkspaceId(Hyprland.focusedMonitor);
         if (focusedWs > 0) return focusedWs;
-        const fallbackWs = WGMath.resolveWorkspaceId(Hyprland.focusedWorkspace);
+        const fallbackWs = root.fastWorkspaceId(Hyprland.focusedWorkspace);
         if (fallbackWs > 0) return fallbackWs;
         return root.getTargetWorkspaceId(Defaults.DEFAULT_SUB_WORKSPACE_INDEX);
     }
-
-
-
+    readonly property var _occupancyMap: {
+        root._toplevelsTrigger;
+        const map = ({});
+        const toplevels = Hyprland.toplevels?.values || [];
+        for (let i = 0; i < toplevels.length; i++) {
+            const wId = root.fastWorkspaceId(toplevels[i]);
+            if (wId > 0)
+                map[wId] = true;
+        }
+        const workspaces = Hyprland.workspaces?.values || [];
+        for (let j = 0; j < workspaces.length; j++) {
+            const w = workspaces[j];
+            const wId = root.fastWorkspaceId(w);
+            if (wId > 0 && (w.windows > 0 || (w.lastIpcObject && w.lastIpcObject.windows > 0)))
+                map[wId] = true;
+        }
+        return map;
+    }
     readonly property var subWorkspacesList: {
         root._toplevelsTrigger;
         root.hideEmptyWorkspaces;
-        const count = Math.max(1, Math.min(20, root.workspacesPerMonitor || 10));
+        const activeWs = root.activeWorkspaceIdOnThisMon;
+        const occ = root._occupancyMap;
+        const K = root.workspacesPerMonitor || 10;
+        const G = root.activeGroupIndex;
+        const slot = root.getMonitorSlot();
+        const count = Math.max(1, Math.min(20, K));
         const arr = [];
         for (let i = 1; i <= count; i++) {
-            const targetWs = root.getTargetWorkspaceId(i);
-            const isActive = root.activeWorkspaceIdOnThisMon === targetWs;
-            const isOccupied = root.isWorkspaceOccupied(targetWs);
+            const targetWs = WGMath.calcWorkspaceFixed(G, slot, i, K);
+            const isActive = activeWs === targetWs;
+            const isOccupied = occ[targetWs] === true;
             if (!root.hideEmptyWorkspaces || isActive || isOccupied) {
                 arr.push(i);
             }
         }
+        const prev = root._lastSubList;
+        if (prev && prev.length === arr.length) {
+            let same = true;
+            for (let k = 0; k < arr.length; k++) {
+                if (prev[k] !== arr[k]) {
+                    same = false;
+                    break;
+                }
+            }
+            if (same)
+                return prev;
+        }
+        root._lastSubList = arr;
         return arr;
     }
-
     function getTargetWorkspaceId(subWs) {
         const K = root.workspacesPerMonitor || 10;
         const G = root.activeGroupIndex;
         const slot = root.getMonitorSlot();
         return WGMath.calcWorkspaceFixed(G, slot, subWs, K);
     }
-
     function isWorkspaceOccupied(wsId) {
         root._toplevelsTrigger;
-        const toplevels = Hyprland.toplevels?.values || [];
-        for (let i = 0; i < toplevels.length; i++) {
-            const tl = toplevels[i];
-            const wId = WGMath.resolveWorkspaceId(tl);
-            if (wId === wsId)
-                return true;
-        }
-        const workspaces = Hyprland.workspaces?.values || [];
-        const foundWs = workspaces.find(w => WGMath.resolveWorkspaceId(w) === wsId);
-        if (foundWs && (foundWs.windows > 0 || (foundWs.lastIpcObject && foundWs.lastIpcObject.windows > 0))) {
-            return true;
-        }
-        return false;
+        return root._occupancyMap[wsId] === true;
     }
 
     function cycleGroupFromWheel(event) {

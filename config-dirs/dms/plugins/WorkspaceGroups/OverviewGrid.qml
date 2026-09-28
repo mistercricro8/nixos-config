@@ -90,8 +90,15 @@ ColumnLayout {
         contentHeight: groupGrid.height + 16
         boundsBehavior: Flickable.StopAtBounds
 
+        property bool _wheelActive: false
+        Timer {
+            id: wheelSettleTimer
+            interval: 120
+            repeat: false
+            onTriggered: overviewFlickable._wheelActive = false
+        }
         Behavior on contentY {
-            enabled: !overviewFlickable.moving && !overviewFlickable.flicking && grid.contentVisible
+            enabled: !overviewFlickable.moving && !overviewFlickable.flicking && grid.contentVisible && !overviewFlickable._wheelActive
             NumberAnimation {
                 duration: 180
                 easing.type: Easing.OutCubic
@@ -159,6 +166,8 @@ ColumnLayout {
         WheelHandler {
             target: overviewFlickable
             onWheel: event => {
+                overviewFlickable._wheelActive = true;
+                wheelSettleTimer.restart();
                 if (event.angleDelta.y > 0) {
                     overviewFlickable.contentY = Math.max(0, overviewFlickable.contentY - Defaults.SCROLL_STEP_OVERVIEW);
                 } else if (event.angleDelta.y < 0) {

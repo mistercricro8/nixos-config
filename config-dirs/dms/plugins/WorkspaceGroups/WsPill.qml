@@ -40,7 +40,6 @@ Rectangle {
     }
     border.width: 1
 
-    Behavior on width { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
     Behavior on color { ColorAnimation { duration: 100 } }
     Behavior on border.color { ColorAnimation { duration: 100 } }
 

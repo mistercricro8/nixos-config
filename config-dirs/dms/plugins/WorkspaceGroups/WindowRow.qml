@@ -125,6 +125,7 @@ Rectangle {
                 anchors.fill: parent
                 source: row.rowData.icon || ""
                 visible: row.rowData.icon !== "" && status === Image.Ready
+                asynchronous: true
             }
 
             DankIcon {
