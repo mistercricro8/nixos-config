@@ -15,6 +15,17 @@
       "type": "remote",
       "url": "http://localhost:12002/sse",
       "enabled": true
+    },
+    "pencil": {
+      "command": [
+        "/home/cricro/.cache/appimage-run/512ee5eea9797aacee452f9569b54d875c6c3a49f397700d906b9a82f633411b/resources/app.asar.unpacked/out/mcp-server-linux-x64",
+        "--app",
+        "desktop",
+        "--agent",
+        "openCodeCLI"
+      ],
+      "enabled": true,
+      "type": "local"
     }
   }
 }

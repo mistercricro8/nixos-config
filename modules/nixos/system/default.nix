@@ -23,6 +23,9 @@
 
       nixpkgs.config.allowUnfree = true;
 
+      programs.appimage.enable = true;
+      programs.appimage.binfmt = true;
+
       networking.networkmanager.enable = true;
       networking.nameservers = [
         "1.1.1.1"
