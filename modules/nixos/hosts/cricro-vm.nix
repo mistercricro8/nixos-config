@@ -214,6 +214,7 @@
         };
         services.lcy41S = {
           executor = "docker";
+          dockerImage = "alpine:latest";
           authenticationTokenConfigFile = config.sops.secrets."cricro-vm/lcy41S/gitlabTokenConfigFile".path;
         };
       };
