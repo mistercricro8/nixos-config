@@ -196,6 +196,11 @@
         format = "yaml";
       };
 
+      sops.secrets."cricro-vm/lcy41S/gitlabTokenConfigFile" = {
+        sopsFile = inputs.self + "/secrets/cricro-vm.yaml";
+        format = "yaml";
+      };
+
       services.gitlab-runner = {
         enable = true;
         services.WZ7uTl = {
@@ -207,7 +212,13 @@
             "--docker-security-opt apparmor:unconfined"
           ];
         };
+        services.lcy41S = {
+          executor = "docker";
+          authenticationTokenConfigFile = config.sops.secrets."cricro-vm/lcy41S/gitlabTokenConfigFile".path;
+        };
       };
+
+
 
       # ============== System
       system.stateVersion = "23.05";
