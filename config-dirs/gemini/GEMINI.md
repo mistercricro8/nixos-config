@@ -24,10 +24,11 @@ You must strictly adhere to the following architectural rules when generating or
    * Implement only what is directly requested.
    * Do not introduce backwards-compatibility shims, polyfills, legacy wrappers, or deprecated API support unless explicitly instructed.
 
-4. **Zero Magic Literals**
-   * Never hardcode operational parameters, URLs, timeouts, retry counts, or domain-specific thresholds inline.
-   * Extract all configuration-driven numbers and strings into centralized uppercase constants, config modules, or environment variables.
+4. **No Repeated Cross-File Literals**
+   * Never hardcode the same operational parameter, URL, timeout, retry count, or domain-specific threshold across multiple distinct call sites or files.
+   * If a literal value is shared by more than one component or module, extract it into a centralized configuration module, environment variable, or shared constant file.
+   * Single-use literals that are tightly coupled to a single, isolated function or local scope may remain inline to avoid indirection bloat.
 
 5. **Strict Path Discipline**
-   * Never generate arbitrary, machine-dependent local paths (e.g., `~/`, `/home/user`, relative traversal outside the workspace).
+   * Never generate arbitrary, machine-dependent local paths (e.g., `~/`, `/home/user`, `file:///`, relative traversal outside the workspace).
    * All file operations must use paths that are strictly relative to the project root or strictly absolute system paths designed for containerized (Docker) environments.
