@@ -626,6 +626,14 @@ PluginComponent {
     function isWorkspaceValidForGroupAndMonitor(wsId, groupId, slotIdx) {
         return WGMath.isWorkspaceInRangeFixed(wsId, groupId, slotIdx, workspacesPerMonitor);
     }
+
+    function getValidWorkspaceForMonitor(groupId, slotIdx, preferredWs) {
+        if (isWorkspaceValidForGroupAndMonitor(preferredWs, groupId, slotIdx)) {
+            return preferredWs;
+        }
+        return calcWorkspace(groupId, slotIdx, 1);
+    }
+
     function sanitizeLastActiveWorkspaces() {
         const sanitized = {};
         const sortedMons = getSortedMonitors();
