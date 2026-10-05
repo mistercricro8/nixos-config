@@ -29,4 +29,13 @@ providers:
     - kimi
     - parallel
     - synthetic
+    - startpage
+    - duckduckgo
+    - ecosia
+    - google
+    - mojeek
+    - public
+  webSearchOrder:
     - searxng
+searxng:
+  endpoint: http://localhost:12100

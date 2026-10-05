@@ -13,22 +13,27 @@ Standalone python, python3 or others will generally not be available. Explore wh
 You must strictly adhere to the following architectural rules when generating or modifying code. Violating any of these principles is considered a fatal regression:
 
 1. **Exhaustive Branching & Explicit State Handling**
-   * Every branch in an `if/else` block, pattern match, or `switch` statement must explicitly manage application state or raise a dedicated error.
-   * Never write silent `pass`/noop blocks, empty branches, or branches that merely log a warning without addressing control flow.
+  * Every branch in an `if/else` block, pattern match, or `switch` statement must explicitly manage application state or raise a dedicated error.
+  * Never write silent `pass`/noop blocks, empty branches, or branches that merely log a warning without addressing control flow.
 
 2. **Zero Fallbacks & Deterministic Control Flow**
-   * Never implement fallback chains, speculative catch-alls, or silent defaults.
-   * Every execution path must be explicit, deliberate, and predictable. If expected input or state is absent, fail fast and explicitly rather than defaulting to an assumed state.
+  * Never implement fallback chains, speculative catch-alls, or silent defaults.
+  * Every execution path must be explicit, deliberate, and predictable. If expected input or state is absent, fail fast and explicitly rather than defaulting to an assumed state.
 
 3. **No Unrequested Legacy Support**
-   * Implement only what is directly requested.
-   * Do not introduce backwards-compatibility shims, polyfills, legacy wrappers, or deprecated API support unless explicitly instructed.
+  * Implement only what is directly requested.
+  * Do not introduce backwards-compatibility shims, polyfills, legacy wrappers, or deprecated API support unless explicitly instructed.
 
 4. **No Repeated Cross-File Literals**
-   * Never hardcode the same operational parameter, URL, timeout, retry count, or domain-specific threshold across multiple distinct call sites or files.
-   * If a literal value is shared by more than one component or module, extract it into a centralized configuration module, environment variable, or shared constant file.
-   * Single-use literals that are tightly coupled to a single, isolated function or local scope may remain inline to avoid indirection bloat.
+  * Never hardcode the same operational parameter, URL, timeout, retry count, or domain-specific threshold across multiple distinct call sites or files.
+  * If a literal value is shared by more than one component or module, extract it into a centralized configuration module, environment variable, or shared constant file.
+  * Single-use literals that are tightly coupled to a single, isolated function or local scope may remain inline to avoid indirection bloat.
 
 5. **Strict Path Discipline**
-   * Never generate arbitrary, machine-dependent local paths (e.g., `~/`, `/home/user`, `file:///`, relative traversal outside the workspace).
-   * All file operations must use paths that are strictly relative to the project root or strictly absolute system paths designed for containerized (Docker) environments.
+  * Never generate arbitrary, machine-dependent local paths (e.g., `~/`, `/home/user`, `file:///`, relative traversal outside the workspace).
+  * All file operations must use paths that are strictly relative to the project root or strictly absolute system paths designed for containerized (Docker) environments.
+
+6. **Prioritize Native & Ecosystem Solutions**
+  * Before implementing custom utilities, boilerplate algorithms, or low-level logic, use `ctx7` or web search to verify whether the target framework or an established third-party library already provides a first-class solution.
+  * **Framework built-ins take strict priority:** If the active framework provides an idiomatic, built-in solution for the task, you must use it over custom implementations.
+  * **Library solutions must be recommended:** If an external library cleanly solves the task, explicitly recommend it and present it as the preferred path over rolling custom code, unless specifically instructed to avoid new dependencies.
