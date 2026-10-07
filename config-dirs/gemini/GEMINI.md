@@ -1,15 +1,13 @@
-<!-- context7 -->
 Use the `ctx7` CLI to fetch current documentation whenever the user asks about a library, framework, SDK, API, CLI tool, or cloud service — even well-known ones like React, Next.js, Prisma, Express, Tailwind, Django, or Spring Boot. This includes API syntax, configuration, version migration, library-specific debugging, setup instructions, and CLI tool usage. Use even when you think you know the answer — your training data may not reflect recent changes. Prefer this over web search for library docs.
 Do not use for: refactoring, writing scripts from scratch, debugging business logic, code review, or general programming concepts.
 Enable the find-docs skill for instructions on how to use `ctx7` to fetch documentation.
 
-<!-- javascript tooling -->
-NEVER use npm to install or run libraries, frameworks, SDKs, APIs, CLI tools, or cloud services. Whenever in a javascript context, test whether pnpm/bun/yarn are available and only use EITHER of those. If none are available, try using `nix run nixpkgs#package` (e.g. `nix run nixpkgs#pnpm` or `nix run nixpkgs#bun`) as an ad-hoc runner instead of aborting the task. Do not use npm for any reason.
+Nix will always be available for ad-hoc packages, so you must use it to install or run libraries, frameworks, SDKs or CLI tools if not available.
 
-<!-- python tooling -->
-Standalone python, python3 or others will generally not be available. Explore whether uv is available and use it to run python scripts. If uv is not available, try using `nix run nixpkgs#package` (e.g. `nix run nixpkgs#uv`) as an ad-hoc runner instead of aborting the task.
+NEVER use npm to install or run libraries, frameworks, SDKs, APIs, CLI tools, or cloud services. Do not use npm for any reason. In a JavaScript context, quickly check if `pnpm`, `bun`, or `yarn` are available; otherwise, use `nix run nixpkgs#`. 
 
-<!-- quality -->
+In a Python context, quickly check if `uv` is available to execute scripts; otherwise, use `nix run nixpkgs#`. 
+
 You must strictly adhere to the following architectural rules when generating or modifying code. Violating any of these principles is considered a fatal regression:
 
 1. **Exhaustive Branching & Explicit State Handling**
