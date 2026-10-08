@@ -29,6 +29,10 @@
       normalizedKeys = map normalizeKey keys;
     in
     {
+      systemd.tmpfiles.rules = [
+        "d ${userHome}/.ssh 0700 ${user} ${userGroup} -"
+      ];
+
       sops.secrets = lib.listToAttrs (
         map (k: {
           name = "ssh-${k.name}";
