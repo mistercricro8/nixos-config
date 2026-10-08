@@ -4,6 +4,7 @@ keys:
   - &cricro_laptop age1xk55pvdly05kxl5sxgt4vmczalyw4vmzyrehg5ttqcjz8acvvg5s6nyval
   - &cricro_vm age1kkmrsy3ctfcdxeqh3rm3u2w8sh6aaj0f5n5t376k8prsuq5das3q6era99
   - &cricro_l2 age1gzlg6wj6aqened2p545fvacznlnmmp0naq920wdpxn3ks8kmyfrq9hxvh4
+  - &cricro_sv2 age1l6szqm8wwpjg0tz7aqqzjh5yhy5ar0zer4ea8r6x42nwf93zjezqyw474t
 creation_rules:
   - path_regex: provisioning/secrets/[^/]+\.(yaml|json|env|ini)$
     key_groups:
@@ -19,3 +20,4 @@ creation_rules:
           - *cricro_laptop
           - *cricro_vm
           - *cricro_l2
+          - *cricro_sv2

@@ -11,6 +11,7 @@ let
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFemLgqTdnfq/P4v+lkh0XpFhGAyLlD6hwKAUNLeWq4D cricro@cricro-vm"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIQvMNCGvxpPmwxCBPiOf9o/B5tZymCRBg8Y7wgwsL57 cricro@cricro-laptop"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIElGKqHU3uf9R8bBc8eyAV5/ScVmCw/MP8JgOOAXXSqB cricro@cricro-l2"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHOTgrKIyBs+oTxdZ14K2YVF4I3CL61XaVHHeI6kzhIH cricro@cricro-sv2"
 
     # windows
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMhKGamcAqDuwcnGr/edN8cGfzgsWoO+SZnT6l3tVh1F cricro@cricro-pc"

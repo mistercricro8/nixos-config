@@ -18,6 +18,11 @@
       deployHostname = "cricro-l2";
     }
     {
+      name = "cricro-sv2";
+      system = "x86_64-linux";
+      deployHostname = "cricro-sv2";
+    }
+    {
       name = "cricro-vm";
       system = "aarch64-linux";
       deployHostname = "cricro-vm";
