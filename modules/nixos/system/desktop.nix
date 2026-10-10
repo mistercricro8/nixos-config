@@ -19,6 +19,10 @@
         ]
       );
 
+      dotfiles.profiles = [
+        "face"
+      ];
+
       programs.dconf.enable = true;
 
       programs.xfconf.enable = true;

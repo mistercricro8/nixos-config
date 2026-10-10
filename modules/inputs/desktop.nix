@@ -7,7 +7,7 @@
       inputs.hyprland.follows = "hyprland";
     };
     dms = {
-      url = "github:AvengeMedia/DankMaterialShell/stable";
+      url = "github:AvengeMedia/DankMaterialShell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     dank-greeter = {

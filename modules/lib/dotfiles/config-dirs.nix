@@ -58,6 +58,9 @@
     octave = {
       path = "";
     };
+    face = {
+      path = "";
+    };
     zed = {
       path = ".config/zed";
     };

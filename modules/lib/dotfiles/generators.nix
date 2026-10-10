@@ -80,8 +80,11 @@
                         outPrefix = outPrefix;
                       }
                     else
+                      let
+                        outPath = if outPrefix == "" then relPath else "${outPrefix}/${relPath}";
+                      in
                       {
-                        "${outPrefix}/${relPath}" = {
+                        "${outPath}" = {
                           source = "${absDir}/${relPath}";
                           type = "symlink";
                           clobber = true;
@@ -147,8 +150,11 @@
                       outPrefix = outPrefix;
                     }
                   else
+                    let
+                      outPath = if outPrefix == "" then relPath else "${outPrefix}/${relPath}";
+                    in
                     {
-                      "${outPrefix}/${relPath}" = {
+                      "${outPath}" = {
                         source = "${storeDir}/${name}";
                         type = "symlink";
                         clobber = true;
