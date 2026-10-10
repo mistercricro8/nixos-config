@@ -4,6 +4,7 @@ import QtQuick.Controls
 import Quickshell
 import qs.Common
 import qs.Widgets
+import qs.DCommon.Widgets
 import "WorkspaceGroupsDefaults.js" as Defaults
 
 Rectangle {
@@ -227,7 +228,7 @@ Rectangle {
                 boundsBehavior: Flickable.StopAtBounds
                 interactive: false
 
-                ScrollBar.vertical: DankScrollbar {
+                ScrollBar.vertical: DScrollbar {
                     id: winScrollBar
                 }
 
@@ -277,7 +278,7 @@ Rectangle {
                 visible: card.windows.length === 0
                 spacing: Theme.spacingXS
 
-                DankIcon {
+                DIcon {
                     Layout.alignment: Qt.AlignHCenter
                     name: "desktop_windows"
                     size: 26
@@ -308,7 +309,7 @@ Rectangle {
             border.color: Theme.withAlpha(Theme.primary, 0.4)
             border.width: 1
 
-            DankIcon {
+            DIcon {
                 anchors.centerIn: parent
                 name: "add"
                 size: 24

@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import qs.Common
 import qs.Widgets
+import qs.DCommon.Widgets
 import "WorkspaceGroupsDefaults.js" as Defaults
 
 ColumnLayout {
@@ -54,7 +55,7 @@ ColumnLayout {
 
             Item { Layout.fillWidth: true }
 
-            DankButton {
+            DButton {
                 text: "New Group"
                 iconName: "add"
                 buttonHeight: 32
@@ -159,7 +160,7 @@ ColumnLayout {
             }
         }
 
-        ScrollBar.vertical: DankScrollbar {
+        ScrollBar.vertical: DScrollbar {
             id: overviewScrollBar
         }
 

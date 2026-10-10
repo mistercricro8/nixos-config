@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import qs.Common
 import qs.Widgets
+import qs.DCommon.Widgets
 
 WGModalCard {
     id: modal
@@ -43,7 +44,7 @@ WGModalCard {
             Layout.fillWidth: true
             spacing: Theme.spacingS
 
-            DankIcon {
+            DIcon {
                 name: "warning"
                 size: 24
                 color: Theme.error
@@ -73,13 +74,13 @@ WGModalCard {
 
             Item { Layout.fillWidth: true }
 
-            DankButton {
+            DButton {
                 id: cancelBtn
                 text: "Cancel"
                 onClicked: modal.closed()
             }
 
-            DankButton {
+            DButton {
                 text: "Delete & Move Windows"
                 iconName: "delete"
                 backgroundColor: Theme.error

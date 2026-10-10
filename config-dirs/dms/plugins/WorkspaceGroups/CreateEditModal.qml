@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import qs.Common
 import qs.Widgets
+import qs.DCommon.Widgets
 import "WorkspaceGroupsDefaults.js" as Defaults
 
 WGModalCard {
@@ -112,7 +113,7 @@ WGModalCard {
                 color: Theme.surfaceVariantText
             }
 
-            DankTextField {
+            DTextField {
                 id: createNameInput
                 Layout.fillWidth: true
                 text: modal.formName
@@ -163,7 +164,7 @@ WGModalCard {
                     }
                 }
 
-                DankTextField {
+                DTextField {
                     id: createIconInput
                     implicitWidth: 80
                     text: modal.formIcon
@@ -181,7 +182,7 @@ WGModalCard {
                     }
                 }
 
-                DankButton {
+                DButton {
                     text: "Randomize"
                     iconName: "casino"
                     onClicked: {
@@ -262,7 +263,7 @@ WGModalCard {
                 Layout.fillWidth: true
             }
 
-            DankToggle {
+            DToggle {
                 checked: modal.formSwitch
                 onToggled: isChecked => {
                     modal.formSwitch = isChecked;
@@ -278,12 +279,12 @@ WGModalCard {
 
             Item { Layout.fillWidth: true }
 
-            DankButton {
+            DButton {
                 text: "Cancel"
                 onClicked: modal.closed()
             }
 
-            DankButton {
+            DButton {
                 text: modal.editingId > 0 ? "Save Changes" : "Create Group"
                 iconName: modal.editingId > 0 ? "check" : "add"
                 backgroundColor: modal.formColor || Theme.primary

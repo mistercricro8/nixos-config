@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell.Widgets
 import qs.Common
 import qs.Widgets
+import qs.DCommon.Widgets
 import "WorkspaceGroupsDefaults.js" as Defaults
 
 Rectangle {
@@ -128,7 +129,7 @@ Rectangle {
                 asynchronous: true
             }
 
-            DankIcon {
+            DIcon {
                 anchors.centerIn: parent
                 name: "desktop_windows"
                 size: 14

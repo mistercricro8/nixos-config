@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Common
 import qs.Widgets
+import qs.DCommon.Widgets
 
 Rectangle {
     id: btn
@@ -26,7 +27,7 @@ Rectangle {
     radius: cornerRadius
     color: btnMouse.containsMouse ? hoverColor : baseColor
 
-    DankIcon {
+    DIcon {
         anchors.centerIn: parent
         visible: btn.iconName !== ""
         name: btn.iconName

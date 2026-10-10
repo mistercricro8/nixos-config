@@ -55,6 +55,35 @@ PluginComponent {
 
     popoutWidth: 320
 
+    readonly property color barAccent: Theme.primary
+    readonly property color barHoverColor: Theme.withAlpha(Theme.onSurface, Theme.stateLayerHover)
+    readonly property real barOutlineThickness: (root.barConfig?.widgetOutlineEnabled ?? false) ? (root.barConfig?.widgetOutlineThickness ?? Theme.outlineWidth) : 0
+    readonly property color barOutlineColor: {
+        if (barOutlineThickness <= 0)
+            return "transparent";
+        const opacity = root.barConfig?.widgetOutlineOpacity ?? 1.0;
+        if (opacity <= 0)
+            return "transparent";
+        switch (root.barConfig?.widgetOutlineColor || "primary") {
+        case "surfaceText":
+            return Theme.withAlpha(Theme.surfaceText, opacity);
+        case "secondary":
+            return Theme.withAlpha(Theme.secondary, opacity);
+        default:
+            return Theme.withAlpha(Theme.primary, opacity);
+        }
+    }
+
+    function disableOuterPillHover() {
+        for (let i = 0; i < root.children.length; i++) {
+            const child = root.children[i];
+            if (child && child.hasOwnProperty("enableBackgroundHover")) {
+                child.enableBackgroundHover = false;
+                child.enableCursor = false;
+            }
+        }
+    }
+
     function updateFromGlobals(varName) {
         if (!PluginService)
             return;
@@ -82,7 +111,9 @@ PluginComponent {
     }
     Component.onCompleted: {
         updateFromGlobals();
+        disableOuterPillHover();
     }
+    onChildrenChanged: disableOuterPillHover()
 
     Connections {
         target: PluginService
@@ -297,21 +328,23 @@ PluginComponent {
             wgIpc.call(wgIpc.nextGroup);
         }
     }
-    pillClickAction: () => {
-        wgIpc.call(wgIpc.toggleOverview);
-    }
-
-    pillRightClickAction: () => {
-        if (root.hasPopout) {
-            pluginPopout.toggle();
-        }
-    }
+    pillClickAction: () => {}
+    pillRightClickAction: () => {}
 
     horizontalBarPill: Component {
         Item {
             id: horizItem
             implicitWidth: barRow.implicitWidth
             implicitHeight: barRow.implicitHeight
+
+            MouseArea {
+                anchors.fill: parent
+                z: -1
+                acceptedButtons: Qt.AllButtons
+                cursorShape: Qt.ArrowCursor
+                hoverEnabled: false
+                onClicked: {}
+            }
 
             RowLayout {
                 id: barRow
@@ -323,11 +356,12 @@ PluginComponent {
                     implicitWidth: groupRow.implicitWidth + Theme.spacingM
                     implicitHeight: 28
                     radius: Theme.cornerRadiusSmall
-                    color: groupMouse.containsMouse ? Theme.withAlpha(root.activeGroupColor, 0.25) : Theme.withAlpha(root.activeGroupColor, 0.15)
-                    border.color: Theme.withAlpha(root.activeGroupColor, 0.4)
-                    border.width: 1
+                    color: groupMouse.containsMouse ? root.barHoverColor : "transparent"
+                    border.color: groupMouse.containsMouse ? root.barOutlineColor : "transparent"
+                    border.width: root.barOutlineThickness
 
                     Behavior on color { ColorAnimation { duration: 100 } }
+                    Behavior on border.color { ColorAnimation { duration: 100 } }
 
                     RowLayout {
                         id: groupRow
@@ -337,7 +371,7 @@ PluginComponent {
                         StyledText {
                             text: root.activeGroupIcon
                             font.pixelSize: Theme.fontSizeMedium + 2
-                            color: root.activeGroupColor
+                            color: root.barAccent
                         }
 
                         StyledText {
@@ -394,7 +428,10 @@ PluginComponent {
                                 targetWs: root.getTargetWorkspaceId(subNumber)
                                 isActive: root.activeWorkspaceIdOnThisMon === targetWs
                                 isOccupied: root.isWorkspaceOccupied(targetWs)
-                                activeColor: root.activeGroupColor
+                                activeColor: root.barAccent
+                                hoverColor: root.barHoverColor
+                                outlineColor: root.barOutlineColor
+                                outlineThickness: root.barOutlineThickness
                                 orientation: "horizontal"
                                 showDot: true
                                 onClicked: mouse => {
@@ -430,6 +467,15 @@ PluginComponent {
             implicitWidth: verticalContent.implicitWidth
             implicitHeight: verticalContent.implicitHeight
 
+            MouseArea {
+                anchors.fill: parent
+                z: -1
+                acceptedButtons: Qt.AllButtons
+                cursorShape: Qt.ArrowCursor
+                hoverEnabled: false
+                onClicked: {}
+            }
+
             ColumnLayout {
                 id: verticalContent
                 anchors.centerIn: parent
@@ -440,9 +486,12 @@ PluginComponent {
                     implicitWidth: 32
                     implicitHeight: 32
                     radius: Theme.cornerRadiusSmall
-                    color: vertGroupMouse.containsMouse ? Theme.withAlpha(root.activeGroupColor, 0.25) : Theme.withAlpha(root.activeGroupColor, 0.15)
-                    border.color: Theme.withAlpha(root.activeGroupColor, 0.4)
-                    border.width: 1
+                    color: vertGroupMouse.containsMouse ? root.barHoverColor : "transparent"
+                    border.color: vertGroupMouse.containsMouse ? root.barOutlineColor : "transparent"
+                    border.width: root.barOutlineThickness
+
+                    Behavior on color { ColorAnimation { duration: 100 } }
+                    Behavior on border.color { ColorAnimation { duration: 100 } }
 
                     ColumnLayout {
                         anchors.centerIn: parent
@@ -452,7 +501,7 @@ PluginComponent {
                             Layout.alignment: Qt.AlignHCenter
                             text: root.activeGroupIcon
                             font.pixelSize: Theme.fontSizeSmall + 2
-                            color: root.activeGroupColor
+                            color: root.barAccent
                         }
 
                         StyledText {
@@ -501,7 +550,10 @@ PluginComponent {
                         targetWs: root.getTargetWorkspaceId(subNumber)
                         isActive: root.activeWorkspaceIdOnThisMon === targetWs
                         isOccupied: root.isWorkspaceOccupied(targetWs)
-                        activeColor: root.activeGroupColor
+                        activeColor: root.barAccent
+                        hoverColor: root.barHoverColor
+                        outlineColor: root.barOutlineColor
+                        outlineThickness: root.barOutlineThickness
                         orientation: "vertical"
                         showDot: false
                         onClicked: mouse => {

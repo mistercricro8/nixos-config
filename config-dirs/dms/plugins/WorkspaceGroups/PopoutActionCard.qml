@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Common
 import qs.Widgets
+import qs.DCommon.Widgets
 
 Rectangle {
     id: card
@@ -27,7 +28,7 @@ Rectangle {
         anchors.centerIn: parent
         spacing: Theme.spacingS
 
-        DankIcon {
+        DIcon {
             anchors.verticalCenter: parent.verticalCenter
             visible: card.iconName !== ""
             name: card.iconName

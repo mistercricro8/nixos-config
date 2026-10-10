@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import qs.Common
 import qs.Widgets
+import qs.DCommon.Widgets
 import qs.Modules.Plugins
 import "WorkspaceGroupsDefaults.js" as Defaults
 
@@ -306,7 +307,7 @@ PluginSettings {
                     }
                 }
 
-                DankToggle {
+                DToggle {
                     checked: root.currentHideEmptyWorkspaces
                     onToggled: isChecked => {
                         root.currentHideEmptyWorkspaces = isChecked;
@@ -328,7 +329,7 @@ PluginSettings {
             Layout.fillWidth: true
         }
 
-        DankButton {
+        DButton {
             text: "Add Group"
             iconName: "add"
             onClicked: root.addGroup()
@@ -375,7 +376,7 @@ PluginSettings {
         width: parent.width
         spacing: Theme.spacingM
 
-        DankButton {
+        DButton {
             text: "Save On-Launch Config"
             iconName: "save"
             backgroundColor: Theme.primary
@@ -383,13 +384,13 @@ PluginSettings {
             onClicked: root.saveAll()
         }
 
-        DankButton {
+        DButton {
             text: "Apply to Current Session"
             iconName: "sync"
             onClicked: root.applyToCurrentSession()
         }
 
-        DankButton {
+        DButton {
             text: "Reset to Defaults"
             iconName: "restore"
             onClicked: root.resetDefaults()

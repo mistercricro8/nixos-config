@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import qs.Common
 import qs.Widgets
+import qs.DCommon.Widgets
 import "WorkspaceGroupsDefaults.js" as Defaults
 
 Rectangle {
@@ -73,7 +74,7 @@ Rectangle {
                 color: editor.groupColor || Theme.primary
             }
 
-            DankTextField {
+            DTextField {
                 id: nameField
                 Layout.fillWidth: true
                 text: editor.groupName
@@ -110,7 +111,7 @@ Rectangle {
                 color: Theme.surfaceVariantText
             }
 
-            DankTextField {
+            DTextField {
                 id: iconField
                 implicitWidth: 70
                 text: editor.groupIcon
@@ -167,7 +168,7 @@ Rectangle {
                 border.width: 1
             }
 
-            DankTextField {
+            DTextField {
                 id: colorField
                 implicitWidth: 100
                 text: editor.groupColor

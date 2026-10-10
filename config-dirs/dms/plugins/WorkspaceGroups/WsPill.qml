@@ -10,6 +10,9 @@ Rectangle {
     property bool isActive: false
     property bool isOccupied: false
     property color activeColor: Theme.primary
+    property color hoverColor: Theme.withAlpha(Theme.onSurface, Theme.stateLayerHover)
+    property color outlineColor: "transparent"
+    property real outlineThickness: 0
     property string orientation: "horizontal"
     property bool showDot: true
     signal clicked(var mouse)
@@ -23,7 +26,7 @@ Rectangle {
         if (isActive)
             return activeColor;
         if (pillMouse.containsMouse)
-            return Theme.surfaceContainerHighest;
+            return hoverColor;
         if (isOccupied)
             return Theme.withAlpha(Theme.surfaceContainerHigh, 0.7);
         return "transparent";
@@ -32,13 +35,11 @@ Rectangle {
     border.color: {
         if (isActive)
             return activeColor;
-        if (isOccupied)
-            return Theme.withAlpha(activeColor, 0.4);
         if (pillMouse.containsMouse)
-            return Theme.outlineVariant;
+            return outlineThickness > 0 && outlineColor !== "transparent" ? outlineColor : Theme.outlineVariant;
         return "transparent";
     }
-    border.width: 1
+    border.width: isActive ? 1 : (outlineThickness > 0 ? outlineThickness : 1)
 
     Behavior on color { ColorAnimation { duration: 100 } }
     Behavior on border.color { ColorAnimation { duration: 100 } }
