@@ -8,6 +8,7 @@
         [
           nerd-fonts.caskaydia-mono
           nerd-fonts.jetbrains-mono
+          corefonts
         ]
       );
     };

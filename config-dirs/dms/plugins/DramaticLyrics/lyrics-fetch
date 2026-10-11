@@ -1,0 +1,186 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use JSON::PP ();
+
+my $TAIL_SECS = 3.0;
+
+sub clean_str {
+    my ($s) = @_;
+    $s //= '';
+    $s =~ s/\[[^\]]*\]|\([^)]*\)|\{[^}]*\}/ /g;
+    $s =~ s/\s+/ /g;
+    $s =~ s/^ //;
+    $s =~ s/ $//;
+    return $s;
+}
+
+
+sub stable_key {
+    my ($artist, $title) = @_;
+    return lc(clean_str($artist)) . "\n" . lc(clean_str($title));
+}
+
+sub ts {
+    my ($m, $s) = @_;
+    return $m * 60 + $s;
+}
+
+sub xml_esc {
+    my ($s) = @_;
+    $s =~ s/&/&amp;/g;
+    $s =~ s/</&lt;/g;
+    $s =~ s/>/&gt;/g;
+    $s =~ s/"/&quot;/g;
+    return $s;
+}
+
+sub fmt_t {
+    my ($t) = @_;
+    return sprintf('%.2fs', $t);
+}
+
+sub read_file {
+    my ($path) = @_;
+    open(my $fh, '<:encoding(UTF-8)', $path) or return undef;
+    local $/;
+    my $raw = <$fh>;
+    close($fh);
+    return $raw;
+}
+
+sub parse_body {
+    my ($text) = @_;
+    my @l = split(/\n/, $text);
+    my $i = 0;
+    $i++ while $i < @l && $l[$i] =~ /^\s*$/;
+    if ($i < @l && $l[$i] =~ /^\s*---\s*$/) {
+        $i++;
+        $i++ while $i < @l && $l[$i] !~ /^\s*---\s*$/;
+        $i++ if $i < @l;
+    }
+    my @out = ();
+    for (; $i < @l; $i++) {
+        my $ln = parse_line($l[$i]);
+        push @out, $ln if defined $ln;
+    }
+    return @out;
+}
+
+sub parse_line {
+    my ($raw) = @_;
+    if ($raw =~ /^\s*\[(\d+):(\d{1,2}(?:\.\d+)?)\s*(?:->\s*(\d+):(\d{1,2}(?:\.\d+)?))?\]\s*(?:\[([^\]]*)\])?\s*(.*)$/) {
+        my ($m1, $s1, $m2, $s2, $tag, $text) = ($1, $2, $3, $4, $5, $6);
+        $text =~ s/^\s+//;
+        $text =~ s/\s+$//;
+        return undef if $text eq '';
+        my $start = ts($m1 + 0, $s1 + 0);
+        my $end = defined $m2 ? ts($m2 + 0, $s2 + 0) : undef;
+        my @singers = ();
+        if (defined $tag) {
+            @singers = grep { $_ ne '' } map { my $x = $_; $x =~ s/^\s+//; $x =~ s/\s+$//; $x; } split(/&/, $tag);
+        }
+        return { start => $start, end => $end, singers => \@singers, text => $text };
+    }
+    return undef;
+}
+
+sub para {
+    my ($ln, $agent) = @_;
+    my $p = '<p begin="' . fmt_t($ln->{start}) . '" end="' . fmt_t($ln->{end}) . '"';
+    $p .= ' ttm:agent="' . xml_esc($agent) . '"' if defined $agent;
+    $p .= '>';
+    $p .= word_spans($ln);
+    $p .= '</p>';
+    return $p;
+}
+
+sub word_spans {
+    my ($ln) = @_;
+    my @words = split(/(\s+)/, $ln->{text});
+    @words = grep { defined $_ && $_ ne '' } @words;
+    my $n = scalar(@words);
+    return xml_esc($ln->{text}) if $n == 0;
+    my $dur = $ln->{end} > $ln->{start} ? ($ln->{end} - $ln->{start}) : 0;
+    my $out = '';
+    for my $i (0 .. $#words) {
+        my $ws = $ln->{start} + ($n > 0 ? $dur * $i / $n : 0);
+        my $we = $ln->{start} + ($n > 0 ? $dur * ($i + 1) / $n : 0);
+        $out .= '<span begin="' . fmt_t($ws) . '" end="' . fmt_t($we) . '">' . xml_esc($words[$i]) . '</span>';
+    }
+    return $out;
+}
+
+my $stdin = do { local $/; <STDIN> } // '';
+my $q = eval { JSON::PP->new->decode($stdin) } // {};
+my $title  = $q->{title}  // '';
+my $artist = $q->{artist} // '';
+if ($title eq '' && $artist eq '') { print ''; exit 0; }
+
+my $home = $ENV{HOME} // '';
+my $xdg  = $ENV{XDG_STATE_HOME} // ($home ne '' ? "$home/.local/state" : '');
+exit 0 if $xdg eq '';
+my $songs = "$xdg/DankMaterialShell/plugins/dramaticLyrics_songs";
+if (!-d $songs) {
+    my $alt = "$xdg/DankMaterialShell/dramaticLyrics_songs";
+    $songs = $alt if -d $alt;
+}
+if (!-d $songs) { print ''; exit 0; }
+
+my $key = stable_key($artist, $title);
+my $raw_idx = read_file("$songs/index.json");
+if (!defined $raw_idx || $raw_idx !~ /\S/) { print ''; exit 0; }
+my $idx = eval { JSON::PP->new->decode($raw_idx) } // {};
+if (ref $idx ne 'HASH') { print ''; exit 0; }
+
+my $fname = $idx->{$key};
+if (!defined $fname || $fname eq '') { print ''; exit 0; }
+(my $safe = $fname) =~ s{/}{_}g;
+my $raw = read_file("$songs/$safe");
+if (!defined $raw) { print ''; exit 0; }
+
+my @lines = parse_body($raw);
+if (!@lines) { print ''; exit 0; }
+
+@lines = sort { $a->{start} <=> $b->{start} } @lines;
+for my $i (0 .. $#lines) {
+    if (!defined $lines[$i]{end}) {
+        my $nxt = ($i + 1 <= $#lines) ? $lines[$i + 1]{start} : undef;
+        if (defined $nxt && $nxt > $lines[$i]{start}) { $lines[$i]{end} = $nxt; }
+        else { $lines[$i]{end} = $lines[$i]{start} + $TAIL_SECS; }
+    }
+}
+
+my %voices = ();
+my @agents = ();
+my $tt = '<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata"><head><metadata>';
+for my $ln (@lines) {
+    for my $v (@{$ln->{singers}}) {
+        next if exists $voices{$v};
+        my $id = 'v' . (scalar(@agents) + 1);
+        $voices{$v} = $id;
+        push @agents, [$id, $v];
+    }
+}
+for my $a (@agents) {
+    $tt .= '<ttm:agent id="' . xml_esc($a->[0]) . '" type="person"><ttm:name type="full">' . xml_esc($a->[1]) . '</ttm:name></ttm:agent>';
+}
+$tt .= '</metadata></head><body><div>';
+for my $ln (@lines) {
+    my $singers = $ln->{singers};
+    if (!@$singers) {
+        $tt .= para($ln, undef);
+    } elsif (@$singers == 1) {
+        $tt .= para($ln, $voices{$singers->[0]});
+    } else {
+        for my $v (@$singers) {
+            $tt .= para($ln, $voices{$v});
+        }
+    }
+}
+$tt .= '</div></body></tt>';
+
+my $out = JSON::PP->new->utf8->encode({ format => 'ttml', lyrics => $tt });
+print $out;
+exit 0;

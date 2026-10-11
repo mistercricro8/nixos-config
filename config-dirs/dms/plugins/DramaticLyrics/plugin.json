@@ -1,0 +1,28 @@
+{
+  "id": "dramaticLyrics",
+  "name": "Dramatic Lyrics",
+  "description": "GPU-accelerated fullscreen dramatic scattered lyrics overlay driven by DMS lyrics, styled by .lyr files.",
+  "version": "0.2.0",
+  "author": "MisterCricro8",
+  "icon": "lyrics",
+  "type": "composite",
+  "capabilities": [
+    "daemon",
+    "lyrics-overlay"
+  ],
+  "components": {
+    "daemon": "./DramaticLyricsDaemon.qml"
+  },
+  "lyrics": {
+    "command": "./lyrics-fetch",
+    "name": "Dramatic Lyrics (.lyr)",
+    "wordSync": true
+  },
+  "settings": "./DramaticLyricsSettings.qml",
+  "permissions": [
+    "settings_read",
+    "settings_write",
+    "process"
+  ],
+  "requires_dms": ">=1.6.0"
+}
