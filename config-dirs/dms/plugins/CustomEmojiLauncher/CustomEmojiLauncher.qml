@@ -4,6 +4,7 @@ import Quickshell.Io
 import QtCore
 import qs.Common
 import qs.Services
+import "CustomEmojiSearch.js" as EmojiSearch
 
 QtObject {
     id: root
@@ -17,6 +18,7 @@ QtObject {
     property string emojiFilePath: ""
     property var entries: []
     property var localIconCache: ({})
+    property var usageData: ({})
 
     readonly property string cacheDir: {
         const p = String(StandardPaths.writableLocation(StandardPaths.GenericCacheLocation));
@@ -39,6 +41,13 @@ QtObject {
             emojiFilePath = newPath;
             loadEntriesFromFile(emojiFilePath);
         }
+
+        function onPluginStateChanged(changedPluginId) {
+            if (changedPluginId !== pluginId)
+                return;
+            loadUsageData();
+            itemsChanged();
+        }
     }
 
     Component.onCompleted: {
@@ -46,8 +55,43 @@ QtObject {
             return;
         trigger = pluginService.loadPluginData(pluginId, "trigger", "e:");
         emojiFilePath = pluginService.loadPluginData(pluginId, "emojiFilePath", "");
+        loadUsageData();
         if (emojiFilePath)
             loadEntriesFromFile(emojiFilePath);
+    }
+
+    function loadUsageData() {
+        if (!pluginService || typeof pluginService.loadPluginState !== "function") {
+            return;
+        }
+        const loaded = pluginService.loadPluginState(pluginId, "usage", {});
+        if (loaded && typeof loaded === "object") {
+            usageData = loaded;
+        } else {
+            usageData = {};
+        }
+    }
+
+    function recordUsage(item) {
+        if (!item) {
+            return;
+        }
+        const key = item.id || item.name || item.imageUrl || "";
+        if (!key) {
+            return;
+        }
+        const now = Date.now();
+        const current = (usageData && usageData[key]) ? usageData[key] : { count: 0, lastUsed: 0 };
+        const updated = Object.assign({}, usageData);
+        updated[key] = {
+            count: (typeof current.count === "number" ? current.count : 0) + 1,
+            lastUsed: now
+        };
+        usageData = updated;
+        if (pluginService && typeof pluginService.savePluginState === "function") {
+            pluginService.savePluginState(pluginId, "usage", usageData);
+        }
+        itemsChanged();
     }
 
     function loadEntriesFromFile(path) {
@@ -141,48 +185,57 @@ QtObject {
     }
 
     function getItems(query) {
-        const lowerQuery = query ? query.toLowerCase().trim() : "";
-        const filtered = lowerQuery.length === 0 ? entries : entries.filter(e => (e.name || "").toLowerCase().includes(lowerQuery));
-        return filtered.map(e => {
+        const scored = EmojiSearch.scoreAndFilter(entries, query, usageData, Date.now());
+        return scored.map(item => {
+            const e = item.entry;
             const url = e.url || "";
             const localPath = localIconCache[url] || "";
             return {
+                id: e.id || e.name || url,
                 name: e.name || "",
                 icon: localPath ? "image:" + localPath : "material:mood",
                 comment: url,
                 action: "copy:" + url,
                 categories: ["Custom Emoji"],
                 imageUrl: url,
-                animated: (url.endsWith(".gif") || url.endsWith(".webp"))
+                animated: (url.endsWith(".gif") || url.endsWith(".webp")),
+                _preScored: item.score,
+                usageCount: item.usageCount
             };
         });
     }
 
     function executeItem(item) {
         const url = getPasteText(item);
-        if (!url)
+        if (!url) {
             return;
+        }
         Quickshell.execDetached(["dms", "cl", "copy", url]);
         ToastService.showInfo("Copied: " + (item.name || url), url);
     }
 
     function getPasteText(item) {
-        if (!item?.action?.startsWith("copy:"))
+        if (!item || !item.action || typeof item.action !== "string" || !item.action.startsWith("copy:")) {
             return null;
+        }
+        recordUsage(item);
         return item.action.substring(5);
     }
 
     function getContextMenuActions(item) {
-        if (!item)
+        if (!item) {
             return [];
+        }
         return [
             {
                 icon: "content_copy",
                 text: "Copy URL",
                 action: () => {
                     const url = item.imageUrl || "";
-                    if (!url)
+                    if (!url) {
                         return;
+                    }
+                    recordUsage(item);
                     Quickshell.execDetached(["dms", "cl", "copy", url]);
                     ToastService.showInfo("Copied", url);
                 }
