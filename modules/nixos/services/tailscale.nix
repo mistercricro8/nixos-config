@@ -1,7 +1,8 @@
 # Params:
 #   hostname - Tailscale hostname (required)
-#   useRoutingFeatures - "client" | "server" | "both" (default "client")
+#   hostType - "client" | "server" | "both" (default "client")
 #   extraFlags - additional flags for tailscale up (default [])
+#   extraSetFlags - additional flags for tailscale set (default [])
 { inputs, lib, ... }:
 {
   flake.factories.nixos."services/tailscale" =
@@ -9,6 +10,7 @@
       hostname,
       hostType ? "client",
       extraFlags ? [ ],
+      extraSetFlags ? [ ],
     }:
     { config, ... }:
     {
@@ -32,6 +34,7 @@
           "--reset"
         ]
         ++ extraFlags;
+        inherit extraSetFlags;
       };
     };
 }
