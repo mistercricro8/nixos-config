@@ -1,0 +1,19 @@
+{
+  "id": "quickLinks",
+  "name": "Quick Links",
+  "description": "Store, search, and open links using tags, keywords, fuzzy matching, and historic usage recommendations.",
+  "version": "1.0.0",
+  "author": "MisterCricro8",
+  "icon": "link",
+  "type": "launcher",
+  "capabilities": ["launcher", "command-execution", "clipboard"],
+  "trigger": "l:",
+  "viewMode": "list",
+  "component": "./QuickLinksLauncher.qml",
+  "settings": "./QuickLinksSettings.qml",
+  "permissions": [
+    "settings_read",
+    "settings_write",
+    "process"
+  ]
+}

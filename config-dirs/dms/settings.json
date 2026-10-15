@@ -249,7 +249,7 @@
   },
   "centeringMode": "geometric",
   "clockFormat": "12h",
-  "configVersion": 40,
+  "configVersion": 42,
   "containerSaturation": 100,
   "controlCenterWidgets": [
     {
@@ -343,19 +343,21 @@
     },
     {
       "enabled": true,
-      "footer": true,
       "h": 1,
       "id": "runningApps",
-      "w": 4
+      "w": 4,
+      "small": true,
+      "col": 0,
+      "row": 6
     },
     {
       "enabled": true,
-      "footer": true,
-      "footerEnd": true,
       "h": 1,
       "id": "edit",
       "small": true,
-      "w": 1
+      "w": 1,
+      "col": 7,
+      "row": 6
     }
   ],
   "currentThemeCategory": "dynamic",
