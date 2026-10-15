@@ -27,6 +27,35 @@
             hostname = "cricro-sv2";
             hostType = "client";
           })
+          (nixos."services/samba" {
+            shares = {
+              "files" = {
+                path = "/home/LaEsquina/la-esquina-store/laesquina-management/files";
+                guestOk = "no";
+                writable = "yes";
+                accessMode = "read-write";
+                user = "LaEsquina";
+                userData = {
+                  homeMode = "0777";
+                  hashedPassword = "$y$j9T$Fm/3aDe8MkmxKAX16PhK/0$sVt5FWmeQJbOkTFHQhT0DCqC3bti13ORbx/MiwDFXB2";
+                };
+              };
+              "Archivos" = {
+                path = "/home/LaEsquina/la-esquina-store/Archivos";
+                guestOk = "no";
+                writable = "yes";
+                accessMode = "read-write";
+                user = "LaEsquina";
+              };
+              "Medicina" = {
+                path = "/home/LaEsquina/la-esquina-store/Medicina";
+                guestOk = "no";
+                writable = "yes";
+                accessMode = "read-write";
+                user = "LaEsquina";
+              };
+            };
+          })
         ])
         ++ [
           (import _hardware/cricro-sv2.nix { inherit inputs; })

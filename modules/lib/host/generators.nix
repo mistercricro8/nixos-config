@@ -39,7 +39,7 @@
       fastConnection ? null,
       autoRollback ? null,
       magicRollback ? null,
-      remoteBuild ? null,
+      remoteBuild ? true,
       sshOpts ? null,
       sudo ? null,
       profilesOrder ? null,
