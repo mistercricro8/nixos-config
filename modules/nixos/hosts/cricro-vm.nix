@@ -27,7 +27,6 @@
             hostType = "both";
             extraFlags = [
               "--advertise-exit-node"
-              "--advertise-tags=tag:exit"
             ];
             extraSetFlags = [
               "--advertise-exit-node"
