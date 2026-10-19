@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@oh-my-pi/pi-coding-agent": [
+        "/home/cricro/tiny-projects/omp/tgrep/node_modules/@oh-my-pi/pi-coding-agent"
+      ],
+      "@oh-my-pi/pi-tui": [
+        "/home/cricro/tiny-projects/omp/tgrep/node_modules/@oh-my-pi/pi-tui"
+      ]
+    }
+  },
+  "include": ["src"]
+}

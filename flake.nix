@@ -47,10 +47,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     omp.url = "github:numtide/llm-agents.nix";
-    playwright-mcp = {
-      url = "github:mistercricro8/mcps?dir=playwright-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     private.url = "github:mistercricro8/nixos-config-private";
     sops-nix = {
       url = "github:Mic92/sops-nix";

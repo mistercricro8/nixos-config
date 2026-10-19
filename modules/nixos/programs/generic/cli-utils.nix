@@ -47,6 +47,9 @@
           winetricks
           zellij
           tgrep
+          uv
+          nodejs
+          pnpm
         ]
       );
 

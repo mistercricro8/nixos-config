@@ -10,8 +10,15 @@
       "url": "http://localhost:12001/sse"
     },
     "playwright": {
-      "type": "http",
-      "url": "http://localhost:12002/mcp"
+      "type": "stdio",
+      "command": "pnpx",
+      "args": [
+        "@playwright/mcp@latest",
+        "--extension"
+      ],
+      "env": {
+        "PLAYWRIGHT_MCP_EXECUTABLE_PATH": "/etc/profiles/per-user/cricro/bin/brave"
+      }
     },
     "pencil": {
       "type": "stdio",

@@ -17,9 +17,5 @@
     };
     omp.url = "github:numtide/llm-agents.nix";
     private.url = "github:mistercricro8/nixos-config-private";
-    playwright-mcp = {
-      url = "github:mistercricro8/mcps?dir=playwright-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 }
