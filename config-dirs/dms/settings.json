@@ -116,7 +116,8 @@
       "widgetOutlineThickness": 1,
       "widgetPadding": 8,
       "widgetStyle": "pills",
-      "widgetTransparency": 0
+      "widgetTransparency": 0,
+      "island": false
     },
     {
       "autoHide": false,
@@ -599,5 +600,14 @@
   "textRenderType": 1,
   "weatherEnabled": false,
   "widgetBackgroundColor": "sc",
-  "widgetColorMode": "colorful"
+  "widgetColorMode": "colorful",
+  "blurLayerOutlineOpacity": 0,
+  "blurBorderEnabled": true,
+  "blurEnabled": false,
+  "blurBorderSeeded": true,
+  "blurStrength": 0,
+  "m3ElevationIntensity": 12,
+  "m3ElevationOpacity": 30,
+  "m3ElevationEnabled": false,
+  "radiusMode": "scale"
 }
