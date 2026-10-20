@@ -447,6 +447,9 @@
   "dashOptions": {
     "media": {
       "playerStyle": "material"
+    },
+    "wellbeing": {
+      "panelRows": 8
     }
   },
   "desktopWidgetInstances": [],
