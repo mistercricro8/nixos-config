@@ -30,6 +30,8 @@ QtObject {
     readonly property string reorder: Defaults.VERB_REORDER
     readonly property string getActive: Defaults.VERB_GET_ACTIVE
     readonly property string getGroups: Defaults.VERB_GET_GROUPS
+    readonly property string recoverOrphanGroups: Defaults.VERB_RECOVER_ORPHANS
+    readonly property string recoverOrphanScreens: Defaults.VERB_RECOVER_ORPHAN_SCREENS
 
     function call(verb) {
         var args = Array.prototype.slice.call(arguments, 1);

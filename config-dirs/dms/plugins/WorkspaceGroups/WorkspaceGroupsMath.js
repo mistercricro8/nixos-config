@@ -63,6 +63,32 @@ function subFromWorkspaceFixed(wsId, wsPerMonitor) {
     return (withinGroup % K) + 1;
 }
 
+function slotFromWorkspaceFixed(wsId, wsPerMonitor) {
+    if (!wsId || wsId < 1)
+        return 0;
+    var K = wsPerMonitor || WS_DEFAULT;
+    var totalPerGroup = totalPerGroupFixed(K);
+    if (totalPerGroup <= 0)
+        return 0;
+    var withinGroup = (wsId - 1) % totalPerGroup;
+    return clampSlot(Math.floor(withinGroup / K));
+}
+
+function decodeWorkspaceFixed(wsId, wsPerMonitor) {
+    if (!wsId || wsId < 1)
+        return null;
+    var K = wsPerMonitor || WS_DEFAULT;
+    var totalPerGroup = totalPerGroupFixed(K);
+    if (totalPerGroup <= 0)
+        return null;
+    var withinGroup = (wsId - 1) % totalPerGroup;
+    return {
+        group: Math.floor((wsId - 1) / totalPerGroup) + 1,
+        slot: clampSlot(Math.floor(withinGroup / K)),
+        sub: (withinGroup % K) + 1
+    };
+}
+
 function assignMonitorSlots(allNames, priority, existingSlots, maxSlots) {
     var max = maxSlots || MAX_MONITOR_SLOTS;
     if (max < 1)

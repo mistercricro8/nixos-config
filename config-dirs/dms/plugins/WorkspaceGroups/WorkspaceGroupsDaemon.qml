@@ -78,6 +78,14 @@ PluginComponent {
             root._wsTriggerCoalesced++;
         }
     }
+    Timer {
+        id: orphanRecoveryTimer
+        interval: Defaults.ORPHAN_RECOVERY_DEBOUNCE_MS
+        repeat: false
+        onTriggered: {
+            root.recoverOrphanScreens();
+        }
+    }
     function requestHeavyRecompute() {
         if (!heavyCoalesceTimer.running)
             heavyCoalesceTimer.start();
@@ -374,6 +382,75 @@ PluginComponent {
         root.execBatchedHyprctl(batchCommands);
     }
 
+    function recoverOrphanScreens() {
+        const mons = root.getSortedMonitors();
+        if (!mons || mons.length === 0)
+            return 0;
+
+        const activeSlots = {};
+        for (let i = 0; i < mons.length; i++) {
+            if (mons[i] && mons[i].name) {
+                const s = root.getMonitorSlot(mons[i].name);
+                activeSlots[s] = true;
+            }
+        }
+
+        const primaryMon = mons[0];
+        const targetSlot = (primaryMon && primaryMon.name) ? root.getMonitorSlot(primaryMon.name) : 0;
+
+        const K = root.workspacesPerMonitor;
+        const tops = Hyprland.toplevels?.values || [];
+        if (tops.length === 0)
+            return 0;
+
+        const maxGroups = (root.groups && root.groups.length > 0) ? root.groups.length : 1;
+        const batchCommands = [];
+        let movedCount = 0;
+
+        for (let i = 0; i < tops.length; i++) {
+            const top = tops[i];
+            if (!top)
+                continue;
+            const wsId = WGMath.resolveWorkspaceId(top);
+            if (!(wsId > 0))
+                continue;
+
+            const decoded = WGMath.decodeWorkspaceFixed(wsId, K);
+            if (!decoded)
+                continue;
+            if (decoded.group < 1 || decoded.group > maxGroups)
+                continue;
+
+            if (activeSlots[decoded.slot] === true)
+                continue;
+
+            const targetWs = WGMath.calcWorkspaceFixed(decoded.group, targetSlot, decoded.sub, K);
+            if (targetWs === wsId)
+                continue;
+
+            const addr = root.formatWindowAddress(top);
+            if (!addr)
+                continue;
+
+            if (root.isLua) {
+                batchCommands.push(`dispatch hl.dsp.window.move({ workspace = '${targetWs}', silent = true, window = 'address:${addr}' })`);
+            } else {
+                batchCommands.push(`dispatch movetoworkspacesilent ${targetWs},address:${addr}`);
+            }
+            movedCount++;
+        }
+
+        if (batchCommands.length > 0) {
+            root.execBatchedHyprctl(batchCommands);
+            root.requestHeavyRecompute();
+            root.notifyState();
+            saveStateDebounceTimer.restart();
+        }
+
+        return movedCount;
+    }
+
+
 
     Component.onCompleted: {
         const savedState = loadStateFile();
@@ -406,6 +483,7 @@ PluginComponent {
 
         root._lastKnownMonitorNames = root.getSortedMonitors().map(m => m.name);
         ensureGroupsCoverAllWorkspaces();
+        root.recoverOrphanScreens();
         syncFromCurrentWorkspace();
         notifyState();
         saveStateFile();
@@ -487,9 +565,14 @@ PluginComponent {
             const names = mons.map(m => m.name);
             const prev = root._lastKnownMonitorNames || [];
             const membershipChanged = names.length !== prev.length || names.some(n => prev.indexOf(n) < 0);
+            const monitorRemoved = prev.some(n => names.indexOf(n) < 0);
             root._lastKnownMonitorNames = names;
             if (membershipChanged) {
                 root.sanitizeLastActiveWorkspaces();
+                if (monitorRemoved) {
+                    root.recoverOrphanScreens();
+                    orphanRecoveryTimer.restart();
+                }
                 root.snapMonitorsToActiveGroup(mons);
             }
             root.syncFromCurrentWorkspace();
@@ -1788,6 +1871,12 @@ function M.cycle_workspaces(direction)
   end
 end
 
+function M.recover_orphan_screens()
+  return function()
+    dms_ipc("workspaceGroups", "recoverOrphanScreens")
+  end
+end
+
 function M.setup(opts)
   opts = opts or {}
   local mainMod = opts.mainMod or "SUPER"
@@ -1869,6 +1958,11 @@ return M
         function recoverOrphanGroups(): string {
             const added = root.ensureGroupsCoverAllWorkspaces();
             return added ? "RECOVERED" : "NO_ORPHANS";
+        }
+
+        function recoverOrphanScreens(): string {
+            const count = root.recoverOrphanScreens();
+            return count > 0 ? ("RECOVERED_" + count) : "NO_ORPHANS";
         }
 
         function writeLuaConfig(): string {

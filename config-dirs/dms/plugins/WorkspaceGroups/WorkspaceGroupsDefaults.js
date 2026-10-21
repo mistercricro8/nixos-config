@@ -27,6 +27,7 @@ var DRAG_THRESHOLD = 8;
 var HOVER_DEADZONE = 4;
 var SCROLL_STEP_OVERVIEW = 80;
 var SCROLL_STEP_CARD = 33;
+var ORPHAN_RECOVERY_DEBOUNCE_MS = 150;
 
 var KEY_ACTIVE_INDEX = "activeGroupIndex";
 var KEY_GROUPS = "groups";
@@ -67,6 +68,7 @@ var VERB_GET_ACTIVE = "getActiveGroup";
 var VERB_GET_GROUPS = "getGroups";
 var VERB_SAVE_STATE = "saveState";
 var VERB_RECOVER_ORPHANS = "recoverOrphanGroups";
+var VERB_RECOVER_ORPHAN_SCREENS = "recoverOrphanScreens";
 var VERB_WRITE_LUA = "writeLuaConfig";
 
 var INVALID_WORKSPACE_ID = -1;
