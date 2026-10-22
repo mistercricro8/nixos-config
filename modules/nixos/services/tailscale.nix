@@ -31,6 +31,7 @@
           "--hostname=${hostname}"
           "--login-server=${inputs.private.secrets.tailscale.loginServer}"
           "--accept-routes"
+          "--exit-node-allow-lan-access=true"
           "--reset"
         ]
         ++ extraFlags;
