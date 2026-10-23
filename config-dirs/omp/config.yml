@@ -21,3 +21,4 @@ retry:
 hideThinkingBlock: false
 disabledExtensions:
   []
+defaultThinkingLevel: xhigh
