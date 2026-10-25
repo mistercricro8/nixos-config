@@ -40,6 +40,7 @@
           bat
           micro
           gh
+          glab
           git
           delta
           winePackages.stable
