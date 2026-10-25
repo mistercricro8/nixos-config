@@ -3,8 +3,6 @@
   flake.modules.nixos."desktop/hyprland" =
     {
       pkgs,
-      lib,
-      config,
       ...
     }:
     let
@@ -49,10 +47,6 @@
       programs.dms-greeter = {
         enable = true;
         compositor.name = "hyprland";
-        # TODO: remove when dms generates lua config
-        # compositor.customConfig = ''
-        #   hl.env("DMS_RUN_GREETER", "1")
-        # '';
         configHome = "/home/cricro";
       };
 
@@ -66,47 +60,6 @@
             "gtk"
           ];
         };
-      };
-
-      systemd.user.paths.dms-theme-watcher = {
-        wantedBy = [ "default.target" ];
-        pathConfig = {
-          PathChanged = "%h/.cache/DankMaterialShell/dms-colors.json";
-          Unit = "dms-theme-reload.service";
-        };
-      };
-
-      systemd.user.services.dms-theme-reload = {
-        serviceConfig = {
-          Type = "oneshot";
-          ExecStart =
-            let
-              dotfileTargetDirs = lib.unique (
-                lib.concatMap (
-                  prefix:
-                  let
-                    targetDirConfig = config.dotfiles.definitions.${prefix} or null;
-                  in
-                  if targetDirConfig != null then [ "$HOME/${targetDirConfig.path}" ] else [ ]
-                ) config.dotfiles.profiles
-              );
-              scriptCommands = lib.concatMapStringsSep "\n" (dir: ''
-                if [ -f "${dir}/load_theme.sh" ]; then
-                  echo "[dms-theme-reload] Executing ${dir}/load_theme.sh..."
-                  bash "${dir}/load_theme.sh" || echo "[dms-theme-reload] ERROR: ${dir}/load_theme.sh failed with exit code $?" >&2
-                fi
-              '') dotfileTargetDirs;
-            in
-            "${pkgs.writeShellScript "reload-dms-theme" scriptCommands}";
-        };
-        path = with pkgs; [
-          # TODO: autodeclare these from existing config-dirs?
-          bash
-          jq
-          busybox
-          bat
-          fish
-        ];
       };
     };
 

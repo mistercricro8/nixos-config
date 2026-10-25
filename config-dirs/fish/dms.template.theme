@@ -1,27 +1,27 @@
 # name: 'DMS'
-# preferred_background: %background%
+# preferred_background: {{colors.background.default.hex_stripped}}
 
-fish_color_normal %on_surface%
-fish_color_command %primary%
-fish_color_keyword %tertiary%
-fish_color_quote %secondary%
-fish_color_redirection %tertiary%
-fish_color_end %tertiary%
-fish_color_error %error%
-fish_color_param %on_surface%
-fish_color_comment %outline%
-fish_color_selection --background=%surface_variant%
-fish_color_search_match --background=%surface_variant%
-fish_color_operator %secondary%
-fish_color_escape %tertiary%
-fish_color_autosuggestion %on_surface_variant%
-fish_color_cancel %error%
-fish_color_cwd %primary%
-fish_color_user %primary%
-fish_color_host %primary%
-fish_color_host_remote %tertiary%
-fish_color_status %error%
-fish_pager_color_progress %on_surface_variant%
-fish_pager_color_prefix %primary%
-fish_pager_color_completion %on_surface%
-fish_pager_color_description %outline%
+fish_color_normal {{colors.on_surface.default.hex_stripped}}
+fish_color_command {{colors.primary.default.hex_stripped}}
+fish_color_keyword {{colors.tertiary.default.hex_stripped}}
+fish_color_quote {{colors.secondary.default.hex_stripped}}
+fish_color_redirection {{colors.tertiary.default.hex_stripped}}
+fish_color_end {{colors.tertiary.default.hex_stripped}}
+fish_color_error {{colors.error.default.hex_stripped}}
+fish_color_param {{colors.on_surface.default.hex_stripped}}
+fish_color_comment {{colors.outline.default.hex_stripped}}
+fish_color_selection --background={{colors.surface_variant.default.hex_stripped}}
+fish_color_search_match --background={{colors.surface_variant.default.hex_stripped}}
+fish_color_operator {{colors.secondary.default.hex_stripped}}
+fish_color_escape {{colors.tertiary.default.hex_stripped}}
+fish_color_autosuggestion {{colors.on_surface_variant.default.hex_stripped}}
+fish_color_cancel {{colors.error.default.hex_stripped}}
+fish_color_cwd {{colors.primary.default.hex_stripped}}
+fish_color_user {{colors.primary.default.hex_stripped}}
+fish_color_host {{colors.primary.default.hex_stripped}}
+fish_color_host_remote {{colors.tertiary.default.hex_stripped}}
+fish_color_status {{colors.error.default.hex_stripped}}
+fish_pager_color_progress {{colors.on_surface_variant.default.hex_stripped}}
+fish_pager_color_prefix {{colors.primary.default.hex_stripped}}
+fish_pager_color_completion {{colors.on_surface.default.hex_stripped}}
+fish_pager_color_description {{colors.outline.default.hex_stripped}}

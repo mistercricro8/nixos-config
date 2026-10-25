@@ -1,0 +1,36 @@
+[config]
+
+[templates.starship]
+input_path = '~/.config/starship/starship.template.toml'
+output_path = '~/.config/starship.toml'
+
+[templates.fish]
+input_path = '~/.config/fish/dms.template.theme'
+output_path = '~/.config/fish/themes/dms.theme'
+post_hook = "fish -c 'fish_config theme choose dms' 2>/dev/null || true"
+
+[templates.bat]
+input_path = '~/.config/bat/dms.template.tmTheme'
+output_path = '~/.config/bat/themes/dms.tmTheme'
+post_hook = 'bat cache --build'
+
+[templates.kitty]
+input_path = '~/.config/kitty/dms.template.conf'
+output_path = '~/.config/kitty/dank-theme.conf'
+post_hook = 'kill -SIGUSR1 $(pgrep -x kitty) 2>/dev/null || true'
+
+[templates.atuin]
+input_path = '~/.config/atuin/dms.template.toml'
+output_path = '~/.config/atuin/themes/dms.toml'
+
+[templates.micro]
+input_path = '~/.config/micro/micro.template.micro'
+output_path = '~/.config/micro/colorschemes/dms.micro'
+
+[templates.sioyek]
+input_path = '~/.config/sioyek/prefs_user.template.config'
+output_path = '~/.config/sioyek/prefs_user.config'
+
+[templates.imv]
+input_path = '~/.config/imv/imv.template.config'
+output_path = '~/.config/imv/config'

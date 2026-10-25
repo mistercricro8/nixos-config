@@ -49,6 +49,9 @@
     mimeapps = {
       path = ".config";
     };
+    matugen = {
+      path = ".config/matugen";
+    };
     starship = {
       path = ".config/starship";
     };

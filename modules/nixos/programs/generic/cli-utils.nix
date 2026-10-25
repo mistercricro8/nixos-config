@@ -56,6 +56,7 @@
       dotfiles.profiles = [
         "scripts"
         "fish"
+        "matugen"
         "starship"
         "yazi"
         "micro"
