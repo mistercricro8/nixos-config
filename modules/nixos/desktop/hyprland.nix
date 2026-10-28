@@ -88,6 +88,8 @@
           adw-gtk3
           nur.repos.ilya-fedin.qt6ct
           pywalfox-native
+          evtest
+          libinput
         ]
       );
 

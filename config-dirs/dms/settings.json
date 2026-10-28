@@ -89,8 +89,8 @@
           "id": "systemTray"
         },
         {
-          "enabled": true,
-          "id": "cpuUsage"
+          "id": "catWidget",
+          "enabled": true
         },
         {
           "enabled": true,
