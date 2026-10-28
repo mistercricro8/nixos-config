@@ -27,6 +27,7 @@ in
           "dialout"
           "cdrom"
           "docker"
+          "input"
           "uinput"
         ];
         packages = [ ];

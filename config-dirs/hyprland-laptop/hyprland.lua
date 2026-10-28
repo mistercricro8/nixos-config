@@ -111,6 +111,18 @@ hl.window_rule({
   suppress_event = "maximize",
 })
 
+hl.workspace_rule({
+  workspace = "f[1]",
+  gaps_out = 0,
+  gaps_in = 0,
+})
+
+hl.window_rule({
+  match = { fullscreen = true },
+  border_size = 2,
+  rounding = 0,
+})
+
 -- Modules
 pcall(require, "dms.colors")
 pcall(require, "dms.outputs")

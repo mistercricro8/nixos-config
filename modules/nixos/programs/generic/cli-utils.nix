@@ -33,6 +33,7 @@
           nixd
           jujutsu
           fzf
+          evtest
           fuzzel
           starship
           atuin
