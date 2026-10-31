@@ -108,6 +108,7 @@
       networking.firewall.allowedUDPPorts = [ 7790 ];
 
       programs.droidcam.enable = true;
+      boot.kernelPackages = pkgs.linuxPackages_zen;
       boot.kernelModules = [
         "v4l2loopback"
         "snd-aloop"

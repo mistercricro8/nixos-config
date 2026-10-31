@@ -78,6 +78,9 @@
       # ============== Time
       time.timeZone = "America/Lima";
 
+      # ============== Boot
+      boot.kernelPackages = pkgs.linuxPackages_zen;
+
       # ============== Extra
       networking.hostName = "cricro-laptop";
 
