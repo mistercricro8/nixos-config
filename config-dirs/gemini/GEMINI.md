@@ -29,7 +29,7 @@ You must strictly adhere to the following architectural rules when generating or
 
 5. **Strict Path Discipline**
   * Never generate arbitrary, machine-dependent local paths (e.g., `~/`, `/home/user`, `file:///`, relative traversal outside the workspace).
-  * All file operations must use paths that are strictly relative to the project root or strictly absolute system paths designed for containerized (Docker) environments.
+  * All file operations must use paths that are strictly relative to the project root.
 
 6. **Prioritize Native & Ecosystem Solutions**
   * Before implementing custom utilities, boilerplate algorithms, or low-level logic, use `ctx7` or web search to verify whether the target framework or an established third-party library already provides a first-class solution.

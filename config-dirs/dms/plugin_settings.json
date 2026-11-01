@@ -1,0 +1,35 @@
+{
+  "customEmojiLauncher": {
+    "enabled": true,
+    "emojiFilePath": "/home/cricro/store/important/emotelist_clean.json",
+    "trigger": ":"
+  },
+  "calculator": {
+    "enabled": true,
+    "trigger": "="
+  },
+  "workspaceGroups": {
+    "enabled": true
+  },
+  "dramaticLyrics": {
+    "enabled": false,
+    "fontSize": "5%",
+    "letterRotationDeg": 0,
+    "monitorMode": "all",
+    "monitorName": "",
+    "rotationDeg": 15,
+    "letterSpacing": "0.1em",
+    "windDriftX": "0.1em",
+    "shimmerAmp": "1px",
+    "bloomIntensityTimes10": 10
+  },
+  "bongoCat": {
+    "enabled": true,
+    "catColorMode": "primary",
+    "catYOffset": 3
+  },
+  "catWidget": {
+    "enabled": true,
+    "showCpuPercent": true
+  }
+}

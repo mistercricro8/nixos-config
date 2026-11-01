@@ -627,7 +627,7 @@
   "focusRingEnabled": true,
   "focusRingWidth": 1.5,
   "launcherStyle": "full",
-  "dankLauncherV2Size": "large",
+  "dankLauncherV2Size": "medium",
   "dankLauncherV2BorderEnabled": false,
   "rememberLastQuery": false,
   "lockScreenWidgetInstances": [
