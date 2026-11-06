@@ -23,37 +23,54 @@
       "args": [],
       "projects": [
         {
-          "paths": ["/home/cricro/nixos-config"],
-        },
-      ],
+          "paths": [
+            "/home/cricro/nixos-config"
+          ]
+        }
+      ]
     },
     {
       "host": "cricro-vm",
       "args": [],
       "projects": [
         {
-          "paths": ["/home/cricro/nixos-config"],
+          "paths": [
+            "/home/cricro/nixos-config"
+          ]
         },
         {
-          "paths": ["/home/cricro/server-data"],
+          "paths": [
+            "/home/cricro/server-data"
+          ]
         },
         {
-          "paths": ["/home/cricro/work"],
-        },
-      ],
+          "paths": [
+            "/home/cricro/work"
+          ]
+        }
+      ]
     },
     {
       "host": "cricro-pc-l",
       "args": [],
       "projects": [
         {
-          "paths": ["/home/cricro/nixos-config"],
+          "paths": [
+            "/home/cricro/nixos-config"
+          ]
         },
         {
-          "paths": ["/home/cricro/projects/los-podadores/automation"],
+          "paths": [
+            "/home/cricro/projects/los-podadores/automation"
+          ]
         },
-      ],
-    },
+        {
+          "paths": [
+            "/home/cricro/store/temp/pims-final/./"
+          ]
+        }
+      ]
+    }
   ],
   "auto_install_extensions": {
     "astro": true,
