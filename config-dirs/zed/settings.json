@@ -58,16 +58,6 @@
           "paths": [
             "/home/cricro/nixos-config"
           ]
-        },
-        {
-          "paths": [
-            "/home/cricro/projects/los-podadores/automation"
-          ]
-        },
-        {
-          "paths": [
-            "/home/cricro/store/temp/pims-final/./"
-          ]
         }
       ]
     }
