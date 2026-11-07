@@ -39,6 +39,7 @@
     };
     hyprland.url = "github:hyprwm/hyprland";
     import-tree.url = "github:vic/import-tree";
+    llm-agents.url = "github:numtide/llm-agents.nix";
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=v0.7.0";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-26.05";
@@ -46,7 +47,6 @@
       url = "github:nix-community/NUR";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    omp.url = "github:numtide/llm-agents.nix";
     private.url = "github:mistercricro8/nixos-config-private";
     sops-nix = {
       url = "github:Mic92/sops-nix";

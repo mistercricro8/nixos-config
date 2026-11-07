@@ -6,7 +6,8 @@
     }:
     { pkgs, lib, ... }:
     let
-      omp = inputs.omp.packages.${pkgs.stdenv.hostPlatform.system}.omp;
+      llmPkgs = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
+      omp = llmPkgs.omp;
       # TODO: remove whenever the flake adds fish completions or
       # the package gets to nixpkgs
       ompWithCompletions = pkgs.symlinkJoin {
@@ -21,13 +22,16 @@
     {
       users.users.${user}.packages = inputs.self.lib.util.filterInvalidPackages pkgs (
         lib.flatten [
-          (with pkgs; [
+          (with llmPkgs; [
             opencode
-            github-copilot-cli
+            copilot-cli
             antigravity-cli
-            tgrep
+            orca
           ])
           [ ompWithCompletions ]
+          (with pkgs; [
+            tgrep
+          ])
         ]
       );
 

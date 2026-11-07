@@ -15,7 +15,7 @@
       url = "github:winapps-org/winapps";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    omp.url = "github:numtide/llm-agents.nix";
+    llm-agents.url = "github:numtide/llm-agents.nix";
     private.url = "github:mistercricro8/nixos-config-private";
   };
 }
