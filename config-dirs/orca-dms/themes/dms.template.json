@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "base": "dark",
+  "tokens": {
+    "--background": "{{colors.background.default.hex}}",
+    "--editor-surface": "{{colors.background.default.hex}}",
+    "--card": "{{colors.surface_container.default.hex}}",
+    "--popover": "{{colors.surface_container_high.default.hex}}",
+    "--primary": "{{colors.primary.default.hex}}",
+    "--secondary": "{{colors.secondary.default.hex}}",
+    "--muted": "{{colors.surface_container.default.hex}}",
+    "--accent": "{{colors.surface_container_highest.default.hex}}",
+    "--border": "{{colors.outline_variant.default.hex}}",
+    "--input": "{{colors.outline_variant.default.hex}}",
+    "--sidebar": "{{colors.surface_container_low.default.hex}}",
+    "--sidebar-border": "{{colors.outline_variant.default.hex}}",
+    "--foreground": "{{colors.on_surface.default.hex}}",
+    "--popover-foreground": "{{colors.on_surface.default.hex}}",
+    "--primary-foreground": "{{colors.on_primary.default.hex}}",
+    "--secondary-foreground": "{{colors.on_secondary.default.hex}}",
+    "--muted-foreground": "{{colors.on_surface_variant.default.hex}}",
+    "--accent-foreground": "{{colors.on_surface.default.hex}}",
+    "--ring": "{{colors.primary.default.hex}}",
+    "--sidebar-foreground": "{{colors.on_surface.default.hex}}"
+  },
+  "tokenColors": [
+    {
+      "scope": [
+        "comment",
+        "punctuation.definition.comment"
+      ],
+      "settings": {
+        "foreground": "{{colors.outline.default.hex}}",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "scope": [
+        "keyword",
+        "storage",
+        "storage.type",
+        "storage.modifier"
+      ],
+      "settings": {
+        "foreground": "{{colors.primary.default.hex}}"
+      }
+    },
+    {
+      "scope": [
+        "string",
+        "punctuation.definition.string"
+      ],
+      "settings": {
+        "foreground": "{{colors.tertiary.default.hex}}"
+      }
+    },
+    {
+      "scope": [
+        "constant.numeric",
+        "constant.language",
+        "constant.character"
+      ],
+      "settings": {
+        "foreground": "{{colors.secondary.default.hex}}"
+      }
+    },
+    {
+      "scope": [
+        "entity.name.function",
+        "support.function"
+      ],
+      "settings": {
+        "foreground": "{{colors.primary_fixed.default.hex}}"
+      }
+    },
+    {
+      "scope": [
+        "variable",
+        "entity.name.variable",
+        "variable.parameter"
+      ],
+      "settings": {
+        "foreground": "{{colors.on_surface.default.hex}}"
+      }
+    },
+    {
+      "scope": [
+        "entity.name.type",
+        "entity.name.class",
+        "support.type",
+        "support.class"
+      ],
+      "settings": {
+        "foreground": "{{colors.secondary_fixed.default.hex}}"
+      }
+    },
+    {
+      "scope": [
+        "entity.name.tag",
+        "markup.heading"
+      ],
+      "settings": {
+        "foreground": "{{colors.primary.default.hex}}"
+      }
+    },
+    {
+      "scope": [
+        "entity.other.attribute-name",
+        "variable.other.property",
+        "support.type.property-name"
+      ],
+      "settings": {
+        "foreground": "{{colors.tertiary_fixed.default.hex}}"
+      }
+    },
+    {
+      "scope": [
+        "invalid",
+        "invalid.illegal"
+      ],
+      "settings": {
+        "foreground": "{{colors.error.default.hex}}"
+      }
+    }
+  ]
+}

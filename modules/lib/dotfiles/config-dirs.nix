@@ -110,6 +110,10 @@
     imv = {
       path = ".config/imv";
     };
+    orca-dms = {
+      path = ".config/orca/plugins/dms";
+      symlinkDir = true;
+    };
     icons = {
       type = "flake";
       path = ".icons";

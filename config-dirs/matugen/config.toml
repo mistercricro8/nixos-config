@@ -34,3 +34,13 @@ output_path = '~/.config/sioyek/prefs_user.config'
 [templates.imv]
 input_path = '~/.config/imv/imv.template.config'
 output_path = '~/.config/imv/config'
+
+[templates.orca]
+input_path = '~/.config/orca/plugins/dms/themes/dms.template.json'
+output_path = '~/.config/orca/plugins/dms/themes/dms.json'
+
+[templates.orca-terminal]
+input_path = '~/.config/orca/plugins/dms/terminal/dms.template.json'
+output_path = '~/.config/orca/plugins/dms/terminal/dms.json'
+post_hook = "orca-ide plugin dev reload ~/.config/orca/plugins/dms 2>/dev/null || true"
+

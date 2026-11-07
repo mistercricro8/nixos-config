@@ -42,6 +42,7 @@
         "gemini"
         "copilot"
         "omp"
+        "orca-dms"
       ];
     };
 }
