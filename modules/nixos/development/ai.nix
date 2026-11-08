@@ -29,9 +29,6 @@
             orca
           ])
           [ ompWithCompletions ]
-          (with pkgs; [
-            tgrep
-          ])
         ]
       );
 

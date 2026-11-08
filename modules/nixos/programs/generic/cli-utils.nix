@@ -47,7 +47,6 @@
           wineWow64Packages.stable
           winetricks
           zellij
-          tgrep
           uv
           nodejs
           pnpm
