@@ -18,11 +18,9 @@
           krita
           rnote
           localsend
-          nwg-displays
           gsettings-desktop-schemas
           gtk3
           filezilla
-          rustdesk-flutter
           blender
           easyeffects
           scrcpy
