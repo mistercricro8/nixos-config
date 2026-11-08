@@ -1,4 +1,7 @@
 { inputs, ... }:
+let
+  user = "cricro";
+in
 {
   flake.modules.nixos."hosts/cricro-vm" =
     {
@@ -22,6 +25,7 @@
           (nixos."secrets/ssh-keys" {
             keys = [ "id_ed25519" ];
           })
+          (nixos."development/ai" { inherit user; })
           (nixos."services/tailscale" {
             hostname = "cricro-vm";
             hostType = "both";
