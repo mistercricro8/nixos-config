@@ -205,6 +205,7 @@
 
       services.gitlab-runner = {
         enable = true;
+        package = pkgsStable.gitlab-runner;
         services.WZ7uTl = {
           executor = "docker";
           dockerImage = "moby/buildkit:rootless";

@@ -260,7 +260,7 @@
   },
   "centeringMode": "geometric",
   "clockFormat": "12h",
-  "configVersion": 42,
+  "configVersion": 43,
   "containerSaturation": 100,
   "controlCenterWidgets": [
     {
@@ -478,6 +478,7 @@
       "showOnLastDisplay": true,
       "position": 1,
       "mode": "compact",
+      "middleClickAction": "close",
       "taskbarAlign": "center",
       "widgetExpansion": "popout",
       "iconSize": 48,
