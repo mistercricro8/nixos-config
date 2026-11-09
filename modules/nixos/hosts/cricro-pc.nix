@@ -32,6 +32,51 @@
           nixos."virtualisation/virt-manager"
         ])
         ++ (with inputs.self.factories; [
+          (nixos."system/impermanence" {
+            device = "/dev/disk/by-partlabel/disk-main-root";
+            user = "cricro";
+            directories = [
+              "/var/lib/tailscale"
+              "/etc/NetworkManager/system-connections"
+            ];
+            userDirectories = [
+              "Documents"
+              "nixos-config"
+              ".gnupg"
+              ".local/share/keyrings"
+              ".config/discord"
+              ".mozilla"
+              ".config/BraveSoftware"
+              ".local/share/atuin"
+              ".local/share/fish"
+              ".gemini"
+              ".omp"
+              ".config/context7"
+              ".config/gh"
+              ".config/glab-cli"
+              ".local/share/direnv"
+              ".config/orca"
+              ".orca"
+              ".config/obs-studio"
+              ".local/state/dms"
+              ".cache/uv"
+              ".local/share/uv"
+              ".cargo"
+              ".rustup"
+              ".gradle"
+              ".local/share/zed"
+              ".cache/zed"
+              ".vscode/extensions"
+              ".cache/pnpm"
+              ".local/share/pnpm"
+              ".cache/bun"
+              ".cache/.bun"
+              ".cache/huggingface"
+              ".local/share/opencode"
+              ".cache/ms-playwright"
+              "go"
+            ];
+          })
           (nixos."secrets/ssh-keys" {
             keys = [
               "id_ed25519"
@@ -53,31 +98,6 @@
           })
           (nixos."services/samba" {
             shares = {
-              "files" = {
-                path = "/home/LaEsquina/la-esquina-store/laesquina-management/files";
-                guestOk = "no";
-                writable = "yes";
-                accessMode = "read-write";
-                user = "LaEsquina";
-                userData = {
-                  homeMode = "0777";
-                  hashedPassword = "$y$j9T$Fm/3aDe8MkmxKAX16PhK/0$sVt5FWmeQJbOkTFHQhT0DCqC3bti13ORbx/MiwDFXB2";
-                };
-              };
-              "Archivos" = {
-                path = "/home/LaEsquina/la-esquina-store/Archivos";
-                guestOk = "no";
-                writable = "yes";
-                accessMode = "read-write";
-                user = "LaEsquina";
-              };
-              "Medicina" = {
-                path = "/home/LaEsquina/la-esquina-store/Medicina";
-                guestOk = "no";
-                writable = "yes";
-                accessMode = "read-write";
-                user = "LaEsquina";
-              };
               "Datafest" = {
                 path = "/home/datafest/datafest";
                 guestOk = "no";

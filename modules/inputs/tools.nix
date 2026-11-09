@@ -16,6 +16,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
+    impermanence.url = "github:nix-community/impermanence";
     private.url = "github:mistercricro8/nixos-config-private";
   };
 }

@@ -7,7 +7,7 @@ composer:
 theme:
   dark: titanium
   light: light
-setupVersion: 2
+setupVersion: 3
 advisor:
   enabled: false
   syncBacklog: "1"
@@ -19,6 +19,5 @@ retry:
     web:
       - web/hosted
 hideThinkingBlock: false
-disabledExtensions:
-  []
+disabledExtensions: []
 defaultThinkingLevel: xhigh

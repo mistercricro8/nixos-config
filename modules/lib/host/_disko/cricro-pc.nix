@@ -1,5 +1,3 @@
-# TODO: this will most definitely not work with how windows always
-# prefers being installed first
 { ... }:
 {
   disko.devices = {
@@ -12,7 +10,6 @@
           partitions = {
             ESP = {
               priority = 1;
-              name = "ESP";
               start = "1M";
               end = "512M";
               type = "EF00";
@@ -25,12 +22,6 @@
                   "dmask=0022"
                 ];
               };
-            };
-            reserved = {
-              size = "16M";
-            };
-            windows = {
-              size = "150G";
             };
             root = {
               size = "100%";
@@ -59,6 +50,13 @@
                       "noatime"
                     ];
                   };
+                  "persist" = {
+                    mountpoint = "/persist";
+                    mountOptions = [
+                      "compress=zstd"
+                      "noatime"
+                    ];
+                  };
                 };
               };
             };
@@ -67,20 +65,47 @@
       };
       store = {
         type = "disk";
-        device = "/dev/disk/by-uuid/ab8bbead-5ad6-40db-b940-589deb68344b";
+        device = "/dev/sdb";
         content = {
-          type = "filesystem";
-          format = "ext4";
-          mountpoint = "/home/cricro/store";
+          type = "gpt";
+          partitions = {
+            windows = {
+              size = "200G";
+            };
+            store = {
+              size = "100%";
+              content = {
+                type = "btrfs";
+                extraArgs = [ "-f" ];
+                subvolumes = {
+                  "store" = {
+                    mountpoint = "/home/cricro/store";
+                    mountOptions = [
+                      "compress=zstd"
+                      "noatime"
+                    ];
+                  };
+                };
+              };
+            };
+          };
         };
       };
-      laesquina = {
+      archive = {
         type = "disk";
-        device = "/dev/disk/by-uuid/D624289724287C9D";
+        device = "/dev/sda";
         content = {
-          type = "filesystem";
-          format = "ntfs3";
-          mountpoint = "/home/LaEsquina/la-esquina-store";
+          type = "gpt";
+          partitions = {
+            archive = {
+              size = "100%";
+              content = {
+                type = "filesystem";
+                format = "ext4";
+                mountpoint = "/home/cricro/archive";
+              };
+            };
+          };
         };
       };
     };

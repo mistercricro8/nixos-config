@@ -1,0 +1,17 @@
+[NativePluginWindow]
+showNativePluginUi=true
+
+[StreamInputs]
+inputDevice=alsa_input.usb-DCMT_Technology_USB_Condenser_Microphone_214b206000000178-00.mono-fallback
+plugins=rnnoise#0
+visiblePage=pluginsPage
+visiblePlugin=rnnoise#0
+
+[StreamOutputs]
+outputDevice=alsa_output.pci-0000_08_00.6.analog-stereo
+
+[Window]
+height=712
+visiblePage=inputPage
+visiblePresetSheetPage=communityPage
+width=1348

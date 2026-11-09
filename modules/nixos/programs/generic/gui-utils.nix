@@ -39,6 +39,7 @@
         "mangohud"
         "sioyek"
         "imv"
+        "easyeffects"
       ];
     };
 }

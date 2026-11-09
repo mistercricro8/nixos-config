@@ -110,6 +110,10 @@
     imv = {
       path = ".config/imv";
     };
+    easyeffects = {
+      path = ".config/easyeffects/db";
+      symlinkDir = true;
+    };
     orca-dms = {
       path = ".config/orca/plugins/dms";
       symlinkDir = true;
