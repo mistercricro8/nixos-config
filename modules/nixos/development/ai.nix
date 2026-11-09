@@ -35,10 +35,10 @@
       nixpkgs.config.android_sdk.accept_license = true;
 
       dotfiles.profiles = [
-        "opencode"
         "gemini"
         "copilot"
         "omp"
+        "agents"
         "orca-dms"
       ];
     };

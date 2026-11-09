@@ -67,8 +67,8 @@
     zed = {
       path = ".config/zed";
     };
-    opencode = {
-      path = ".config/opencode";
+    agents = {
+      path = ".agents";
     };
     gemini = {
       path = ".gemini";
