@@ -38,8 +38,12 @@
             directories = [
               "/var/lib/tailscale"
               "/etc/NetworkManager/system-connections"
+              "/var/lib/flatpak"
+              "/var/lib/samba"
+              "/home/datafest"
             ];
             userDirectories = [
+              ".var/app"
               "Documents"
               "nixos-config"
               ".gnupg"

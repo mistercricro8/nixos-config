@@ -75,17 +75,13 @@
             store = {
               size = "100%";
               content = {
-                type = "btrfs";
-                extraArgs = [ "-f" ];
-                subvolumes = {
-                  "store" = {
-                    mountpoint = "/home/cricro/store";
-                    mountOptions = [
-                      "compress=zstd"
-                      "noatime"
-                    ];
-                  };
-                };
+                type = "filesystem";
+                format = "btrfs";
+                mountpoint = "/home/cricro/store";
+                mountOptions = [
+                  "compress=zstd"
+                  "noatime"
+                ];
               };
             };
           };
