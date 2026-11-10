@@ -93,6 +93,10 @@
         ]
       );
 
+      systemd.user.tmpfiles.rules = [
+        "L+ %h/.local/state/DankMaterialShell - - - - %h/.local/state/dms"
+      ];
+
       hjem.users.${user}.files = {
         ".config/hypr/share" = {
           source = "${hyprlandPkg}/share/hypr";
