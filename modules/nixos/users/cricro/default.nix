@@ -46,7 +46,7 @@ in
         packages = [ ];
 
         environment.sessionVariables = {
-          PATH = "$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin";
+          PATH = "$PATH:$HOME/bin:$HOME/.local/bin";
           EDITOR = lib.mkDefault "micro";
           KUBECONFIG = "/home/${user}/.kube/config";
         };

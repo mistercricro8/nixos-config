@@ -76,9 +76,6 @@
     git = {
       path = ".config/git";
     };
-    copilot = {
-      path = ".copilot";
-    };
     omp = {
       path = ".omp/agent";
     };

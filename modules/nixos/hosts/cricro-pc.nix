@@ -38,21 +38,29 @@
             directories = [
               "/var/lib/tailscale"
               "/etc/NetworkManager/system-connections"
+              "/var/lib/NetworkManager"
               "/var/lib/flatpak"
-              "/var/lib/samba"
-              "/home/datafest"
+              "/var/lib/docker"
+              "/var/lib/libvirt"
+              "/var/lib/cups"
             ];
             userDirectories = [
               ".var/app"
-              "Documents"
               "nixos-config"
               ".gnupg"
               ".local/share/keyrings"
+              ".local/share/pki"
+              ".pki"
               ".config/discord"
               ".mozilla"
+              ".config/mozilla"
+              ".config/chromium"
               ".config/BraveSoftware"
+              ".config/pulse"
+              ".local/state/wireplumber"
               ".local/share/atuin"
               ".local/share/fish"
+              ".local/share/zoxide"
               ".gemini"
               ".omp"
               ".config/context7"
@@ -62,7 +70,14 @@
               ".config/orca"
               ".orca"
               ".config/obs-studio"
+              ".config/dconf"
               ".local/state/dms"
+              ".config/Code"
+              ".vscode/extensions"
+              ".vscode-server"
+              ".android"
+              ".config/Google"
+              ".local/share/Google"
               ".cache/uv"
               ".local/share/uv"
               ".cargo"
@@ -70,15 +85,12 @@
               ".gradle"
               ".local/share/zed"
               ".cache/zed"
-              ".vscode/extensions"
               ".cache/pnpm"
               ".local/share/pnpm"
               ".cache/bun"
               ".cache/.bun"
               ".cache/huggingface"
-              ".local/share/opencode"
               ".cache/ms-playwright"
-              "go"
             ];
           })
           (nixos."secrets/ssh-keys" {
@@ -98,21 +110,6 @@
             profiles = inputs.self.lib.networking.mkIgnoreLocalDns {
               name = "ignore-local-dns";
               interface = "enp3s0";
-            };
-          })
-          (nixos."services/samba" {
-            shares = {
-              "Datafest" = {
-                path = "/home/datafest/datafest";
-                guestOk = "no";
-                writable = "yes";
-                accessMode = "read-write";
-                user = "datafest";
-                userData = {
-                  homeMode = "0777";
-                  hashedPassword = "$6$BbbkeDRQQ5ifgrM9$6PlvUgs8g743yzXYTiQy36P/eg.1aTpXQGbB/PO0aF7cwpllqLI3M08KQXcNM9Eibb7jhZU/FrnFKiu0dFNJG/";
-                };
-              };
             };
           })
           (nixos."services/tailscale" {

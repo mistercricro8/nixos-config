@@ -23,8 +23,6 @@
       users.users.${user}.packages = inputs.self.lib.util.filterInvalidPackages pkgs (
         lib.flatten [
           (with llmPkgs; [
-            opencode
-            copilot-cli
             antigravity-cli
             orca
           ])
@@ -36,7 +34,6 @@
 
       dotfiles.profiles = [
         "gemini"
-        "copilot"
         "omp"
         "agents"
         "orca-dms"
