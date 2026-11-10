@@ -31,8 +31,10 @@
           "--hostname=${hostname}"
           "--login-server=${inputs.private.secrets.tailscale.loginServer}"
           "--accept-routes"
-          "--exit-node-allow-lan-access=true"
           "--reset"
+        ]
+        ++ lib.optionals (lib.any (flag: lib.hasPrefix "--exit-node=" flag || flag == "--exit-node") extraFlags) [
+          "--exit-node-allow-lan-access=true"
         ]
         ++ extraFlags;
         inherit extraSetFlags;

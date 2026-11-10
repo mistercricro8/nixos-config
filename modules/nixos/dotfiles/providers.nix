@@ -36,8 +36,8 @@
             chmod -R u+rw "${rootCfgPathAbs}"
           fi
           if [ ! -d "${rootCfgPathAbs}/.git" ]; then
-            git -C "${rootCfgPathAbs}" init -b main
-            git -C "${rootCfgPathAbs}" remote add origin https://github.com/mistercricro8/nixos-config.git
+            git -c safe.directory='*' -C "${rootCfgPathAbs}" init -b main
+            git -c safe.directory='*' -C "${rootCfgPathAbs}" remote add origin https://github.com/mistercricro8/nixos-config.git
             chown -R ${user}:${userGroup} "${rootCfgPathAbs}/.git"
           fi
         '';

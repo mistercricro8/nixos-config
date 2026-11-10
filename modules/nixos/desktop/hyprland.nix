@@ -104,11 +104,6 @@
           type = "symlink";
           clobber = true;
         };
-        ".cache/wal/colors.json" = {
-          source = "/home/${user}/.cache/wal/dank-pywalfox.json";
-          type = "symlink";
-          clobber = true;
-        };
         ".config/hypr/load-env" = {
           source = config.hjem.users.${user}.environment.loadEnv;
         };
