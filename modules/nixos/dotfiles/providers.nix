@@ -32,14 +32,13 @@
         script = ''
           if [ ! -f "${rootCfgPathAbs}/flake.nix" ]; then
             cp -r ${inputs.self}/. "${rootCfgPathAbs}/"
-            chown -R ${user}:${userGroup} "${rootCfgPathAbs}"
             chmod -R u+rw "${rootCfgPathAbs}"
           fi
           if [ ! -d "${rootCfgPathAbs}/.git" ]; then
             git -c safe.directory='*' -C "${rootCfgPathAbs}" init -b main
             git -c safe.directory='*' -C "${rootCfgPathAbs}" remote add origin https://github.com/mistercricro8/nixos-config.git
-            chown -R ${user}:${userGroup} "${rootCfgPathAbs}/.git"
           fi
+          chown -R ${user}:${userGroup} "${rootCfgPathAbs}"
         '';
         serviceConfig = {
           Type = "oneshot";
