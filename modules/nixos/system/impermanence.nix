@@ -17,9 +17,11 @@ let
     "/etc/ssh/ssh_host_mldsa44_ed25519_key.pub"
   ];
 
-  baseUserFiles = [
-    ".ssh/known_hosts"
+  baseUserDirectories = [
+    ".ssh"
   ];
+
+  baseUserFiles = [ ];
 in
 {
   flake.factories.nixos."system/impermanence" =
@@ -80,7 +82,7 @@ in
         if user != null then
           {
             ${user} = {
-              directories = userDirectories;
+              directories = lib.unique (baseUserDirectories ++ userDirectories);
               files = lib.unique (baseUserFiles ++ userFiles);
             };
           }
