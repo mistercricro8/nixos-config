@@ -72,6 +72,7 @@
               ".config/obs-studio"
               ".config/dconf"
               ".local/state/dms"
+              ".cache/dms"
               ".config/Code"
               ".vscode/extensions"
               ".vscode-server"
