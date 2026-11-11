@@ -15,7 +15,7 @@
         "--extension"
       ],
       "env": {
-        "PLAYWRIGHT_MCP_EXECUTABLE_PATH": "/etc/profiles/per-user/cricro/bin/brave"
+        "PLAYWRIGHT_MCP_EXECUTABLE_PATH": "/etc/profiles/per-user/cricro/bin/chromium"
       }
     },
     "pencil": {
