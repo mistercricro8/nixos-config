@@ -20,7 +20,7 @@
       path = ".config/backgrounds";
     };
     dms = {
-      path = ".config/DankMaterialShell";
+      path = ".config/dms";
     };
     dms-kde = {
       path = ".config";

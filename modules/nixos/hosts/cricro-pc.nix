@@ -71,6 +71,7 @@
               ".orca"
               ".config/obs-studio"
               ".config/dconf"
+              ".config/dms"
               ".local/state/dms"
               ".cache/dms"
               ".config/Code"

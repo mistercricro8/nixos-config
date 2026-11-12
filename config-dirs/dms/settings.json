@@ -389,7 +389,7 @@
     "size": 24,
     "theme": "catppuccin-mocha-yellow-cursors"
   },
-  "customThemeFile": "/home/cricro/.config/DankMaterialShell/themes/catppuccin/theme.json",
+  "customThemeFile": "/home/cricro/.config/dms/themes/catppuccin/theme.json",
   "dankLauncherV2BorderThickness": 1,
   "dashCards": [
     {
