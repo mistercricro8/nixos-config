@@ -50,6 +50,14 @@
         configHome = "/home/cricro";
       };
 
+      services.displayManager = {
+        defaultSession = "hyprland-uwsm";
+        autoLogin = {
+          enable = true;
+          user = "cricro";
+        };
+      };
+
       xdg.portal = {
         enable = true;
         xdgOpenUsePortal = false;

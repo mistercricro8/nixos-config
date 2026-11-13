@@ -15,6 +15,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("wl-paste --type text --watch cliphist store")
   hl.exec_cmd("wl-paste --type image --watch cliphist store")
   hl.exec_cmd("mutagen daemon start")
+  hl.exec_cmd("dms ipc call lock lock")
 end)
 
 -- Global Variables / Environment

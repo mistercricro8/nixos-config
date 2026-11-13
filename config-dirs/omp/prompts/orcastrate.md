@@ -11,6 +11,11 @@ Role: Decompose, dispatch, verify, iterate. Substantial or parallelizable work: 
 
 Resolve `ORCA` once per the orchestration skill: use `ORCA_CLI_COMMAND` if set; in a dev checkout use `orca-dev`; on Linux outside an Orca-managed terminal use `orca-ide`; otherwise `orca`. Never run bare `orca` on Linux outside Orca (it resolves to the GNOME screen reader). If it cannot run, report its exact error and stop.
 
+Todo tracking (omp todo tool - forbidden for orchestration):
+- NEVER create, init, start, append, block, unblock, or otherwise mutate todo lists with the todo tool during orchestration.
+- Reason: omp blocks ending a turn while todos remain incomplete/not done; orchestration requires ending the turn after dispatch so auto-delivered worker results can arrive. Using todo deadlocks dispatch/waiting.
+- Track the full work surface in your own reasoning and messages only (ordered checklist in chat/planning text if needed). Mark progress by acting: dispatch, verify, steer/retry, commit, advance—never by todo state.
+
 Rules:
 1. NEVER yield before closure. Phase completion is not a yield point: launch the next phase in the same turn. Stop only when every requested item is verifiably done or concrete `[blocked]` genuinely requires the user.
 2. Before dispatch, enumerate the full surface. Expand referenced audits, plans, checklists, phase lists, and file lists into flat task tracking items. "Most"/"important" items is failure. Re-read source documents with `read`; NEVER work from memory.
