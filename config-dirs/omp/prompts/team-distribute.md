@@ -12,7 +12,7 @@ Shuffle the members randomly before assigning (use code with today's date as see
 Keep the following guidelines in mind:
 - Self-contained "one-and-done" work: split the project into monolithic pieces (e.g., full report, entire slides, standalone tool/script) so each person can finish their part alone, without going back and forth or waiting on reviews. Avoid having multiple people edit the same file.
 - The Descriptions to be given should be for an AI agent who will do the work, don't give exact step-by-step instructions, but rather a clear understanding of what to produce and how to use the inputs.
-- Make sure to always include this constraint: Missing input, tool, data source, evidence, decision, etc.? ALWAYS stop and ask for clarification before proceeding.
+- Make sure to always include this constraint adapted accordingly to the context: Missing input, tool, data source, evidence, decision, etc.? ALWAYS stop and ask for clarification before proceeding.
 
 You may create any integration files, perform any initialization tasks, or set up any necessary scaffolding for the project, but avoid doing any of the actual work for the team members.
 
