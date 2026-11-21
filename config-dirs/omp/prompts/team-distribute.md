@@ -22,7 +22,7 @@ For each member, provide:
 - Inputs: Some existing relative paths to read first (code, screenshots, prior report). No guessing.
 - Output: Files to produce, with relative paths and file types. If multiple files, use a numbered list.
 - Description: Paragraph in plain language, what to produce reusing evidence from Inputs.
-- Deadline: XXXXX (Deadline for the project is XXXXXX)
+- Deadline: [Fill out here, make sure to distribute tasks across project time evenly (Deadline for the project is XXXXXX)]
 - Dependencies: Only teammate outputs needed first, or "Can start immediately".
 
 This info should be provided in spanish

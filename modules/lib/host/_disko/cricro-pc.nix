@@ -57,6 +57,9 @@
                       "noatime"
                     ];
                   };
+                  "swap" = {
+                    mountpoint = "/.swapvol";
+                  };
                 };
               };
             };

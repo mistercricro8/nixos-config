@@ -30,7 +30,7 @@ in
       persistPath ? "/persist",
       wipeRoot ? true,
       wipeHome ? true,
-      retentionDays ? 30,
+      retentionDays ? 3,
       directories ? [ ],
       files ? [ ],
       user ? "cricro",
