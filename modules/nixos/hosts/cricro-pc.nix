@@ -93,6 +93,7 @@
               ".gradle"
               ".local/share/zed"
               ".cache/zed"
+              ".config/github-copilot"
               ".cache/pnpm"
               ".local/share/pnpm"
               ".cache/bun"

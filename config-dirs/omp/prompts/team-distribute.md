@@ -24,3 +24,5 @@ For each member, provide:
 - Description: Paragraph in plain language, what to produce reusing evidence from Inputs.
 - Deadline: XXXXX (Deadline for the project is XXXXXX)
 - Dependencies: Only teammate outputs needed first, or "Can start immediately".
+
+This info should be provided in spanish
