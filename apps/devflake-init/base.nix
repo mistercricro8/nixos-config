@@ -31,21 +31,21 @@
           (with unstable; [
           ])
         ];
-        ldPkgs = with pkgs; [
-          stdenv.cc.cc
+        ldLibraries = with pkgs; [
+          stdenv.cc.cc.lib
           zlib
-          glib
-          libxcb
-          libglvnd
+          zstd
+          openssl
         ];
       in
       {
         devShells.default = pkgs.mkShell {
-          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath ldPkgs;
-          packages = pkgs.lib.flatten [
-            shellPkgs
-          ];
+          packages = shellPkgs;
           shellHook = "";
+          env = {
+            NIX_LD = "${pkgs.stdenv.cc.bintools.dynamicLinker}";
+            NIX_LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath ldLibraries;
+          };
           buildInputs = [ pkgs.bashInteractive ];
         };
       }

@@ -19,20 +19,20 @@
           inherit system;
           config.allowUnfree = true;
         };
-        ldPath =
-          with pkgs;
-          lib.makeLibraryPath [
-            stdenv.cc.cc
-            zlib
-            glib
-            libxcb
-            openssl
-            libglvnd
-          ];
+        ldLibraries = with pkgs; [
+          stdenv.cc.cc.lib
+          zlib
+          zstd
+          openssl
+        ];
+        ldPath = pkgs.lib.makeLibraryPath ldLibraries;
 
         components = {
           python = {
             packages = with pkgs; [ uv python312 ];
+            env = {
+              UV_PYTHON_PREFERENCE = "only-managed";
+            };
           };
 
           node = {
@@ -97,9 +97,13 @@
             nativeBuildInputs = [ pkgs.pkg-config ] ++ pkgs.lib.concatLists (map (c: c.nativeBuildInputs or []) selected);
             buildInputs = [ pkgs.bashInteractive ] ++ pkgs.lib.concatLists (map (c: c.buildInputs or []) selected);
 
-            mergedEnv = pkgs.lib.foldl' (acc: c: acc // (c.env or {})) {
-              LD_LIBRARY_PATH = ldPath;
-            } selected;
+            baseEnv =
+              {
+                NIX_LD = "${pkgs.stdenv.cc.bintools.dynamicLinker}";
+                NIX_LD_LIBRARY_PATH = ldPath;
+              };
+
+            mergedEnv = pkgs.lib.foldl' (acc: c: acc // (c.env or {})) baseEnv selected;
 
             shellHook = pkgs.lib.concatStringsSep "\n" (map (c: c.shellHook or "") selected);
           in
