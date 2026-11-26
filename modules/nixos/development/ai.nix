@@ -18,15 +18,29 @@
           HOME=$TMPDIR ${lib.getExe omp} completions fish > $out/share/fish/vendor_completions.d/omp.fish
         '';
       };
+      # TODO: remove whenever llm-agents.nix stops patchelf-ing agent-browser-linux-x64
+      # (patchelf changes its sha256, breaking orcad-template/orcad-template.json validation)
+      orcaFixed = llmPkgs.orca.overrideAttrs (
+        old:
+        assert lib.hasInfix "! -name orcad-template" old.postFixup;
+        {
+          postFixup = builtins.replaceStrings
+            [ "! -name orcad-template" ]
+            [ "! -name orcad-template ! -name agent-browser-linux-x64" ]
+            old.postFixup;
+        }
+      );
     in
     {
       users.users.${user}.packages = inputs.self.lib.util.filterInvalidPackages pkgs (
         lib.flatten [
           (with llmPkgs; [
             antigravity-cli
-            orca
           ])
-          [ ompWithCompletions ]
+          [
+            ompWithCompletions
+            orcaFixed
+          ]
         ]
       );
 
